@@ -78,7 +78,7 @@ class Entrypoint extends StatelessWidget {
                 onTap: () {
                   AppGlobalKeys.drawer.currentState?.openDrawer();
                 },
-                borderRadius: BorderRadius.circular(5),
+                borderRadius: AppConstants.kAppBorderRadius,
                 child: Ink(
                   child: Padding(
                     padding: EdgeInsets.all(5),
