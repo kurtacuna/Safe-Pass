@@ -28,4 +28,16 @@ class AppIcons {
   static Icon get menuIcon => Icon(
     Icons.menu
   );
+  static Icon get kEmailIcon => Icon(
+    Ionicons.mail
+  );
+  static Icon get kPasswordIcon => Icon(
+    Icons.perm_identity,
+  );
+  static Icon get kCloseEyeIcon => Icon(
+    Ionicons.eye_off
+  );
+  static Icon get kOpenEyeIcon => Icon(
+    Ionicons.eye
+  );
 }
