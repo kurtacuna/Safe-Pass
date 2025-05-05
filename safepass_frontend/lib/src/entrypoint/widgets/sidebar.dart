@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:safepass_frontend/common/assets/icons.dart';
 import 'package:safepass_frontend/common/assets/images.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
-import 'package:safepass_frontend/src/entrypoint/controlleres/sidebar_notifier.dart';
+import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.dart';
 
 class Sidebar extends StatelessWidget {
   const Sidebar({

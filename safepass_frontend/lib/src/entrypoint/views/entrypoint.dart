@@ -5,7 +5,7 @@ import 'package:safepass_frontend/common/const/kconstants.dart';
 import 'package:safepass_frontend/common/const/kglobal_keys.dart';
 import 'package:safepass_frontend/common/utils/responsive.dart';
 import 'package:safepass_frontend/src/dashboard/views/dashboard_screen.dart';
-import 'package:safepass_frontend/src/entrypoint/controlleres/sidebar_notifier.dart';
+import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.dart';
 import 'package:safepass_frontend/src/entrypoint/widgets/sidebar.dart';
 import 'package:safepass_frontend/src/logs/views/logs_screen.dart';
 import 'package:safepass_frontend/src/settings/views/settings_screen.dart';

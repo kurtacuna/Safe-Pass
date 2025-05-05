@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/utils/routes.dart';
-import 'package:safepass_frontend/src/entrypoint/controlleres/sidebar_notifier.dart';
+import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.dart';
 
 void main() {
   runApp(MultiProvider(

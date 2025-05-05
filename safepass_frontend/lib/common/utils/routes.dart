@@ -7,10 +7,10 @@ import 'package:safepass_frontend/src/splashscreen/views/splashscreen.dart';
 
 final GoRouter _router = GoRouter(
   navigatorKey: AppGlobalKeys.navigator,
-  initialLocation: AppRoutes.kSplashscreen,
+  initialLocation: '/',
   routes: [
     GoRoute(
-      path: AppRoutes.kSplashscreen,
+      path: '/',
       builder: (context, state) => const Splashscreen()
     ),
     GoRoute(
