@@ -6,8 +6,8 @@ class AppConstants {
   static BorderRadius get kAppBorderRadius => BorderRadius.circular(5);
   static List<BoxShadow> get kAppBoxShadow => <BoxShadow>[
     BoxShadow(
-      blurRadius: 20,
-      color: AppColors.kLighterGray,
+      blurRadius: 10,
+      color: const Color.fromARGB(255, 221, 216, 216),
     )
   ];
   
