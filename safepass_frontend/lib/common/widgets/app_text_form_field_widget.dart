@@ -19,7 +19,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
 
   // Controller for the value inside the field
   final TextEditingController controller;
-  
+
   // Used to programmatically set the focus to this field
   final FocusNode? focusNode;
 
@@ -58,17 +58,14 @@ class AppTextFormFieldWidget extends StatelessWidget {
       },
       style: AppTextStyles.defaultStyle,
       decoration: InputDecoration(
-        prefixIcon: SizedBox(
-          width: 20,
-          height: 20,
-          child: prefixIcon
-        ),
-        suffixIcon: SizedBox(
-          width: 20,
-          height: 20,
-          child: suffixIcon
-        ),
+        prefixIcon: prefixIcon != null
+            ? SizedBox(width: 20, height: 20, child: prefixIcon)
+            : null,
+        suffixIcon: suffixIcon != null
+            ? SizedBox(width: 20, height: 20, child: suffixIcon)
+            : null,
         hintText: hintText,
+        contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0), // Add horizontal padding
         filled: true,
         fillColor: AppColors.kLighterGray,
         enabledBorder: AppConstants.enabledBorder,
@@ -76,7 +73,6 @@ class AppTextFormFieldWidget extends StatelessWidget {
         errorBorder: AppConstants.errorBorder,
         focusedErrorBorder: AppConstants.focusedBorder,
       ),
-
     );
   }
 }

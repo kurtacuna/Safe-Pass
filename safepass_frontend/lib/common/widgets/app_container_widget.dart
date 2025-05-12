@@ -9,6 +9,7 @@ class AppContainerWidget extends StatelessWidget {
     required this.height,
     required this.child,
     this.boxShadow,
+    this.backgroundColor,
     super.key
   });
 
@@ -24,13 +25,16 @@ class AppContainerWidget extends StatelessWidget {
   // An optional box shadow to override the default box shadow
   final List<BoxShadow>? boxShadow;
 
+  // An optional background color to override the default white color
+  final Color? backgroundColor;
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.kWhite,
+        color: backgroundColor ?? AppColors.kWhite,
         borderRadius: AppConstants.kAppBorderRadius,
         boxShadow: boxShadow ?? AppConstants.kAppBoxShadow
       ),

@@ -29,7 +29,7 @@ class AppTextStyles {
     fontSize: 32,
   );
   static TextStyle biggestStyle = _dmSans(
-    fontSize: 20
+    fontSize: 25
   );
   static TextStyle biggerStyle = _dmSans(
     fontSize: 18
@@ -46,4 +46,15 @@ class AppTextStyles {
   static TextStyle smallerStyle = _dmSans(
     fontSize: 10,
   );
+
+  //Bold Versions
+  static TextStyle bigStyleBold = _dmSans(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
+   static TextStyle biggerStyleBold = _dmSans(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+  );
+
 }
