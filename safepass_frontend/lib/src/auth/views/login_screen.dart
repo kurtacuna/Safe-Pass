@@ -79,11 +79,11 @@ class LoginScreen extends StatelessWidget {
           small: SingleChildScrollView(
             clipBehavior: Clip.none,
             child: Column(
-              mainAxisSize: MainAxisSize.max,
               children: children,
             )
           ), 
           large: SingleChildScrollView(
+            clipBehavior: Clip.none,
             child: Stack(
               children: children
             )

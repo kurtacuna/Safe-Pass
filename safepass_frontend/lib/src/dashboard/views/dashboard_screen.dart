@@ -43,8 +43,10 @@ class DashboardScreen extends StatelessWidget {
 
                       const SizedBox(height: 20),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 20,
+                        runSpacing: 52,
                         children: [
                           AppIconCardWidget(
                             svgAssetPath: 'assets/images/new_visitor_symbol.svg',
@@ -53,7 +55,6 @@ class DashboardScreen extends StatelessWidget {
                               // TODO: Navigate to registration screen
                             },
                           ),
-                          const SizedBox(width: 16),
                           AppIconCardWidget(
                             svgAssetPath: 'assets/images/check_in_symbol.svg',
                             label: 'Check In',
@@ -61,7 +62,6 @@ class DashboardScreen extends StatelessWidget {
                               // TODO: Navigate to Check In
                             },
                           ),
-                          const SizedBox(width: 16),
                           AppIconCardWidget(
                             svgAssetPath: 'assets/images/check_out_symbol.svg',
                             label: 'Check Out',
