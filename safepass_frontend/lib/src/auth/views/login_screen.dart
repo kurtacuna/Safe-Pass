@@ -73,22 +73,25 @@ class LoginScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      body: Padding(
-        padding: AppConstants.kAppPadding,
-        child: AppResponsive(context).responsiveWidget(
-          small: SingleChildScrollView(
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Padding(
+          padding: AppConstants.kAppPadding,
+          child: SingleChildScrollView(
             clipBehavior: Clip.none,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: children,
-            )
-          ), 
-          large: SingleChildScrollView(
-            child: Stack(
-              children: children
+            child: Center(
+              child: AppResponsive(context).responsiveWidget(
+                small: Column(
+                  children: children,
+                ), 
+                large: Stack(
+                  children: children
+                )
+              )
             )
           )
-        )
+        ),
       )
     );
   }

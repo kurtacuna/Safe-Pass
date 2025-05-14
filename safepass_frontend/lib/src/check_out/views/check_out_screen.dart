@@ -35,192 +35,196 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.sizeOf(context).width;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          // Back to Dashboard Button
-          Positioned(
-            top: 50,
-            right: 50,
-            child: TextButton.icon(
-              onPressed: () => context.go('/entrypoint'),
-              icon: Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
-              label: Text(
-                'Back to Dashboard',
-                style: AppTextStyles.bigStyle.copyWith(
-                  color: AppColors.kDarkBlue,
-                  decoration: TextDecoration.underline,
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            // Back to Dashboard Button
+            Positioned(
+              top: 50,
+              right: 50,
+              child: TextButton.icon(
+                onPressed: () => context.go('/entrypoint'),
+                icon: Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
+                label: Text(
+                  'Back to Dashboard',
+                  style: AppTextStyles.bigStyle.copyWith(
+                    color: AppColors.kDarkBlue,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ),
-          ),
-
-          // Logo
-          Positioned(
-            top: 50,
-            left: 50,
-            child: Image.asset(
-              AppImages.logoDark,
-              height: 50,
+        
+            // Logo
+            Positioned(
+              top: 50,
+              left: 50,
+              child: Image.asset(
+                AppImages.logoDark,
+                height: 50,
+              ),
             ),
-          ),
-
-          // Main Content
-          Padding(
-            padding: const EdgeInsets.all(50.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left side - Visitor Details Form
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 120.0, left: 300),
-                    child: Form(
-                      key: _formKey,
+        
+            // Main Content
+            Padding(
+              padding: const EdgeInsets.all(50.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left side - Visitor Details Form
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 120.0, left: screenWidth * 0.1),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Visitor\'s Details',
+                              style: AppTextStyles.biggestStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.kDark,
+                              ),
+                            ),
+                            const SizedBox(height: 50),
+                            SizedBox(
+                              width: 400,
+                              child: AppTextFormFieldWidget(
+                                controller: _nameController,
+                                hintText: 'Name',
+                                validatorText: 'Please enter visitor name',
+                                //enabled: false,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            SizedBox(
+                              width: 400,
+                              child: AppTextFormFieldWidget(
+                                controller: _idNumberController,
+                                hintText: 'ID Number',
+                                validatorText: 'Please enter ID number',
+                                //enabled: false,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            SizedBox(
+                              width: 400,
+                              child: AppTextFormFieldWidget(
+                                controller: _lastVisitController,
+                                hintText: 'Last Visit',
+                                validatorText: 'Please enter last visit date',
+                                //enabled: false,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            SizedBox(
+                              width: 400,
+                              child: AppTextFormFieldWidget(
+                                controller: _visitPurposeController,
+                                hintText: 'Visit Purpose',
+                                validatorText: 'Please enter visit purpose',
+                                //enabled: false,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            SizedBox(
+                              width: 400,
+                              child: AppTextFormFieldWidget(
+                                controller: _checkOutTimeController,
+                                hintText: 'Check-Out Time',
+                                validatorText: 'Please enter check-out time',
+                                //enabled: false,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            AppButtonWidget(
+                              width: 400,
+                              onTap: () {
+                                // TODO: Implement confirm check-out
+                              },
+                              text: 'Confirm Check-Out',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 50),
+                  // Right side - Face Recognition
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 100.0, right: screenWidth * 0.1),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            'Visitor\'s Details',
+                            'Visitor Check-Out',
                             style: AppTextStyles.biggestStyle.copyWith(
                               fontWeight: FontWeight.bold,
                               color: AppColors.kDark,
                             ),
                           ),
-                          const SizedBox(height: 50),
-                          SizedBox(
-                            width: 400,
-                            child: AppTextFormFieldWidget(
-                              controller: _nameController,
-                              hintText: 'Name',
-                              validatorText: 'Please enter visitor name',
-                              //enabled: false,
+                          const SizedBox(height: 10),
+                          Text(
+                            'Facial Recognition',
+                            style: AppTextStyles.biggerStyle.copyWith(
+                              color: AppColors.kDarkGray,
                             ),
                           ),
                           const SizedBox(height: 30),
-                          SizedBox(
-                            width: 400,
-                            child: AppTextFormFieldWidget(
-                              controller: _idNumberController,
-                              hintText: 'ID Number',
-                              validatorText: 'Please enter ID number',
-                              //enabled: false,
+                          AppContainerWidget(
+                            width: double.infinity,
+                            height: 500,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 400,
+                                    height: 350,
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      borderRadius: AppConstants.kAppBorderRadius,
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.camera_alt,
+                                            size: 50,
+                                            color: AppColors.kDarkGray,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  AppButtonWidget(
+                                    width: 400,
+                                    onTap: () {
+                                      // Button is just for display in this case
+                                    },
+                                    text: 'FACE RECOGNIZED',
+                                    color: AppColors.kLightGreen,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 30),
-                          SizedBox(
-                            width: 400,
-                            child: AppTextFormFieldWidget(
-                              controller: _lastVisitController,
-                              hintText: 'Last Visit',
-                              validatorText: 'Please enter last visit date',
-                              //enabled: false,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          SizedBox(
-                            width: 400,
-                            child: AppTextFormFieldWidget(
-                              controller: _visitPurposeController,
-                              hintText: 'Visit Purpose',
-                              validatorText: 'Please enter visit purpose',
-                              //enabled: false,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          SizedBox(
-                            width: 400,
-                            child: AppTextFormFieldWidget(
-                              controller: _checkOutTimeController,
-                              hintText: 'Check-Out Time',
-                              validatorText: 'Please enter check-out time',
-                              //enabled: false,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          AppButtonWidget(
-                            width: 400,
-                            onTap: () {
-                              // TODO: Implement confirm check-out
-                            },
-                            text: 'Confirm Check-Out',
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 50),
-                // Right side - Face Recognition
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 100.0, right: 350.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Visitor Check-Out',
-                          style: AppTextStyles.biggestStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.kDark,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Facial Recognition',
-                          style: AppTextStyles.biggerStyle.copyWith(
-                            color: AppColors.kDarkGray,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        AppContainerWidget(
-                          width: double.infinity,
-                          height: 500,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 400,
-                                  height: 350,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withOpacity(0.1),
-                                    borderRadius: AppConstants.kAppBorderRadius,
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.camera_alt,
-                                          size: 50,
-                                          color: AppColors.kDarkGray,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                AppButtonWidget(
-                                  width: 400,
-                                  onTap: () {
-                                    // Button is just for display in this case
-                                  },
-                                  text: 'FACE RECOGNIZED',
-                                  color: AppColors.kLightGreen,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
