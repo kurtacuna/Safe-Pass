@@ -41,6 +41,7 @@ class Entrypoint extends StatelessWidget {
           Padding(
             padding: AppConstants.kAppPadding,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppResponsive(context).responsiveWidget(
                   small: Container(),
@@ -56,7 +57,12 @@ class Entrypoint extends StatelessWidget {
                     padding: EdgeInsets.symmetric(
                       horizontal: 10
                     ),
-                    child: VerticalDivider(),
+                    child: Row(
+                      children: [
+                        VerticalDivider(),
+                        SizedBox(width: 30)
+                      ]
+                    ),
                   )
                 ),
             

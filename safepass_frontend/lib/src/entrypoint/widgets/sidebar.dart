@@ -23,89 +23,93 @@ class Sidebar extends StatelessWidget {
     return Consumer<SidebarNotifier>(
       builder: (context, sidebarNotifier, child) {
         return Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              centerLogo == true
-                ? Center(
-                    child: Image.asset(
+          child: SingleChildScrollView(
+            clipBehavior: Clip.none,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                centerLogo == true
+                  ? Center(
+                      child: Image.asset(
+                        AppImages.logoDark,
+                        height: 50
+                      ),
+                    )
+                  : Image.asset(
                       AppImages.logoDark,
                       height: 50
                     ),
-                  )
-                : Image.asset(
-                    AppImages.logoDark,
-                    height: 50
+            
+                SizedBox(height: 40),
+            
+                ListTile(
+                  onTap: () {
+                    sidebarNotifier.setIndex = 0;
+                    if (navigatorPop == true) {
+                      context.pop();
+                    }
+                  },
+                  selected: sidebarNotifier.getIndex == 0
+                    ? true
+                    : false,
+                  leading: AppIcons.chartIcon,
+                  title: Center(
+                    child: Text(
+                      "Dashboard",
+                      style: AppTextStyles.defaultStyle
+                    )
                   ),
-          
-              SizedBox(height: 40),
-          
-              ListTile(
-                onTap: () {
-                  sidebarNotifier.setIndex = 0;
-                  if (navigatorPop == true) {
-                    context.pop();
-                  }
-                },
-                selected: sidebarNotifier.getIndex == 0
-                  ? true
-                  : false,
-                leading: AppIcons.chartIcon,
-                title: Center(
-                  child: Text(
-                    "Dashboard",
-                    style: AppTextStyles.defaultStyle
-                  )
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10
+                  ),
                 ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10
+                    
+                ListTile(
+                  onTap: () {
+                    sidebarNotifier.setIndex = 1;
+                    if (navigatorPop == true) {
+                      context.pop();
+                    }
+                  },
+                  selected: sidebarNotifier.getIndex == 1
+                    ? true
+                    : false,
+                  leading: AppIcons.chartIcon,
+                  title: Center(
+                    child: Text(
+                      "Logs",
+                      style: AppTextStyles.defaultStyle
+                    )
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10
+                  ),
                 ),
-              ),
-        
-              ListTile(
-                onTap: () {
-                  sidebarNotifier.setIndex = 1;
-                  if (navigatorPop == true) {
-                    context.pop();
-                  }
-                },
-                selected: sidebarNotifier.getIndex == 1
-                  ? true
-                  : false,
-                leading: AppIcons.chartIcon,
-                title: Center(
-                  child: Text(
-                    "Logs",
-                    style: AppTextStyles.defaultStyle
-                  )
+                    
+                ListTile(
+                  onTap: () {
+                    sidebarNotifier.setIndex = 2;
+                    if (navigatorPop == true) {
+                      context.pop();
+                    }
+                  },
+                  selected: sidebarNotifier.getIndex == 2
+                    ? true
+                    : false,
+                  leading: AppIcons.chartIcon,
+                  title: Center(
+                    child: Text(
+                      "Settings",
+                      style: AppTextStyles.defaultStyle
+                    )
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10
+                  ),
                 ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10
-                ),
-              ),
-        
-              ListTile(
-                onTap: () {
-                  sidebarNotifier.setIndex = 2;
-                  if (navigatorPop == true) {
-                    context.pop();
-                  }
-                },
-                selected: sidebarNotifier.getIndex == 2
-                  ? true
-                  : false,
-                leading: AppIcons.chartIcon,
-                title: Center(
-                  child: Text(
-                    "Settings",
-                    style: AppTextStyles.defaultStyle
-                  )
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10
-                ),
-              ),
-            ]
+              ]
+            ),
           ),
         );
       }
