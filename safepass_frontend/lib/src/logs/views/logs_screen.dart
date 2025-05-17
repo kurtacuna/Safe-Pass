@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:safepass_frontend/src/dashboard/models/visitor_log_model.dart';
 import 'package:safepass_frontend/common/utils/widgets/visitor_logs.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
@@ -176,6 +175,7 @@ class _LogsScreenState extends State<LogsScreen> {
         _HeaderText('Date'),
         _HeaderText('Visit Purpose'),
         _HeaderText('Status'),
+        _HeaderText('Actions'),
       ],
     );
   }
