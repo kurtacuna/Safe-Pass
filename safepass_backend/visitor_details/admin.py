@@ -1,0 +1,7 @@
+from django.contrib import admin
+from . import models
+
+# Register your models here.
+admin.site.register(models.IdTypes)
+admin.site.register(models.VisitorDetails)
+admin.site.register(models.VisitPurposes)
