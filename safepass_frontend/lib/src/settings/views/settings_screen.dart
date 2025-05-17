@@ -64,28 +64,25 @@ class SettingsContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
       children: [
+        Row(
+          children: [
+            SettingsTabWidget(
+              text: "General", 
+              index: 0
+            ),
+            SettingsTabWidget(
+              text: "Database", 
+              index: 1
+            ),
+            SettingsTabWidget(
+              text: "Policies", 
+              index: 2
+            ),
+          ]
+        ),
         appContainerWidget,
-        SizedBox(
-          height: 40,
-          child: Row(
-            children: [
-              SettingsTabWidget(
-                text: "General", 
-                index: 0
-              ),
-              SettingsTabWidget(
-                text: "Database", 
-                index: 1
-              ),
-              SettingsTabWidget(
-                text: "Policies", 
-                index: 2
-              ),
-            ]
-          ),
-        )
       ]
     );
   }
