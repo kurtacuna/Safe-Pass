@@ -69,7 +69,7 @@ class Sidebar extends StatelessWidget {
                     context.pop();
                   }
                 },
-                selected: sidebarNotifier.getIndex == 1
+                selected: sidebarNotifier.getIndex == 1 || sidebarNotifier.getIndex == 3
                   ? true
                   : false,
                 leading: AppIcons.chartIcon,

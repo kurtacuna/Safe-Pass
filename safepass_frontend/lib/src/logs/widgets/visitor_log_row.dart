@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:safepass_frontend/src/dashboard/models/visitor_log_model.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
+import 'package:safepass_frontend/src/logs/widgets/action_buttons_widget.dart';
 
 class VisitorLogRow extends StatelessWidget {
   final VisitorLog log;
@@ -20,6 +21,7 @@ class VisitorLogRow extends StatelessWidget {
           _DataText('01/01/2001'), // Replace if real date field is added
           _DataText(log.purpose),
           _StatusTag(log.status),
+          _ActionButtonsColumn(log: log), // Add this
         ],
       ),
     );
@@ -63,16 +65,43 @@ class _StatusTag extends StatelessWidget {
     }
 
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          status,
-          style: AppTextStyles.smallStyle.copyWith(color: color, fontWeight: FontWeight.bold),
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+            width: 100,
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              status,
+              style: AppTextStyles.smallStyle.copyWith(color: color, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionButtonsColumn extends StatelessWidget {
+  final VisitorLog log;
+  const _ActionButtonsColumn({required this.log});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: ActionButtonsWidget(
+        onEdit: () {
+          
+          print('Edit ${log.name}');
+        },
+        onArchive: () {
+         
+          print('Archive ${log.name}');
+        },
       ),
     );
   }

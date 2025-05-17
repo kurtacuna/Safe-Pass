@@ -9,6 +9,7 @@ import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.da
 import 'package:safepass_frontend/src/entrypoint/widgets/sidebar.dart';
 import 'package:safepass_frontend/src/logs/views/logs_screen.dart';
 import 'package:safepass_frontend/src/settings/views/settings_screen.dart';
+import 'package:safepass_frontend/src/visitor/screens/visitor_details_screen.dart';
 
 class Entrypoint extends StatelessWidget {
   const Entrypoint({super.key});
@@ -16,7 +17,8 @@ class Entrypoint extends StatelessWidget {
   static const List<Widget> screens = [
     DashboardScreen(),
     LogsScreen(),
-    SettingsScreen()
+    SettingsScreen(),
+    VisitorDetailsScreen()
   ];
 
   @override
