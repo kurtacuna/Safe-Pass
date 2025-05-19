@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:safepass_frontend/common/const/app_theme/app_text_styles.dart";
 import "package:safepass_frontend/common/const/kconstants.dart";
+import "package:safepass_frontend/common/utils/responsive.dart";
 import "package:safepass_frontend/common/widgets/app_dropdownbuttonformfield_widget.dart";
 import "package:safepass_frontend/common/widgets/app_switch_widget.dart";
 
@@ -220,18 +221,34 @@ class SubItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: AppTextStyles.defaultStyle
-        ),
-        SizedBox(
-          width: 100,
-          child: action
-        )
-      ],
+    return AppResponsive(context).responsiveWidget(
+      thresholdWidth: 810,
+      small: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: AppTextStyles.defaultStyle
+          ),
+          SizedBox(
+            width: 100,
+            child: action
+          )
+        ],
+      ), 
+      large: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: AppTextStyles.defaultStyle
+          ),
+          SizedBox(
+            width: 100,
+            child: action
+          )
+        ],
+      )
     );
   }
 }
