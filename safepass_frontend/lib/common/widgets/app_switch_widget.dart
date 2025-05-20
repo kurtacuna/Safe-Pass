@@ -1,28 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 
-class AppSwitchWidget extends StatelessWidget {
-  const AppSwitchWidget({
+class AppSwitchWidget extends StatefulWidget {
+  AppSwitchWidget({
     required this.value,
-    required this.onChanged,
     this.scale = 0.8,
     super.key
   });
   
-  final bool value;
-  final void Function(bool) onChanged;
+  bool value;
   final double scale;
 
   @override
+  State<AppSwitchWidget> createState() => _AppSwitchWidgetState();
+}
+
+class _AppSwitchWidgetState extends State<AppSwitchWidget> {
+  @override
   Widget build(BuildContext context) {
     return Transform.scale(
-      scale: scale,
+      scale: widget.scale,
       child: Switch(
-        value: value,
-        onChanged: onChanged,
+        value: widget.value,
+        onChanged: (value) {
+          setState(() {
+            widget.value = value;
+          });
+        },
         trackOutlineWidth: WidgetStatePropertyAll(3),
         trackOutlineColor: WidgetStatePropertyAll(AppColors.kDarkBlue),
-        thumbColor: value == true
+        thumbColor: widget.value == true
           ? WidgetStatePropertyAll(AppColors.kWhite)
           : WidgetStatePropertyAll(AppColors.kDarkBlue),
         activeTrackColor: AppColors.kDarkBlue,
