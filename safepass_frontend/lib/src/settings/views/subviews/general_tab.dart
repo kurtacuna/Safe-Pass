@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
 import "package:safepass_frontend/common/const/app_theme/app_text_styles.dart";
 import "package:safepass_frontend/common/const/kconstants.dart";
-import "package:safepass_frontend/common/utils/responsive.dart";
 import "package:safepass_frontend/common/widgets/app_dropdownbuttonformfield_widget.dart";
 import "package:safepass_frontend/common/widgets/app_switch_widget.dart";
+import "package:safepass_frontend/src/settings/models/settings_model.dart";
 
 class GeneralTab extends StatefulWidget {
   const GeneralTab({super.key});
@@ -13,19 +13,139 @@ class GeneralTab extends StatefulWidget {
 }
 
 class _GeneralTabState extends State<GeneralTab> {
-  bool testBool = false;
-  List<String> dropdownValues = [
-    "test1",
-    "test2",
-  ];
-  
+  // TODO: change values once backend is done
+  Security securitySettings = Security(
+    enableMultiFactorAuth: true, 
+    sessionTimeout: DropdownOption(
+      label: "Custom", 
+      value: "25"
+    ) // in minutes
+  );
+  Notifications notificationsSettings = Notifications(
+    enableVisitorNotifications: true,
+    enableAlerts: false,
+    enableScheduledReminders: true,
+  );
+  Visitors visitorsSettings = Visitors(
+    maximumVisitorsPerDay: DropdownOption(
+      label: "50", 
+      value: "50"
+    ), 
+    maximumVisitDuration: DropdownOption(
+      label: "60 min",
+      value: "60"
+    ) // in minutes
+  );
+  Exports exportsSettings = Exports(
+    exportFormat: DropdownOption(
+      label: ".csv",
+      value: "csv"
+    )
+  );
+  DropdownOptionsModel sessionTimeoutOptionsModel = DropdownOptionsModel(
+    dropdownOptions: [
+      DropdownOption(
+        label: "30 min", 
+        value: "30"
+      ),
+      DropdownOption(
+        label: "60 min", 
+        value: "60"
+      ),
+      DropdownOption(
+        label: "90 min", 
+        value: "90"
+      ),
+      DropdownOption(
+        label: "120 min", 
+        value: "120"
+      ),
+      DropdownOption(
+        label: "Custom", 
+        value: "25"
+      ),
+    ]
+  );
+  DropdownOptionsModel maximumVisitorsPerDayModel = DropdownOptionsModel(
+    dropdownOptions: [
+      DropdownOption(
+        label: "50 people", 
+        value: "50"
+      ),
+      DropdownOption(
+        label: "100 people", 
+        value: "100"
+      ),
+      DropdownOption(
+        label: "150 people", 
+        value: "150"
+      ),
+      DropdownOption(
+        label: "200 people", 
+        value: "200"
+      ),
+      DropdownOption(
+        label: "Custom", 
+        value: "25"
+      ),
+    ]
+  );
+  DropdownOptionsModel maximumVisitDurationModel = DropdownOptionsModel(
+    dropdownOptions: [
+      DropdownOption(
+        label: "30 min", 
+        value: "30"
+      ),
+      DropdownOption(
+        label: "60 min", 
+        value: "60"
+      ),
+      DropdownOption(
+        label: "90 min", 
+        value: "90"
+      ),
+      DropdownOption(
+        label: "120 min", 
+        value: "120"
+      ),
+      DropdownOption(
+        label: "Custom", 
+        value: "25"
+      ),
+    ]
+  );
+  DropdownOptionsModel exportFormatModel = DropdownOptionsModel(
+    dropdownOptions: [
+      DropdownOption(
+        label: ".csv",
+        value: "csv"
+      ),
+      DropdownOption(
+        label: ".xls/.xlsx", 
+        value: "xls/xlsx"
+      ),
+    ]
+  );
+  // TODO: change values once backend is done
+
+
   @override
   Widget build(BuildContext context) {
+    final TextEditingController sessionTimeoutController = TextEditingController(
+      text: securitySettings.sessionTimeout.value
+    );
+    final TextEditingController maximumVisitorsPerDayController = TextEditingController(
+      text: visitorsSettings.maximumVisitorsPerDay.value
+    );
+    final TextEditingController maximumVisitDurationController = TextEditingController(
+      text: visitorsSettings.maximumVisitDuration.value
+    );
+    
     return Padding(
       padding: AppConstants.kAppPadding,
       child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Security
             GeneralSettingsGroup(
@@ -34,35 +154,15 @@ class _GeneralTabState extends State<GeneralTab> {
                 SubItemWidget(
                   title: "Enable Multi-Factor Authentication", 
                   action: AppSwitchWidget(
-                    value: testBool,
-                    onChanged: (value) {
-                      setState(() {
-                        testBool = !testBool;
-                      });
-                    },
+                    value: securitySettings.enableMultiFactorAuth,
                   )
                 ),
                 SubItemWidget(
-                  title: "Password Expiration", 
-                  action: AppDropdownbuttonformfieldWidget(
-                    value: dropdownValues[0], 
-                    dropdownValues: dropdownValues, 
-                    onChanged: (value) {
-                      setState(() {
-                        value = value ?? "*FIX* no value provided";
-                      });
-                    },
-                  )
-                ),
-                SubItemWidget(
-                  title: "Session Timeout", 
-                  action: AppSwitchWidget(
-                    value: testBool,
-                    onChanged: (value) {
-                      setState(() {
-                        testBool = !testBool;
-                      });
-                    },
+                  title: "Session Timeout\n(in minutes)", 
+                  action: AppDropdownButtonFormFieldWidget(
+                    chosenOption: securitySettings.sessionTimeout, 
+                    dropdownOptions: sessionTimeoutOptionsModel.dropdownOptions,
+                    inputFieldController: sessionTimeoutController,
                   )
                 ),
               ]
@@ -75,34 +175,19 @@ class _GeneralTabState extends State<GeneralTab> {
                 SubItemWidget(
                   title: "Enable Visitor Notifications", 
                   action: AppSwitchWidget(
-                    value: testBool, 
-                    onChanged: (value) {
-                      setState(() {
-                        testBool = !testBool;
-                      });
-                    }
+                    value: notificationsSettings.enableVisitorNotifications
                   )
                 ),
                 SubItemWidget(
                   title: "Enable Alerts", 
                   action: AppSwitchWidget(
-                    value: testBool, 
-                    onChanged: (value) {
-                      setState(() {
-                        testBool = !testBool;
-                      });
-                    }
+                    value: notificationsSettings.enableAlerts
                   )
                 ),
                 SubItemWidget(
                   title: "Enable Scheduled Reminders", 
                   action: AppSwitchWidget(
-                    value: testBool, 
-                    onChanged: (value) {
-                      setState(() {
-                        testBool = !testBool;
-                      });
-                    }
+                    value: notificationsSettings.enableScheduledReminders
                   )
                 ),
               ]
@@ -113,27 +198,19 @@ class _GeneralTabState extends State<GeneralTab> {
               title: "Visitors", 
               subItems: [
                 SubItemWidget(
-                  title: "Max Visitors Per Day", 
-                  action: AppDropdownbuttonformfieldWidget(
-                    value: dropdownValues[0], 
-                    dropdownValues: dropdownValues, 
-                    onChanged: (value) {
-                      setState(() {
-                        value = value ?? "No val provided";
-                      });
-                    }
+                  title: "Maximum Visitors Per Day", 
+                  action: AppDropdownButtonFormFieldWidget(
+                    chosenOption: visitorsSettings.maximumVisitorsPerDay,
+                    dropdownOptions: maximumVisitorsPerDayModel.dropdownOptions,
+                    inputFieldController: maximumVisitorsPerDayController,
                   )
                 ),
                 SubItemWidget(
-                  title: "Maximum Visit Length", 
-                  action: AppDropdownbuttonformfieldWidget(
-                    value: dropdownValues[0], 
-                    dropdownValues: dropdownValues, 
-                    onChanged: (value) {
-                      setState(() {
-                        value = value ?? "No val provided";
-                      });
-                    }
+                  title: "Maximum Visit Duration\n(in minutes)", 
+                  action: AppDropdownButtonFormFieldWidget(
+                    chosenOption: visitorsSettings.maximumVisitDuration,
+                    dropdownOptions: maximumVisitDurationModel.dropdownOptions,
+                    inputFieldController: maximumVisitDurationController,
                   )
                 ),
               ]
@@ -145,14 +222,9 @@ class _GeneralTabState extends State<GeneralTab> {
               subItems: [
                 SubItemWidget(
                   title: "Export Format", 
-                  action: AppDropdownbuttonformfieldWidget(
-                    value: dropdownValues[0], 
-                    dropdownValues: dropdownValues, 
-                    onChanged: (value) {
-                      setState(() {
-                        value = value ?? "No val provided";
-                      });
-                    }
+                  action: AppDropdownButtonFormFieldWidget(
+                    chosenOption: exportsSettings.exportFormat,
+                    dropdownOptions: exportFormatModel.dropdownOptions,
                   )
                 )
               ]
@@ -188,12 +260,10 @@ class GeneralSettingsGroup extends StatelessWidget {
           padding: EdgeInsets.only(
             left: AppConstants.kAppPadding.left
           ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 400
-            ),
+          child: SizedBox(
+            width: 800,
             child: Column(
-              spacing: 5,
+              spacing: 10,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(
                 subItems.length, 
@@ -221,34 +291,22 @@ class SubItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppResponsive(context).responsiveWidget(
-      thresholdWidth: 810,
-      small: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
+    return Row(
+      spacing: 10,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
             title,
-            style: AppTextStyles.defaultStyle
+            style: AppTextStyles.defaultStyle,
+            textAlign: TextAlign.start,
           ),
-          SizedBox(
-            width: 100,
-            child: action
-          )
-        ],
-      ), 
-      large: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: AppTextStyles.defaultStyle
-          ),
-          SizedBox(
-            width: 100,
-            child: action
-          )
-        ],
-      )
+        ),
+        SizedBox(
+          width: 150,
+          child: action
+        )
+      ],
     );
   }
 }
