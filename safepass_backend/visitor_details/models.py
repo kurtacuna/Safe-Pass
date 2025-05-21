@@ -7,6 +7,7 @@ class VisitorDetails(models.Model):
   last_name = models.CharField(max_length=255)
   id_type = models.ForeignKey('IdTypes', on_delete=models.PROTECT)
   id_number = models.CharField(max_length=255)
+  visit_purposes = models.CharField(max_length=255)
   contact_number = models.CharField(max_length=11)
 
   def __str__(self):
