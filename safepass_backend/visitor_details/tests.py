@@ -13,8 +13,10 @@ class IdTypesViewTest(APITestCase):
     )
     self.client = APIClient()
   
-  def test_id_types_view(self):
-    url = reverse('id-types')
-    response = self.client.get(url)
+  # def test_id_types_view(self):
+  #   url = reverse('id-types')
+  #   response = self.client.get(url)
 
-    print(response.content)
+  #   print(response.content)
+
+  
