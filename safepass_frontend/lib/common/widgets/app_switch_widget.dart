@@ -10,8 +10,8 @@ class AppSwitchWidget extends StatelessWidget {
   });
   
   final bool value;
-  final void Function(bool) onChanged;
   final double scale;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {

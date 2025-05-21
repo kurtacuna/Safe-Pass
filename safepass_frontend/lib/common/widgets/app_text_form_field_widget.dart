@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kconstants.dart';
@@ -14,6 +15,8 @@ class AppTextFormFieldWidget extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.obscureText = false,
+    this.digitsOnly = false,
+    this.inputFormatters,
     super.key
   });
 
@@ -41,14 +44,26 @@ class AppTextFormFieldWidget extends StatelessWidget {
   // A flag to set if the text inside the field is obscured
   final bool obscureText;
 
+  // Determine if input field is digits only
+  final bool digitsOnly;
+
+  // Custom input formatters
+  final List<TextInputFormatter>? inputFormatters;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      inputFormatters: digitsOnly == true
+        ? [FilteringTextInputFormatter.allow(RegExp('[0-9]'))]
+        : inputFormatters,
       obscureText: obscureText ? true : false,
       controller: controller,
       focusNode: focusNode,
       keyboardType: TextInputType.text,
       onEditingComplete: onEditingComplete,
+      onTapOutside: onEditingComplete != null
+        ? (event) => onEditingComplete!()
+        : null,
       validator: (value) {
         if (value!.isEmpty) {
           return validatorText ?? "Please enter a valid input";
@@ -65,7 +80,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
             ? SizedBox(width: 20, height: 20, child: suffixIcon)
             : null,
         hintText: hintText,
-        contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0), // Add horizontal padding
+        contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
         filled: true,
         fillColor: AppColors.kLighterGray,
         enabledBorder: AppConstants.enabledBorder,

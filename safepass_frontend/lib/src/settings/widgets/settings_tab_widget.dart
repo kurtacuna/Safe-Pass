@@ -22,15 +22,15 @@ class SettingsTabWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SettingsTabNotifier>(
       builder: (context, settingsTabNotifier, child) {
-        return Material(
-          elevation: 20,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          child: SizedBox(
-            width: width,
-            height: height,
+        return SizedBox(
+          width: width,
+          height: height,
+          child: Material(
+            elevation: 20,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
             child: ListTile(
               onTap: () {
                 settingsTabNotifier.setTabIndex = index;
