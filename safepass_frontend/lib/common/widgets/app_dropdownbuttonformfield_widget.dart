@@ -5,23 +5,22 @@ import 'package:safepass_frontend/common/const/kconstants.dart';
 import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart';
 import 'package:safepass_frontend/src/settings/models/settings_model.dart';
 
-class AppDropdownButtonFormFieldWidget extends StatefulWidget {
-  AppDropdownButtonFormFieldWidget({
+class AppDropdownButtonFormFieldWidget extends StatelessWidget {
+  const AppDropdownButtonFormFieldWidget({
     required this.dropdownOptions,
     required this.chosenOption,
+    required this.onChanged,
+    this.onEditingComplete,
     this.inputFieldController,
     super.key
   });
 
-  final List<dynamic> dropdownOptions;
-  dynamic chosenOption;
+  final List<DropdownOption> dropdownOptions;
+  final DropdownOption chosenOption;
   final TextEditingController? inputFieldController;
+  final ValueChanged<String?> onChanged;
+  final Function()? onEditingComplete;
 
-  @override
-  State<AppDropdownButtonFormFieldWidget> createState() => _AppDropdownButtonFormFieldWidgetState();
-}
-
-class _AppDropdownButtonFormFieldWidgetState extends State<AppDropdownButtonFormFieldWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -36,40 +35,27 @@ class _AppDropdownButtonFormFieldWidgetState extends State<AppDropdownButtonForm
           borderRadius: AppConstants.kAppBorderRadius,
           isExpanded: true,
           style: AppTextStyles.defaultStyle,
-          value: widget.chosenOption.value,
+          value: chosenOption.value,
           items: List.generate(
-            widget.dropdownOptions.length,
+            dropdownOptions.length,
             (index) {
               return DropdownMenuItem(
-                value: widget.dropdownOptions[index].value,
-                child: Text(widget.dropdownOptions[index].label)
+                value: dropdownOptions[index].value,
+                child: Text(dropdownOptions[index].label)
               );
             }
           ), 
-          onChanged: (value) {
-            setState(() {
-              widget.chosenOption = widget.dropdownOptions.firstWhere((element) => element.value == value);
-            });
-          }
+          onChanged: onChanged,
         ),
 
         // Input field for custom values
-        widget.inputFieldController != null
-          ? widget.chosenOption.label == "Custom"
+        inputFieldController != null
+          ? chosenOption.label == "Custom"
             ? AppTextFormFieldWidget(
-                controller: widget.inputFieldController!,
+                controller: inputFieldController!,
                 digitsOnly: true,
                 onEditingComplete: () {
-                  setState(() {
-                    widget.chosenOption = widget.dropdownOptions.firstWhere(
-                      (element) => element.value == widget.inputFieldController!.text,
-                      orElse:() {
-                        DropdownOption customOption = widget.chosenOption;
-                        customOption.value = widget.inputFieldController!.text;
-                        return customOption;
-                      }
-                    );
-                  });
+                  onEditingComplete!();
                   FocusScope.of(context).unfocus();
                 },
               )
