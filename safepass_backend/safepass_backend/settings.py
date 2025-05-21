@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'visitor_details',
     'rest_framework',
+    'visitor_logs',
 ]
 
 MIDDLEWARE = [
