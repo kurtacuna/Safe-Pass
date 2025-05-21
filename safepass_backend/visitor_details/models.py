@@ -6,13 +6,13 @@ from django.db.models import UniqueConstraint
 
 # Create your models here.
 class VisitorDetails(models.Model):
-  def custom_upload_to(instance, filename):
-      name, ext = os.path.splitext(filename)
-      full_name = f"{instance.first_name}{(
-        f" {instance.middle_name}" if instance.middle_name else ""
-      )} {instance.last_name}"
+  # def custom_upload_to(instance, filename):
+  #     name, ext = os.path.splitext(filename)
+  #     full_name = f"{instance.first_name}{(
+  #       f" {instance.middle_name}" if instance.middle_name else ""
+  #     )} {instance.last_name}"
 
-      return os.path.join('visitor_photos', f'{instance.id_number}{full_name}{ext}')
+  #     return os.path.join('visitor_photos', f'{instance.id_number}{full_name}{ext}')
 
   
 
@@ -21,7 +21,7 @@ class VisitorDetails(models.Model):
     PENDING = "Pending"
     DENIED = "Denied"
 
-  photo = models.ImageField(upload_to=custom_upload_to)
+  # photo = models.ImageField(upload_to=custom_upload_to)
   first_name = models.CharField(max_length=255)
   middle_name = models.CharField(max_length=255, blank=True)
   last_name = models.CharField(max_length=255)
