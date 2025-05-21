@@ -8,9 +8,9 @@ class AppResponsive {
     {
       required Widget small,
       required Widget large,
+      double thresholdWidth = 800,
     }
   ) {
-    const thresholdWidth = 800;
     final double screenWidth = MediaQuery.sizeOf(context).width;
 
     if (screenWidth < thresholdWidth) {

@@ -11,7 +11,10 @@ class VisitorDetails(models.Model):
       full_name = f"{instance.first_name}{(
         f" {instance.middle_name}" if instance.middle_name else ""
       )} {instance.last_name}"
+
       return os.path.join('visitor_photos', f'{instance.id_number}{full_name}{ext}')
+
+  
 
   class StatusChoices(models.TextChoices):
     APPROVED = "Approved"
@@ -28,6 +31,15 @@ class VisitorDetails(models.Model):
   id_number = models.CharField(max_length=255)
   status = models.CharField(max_length=255, choices=StatusChoices, default=StatusChoices.PENDING)
   registration_date = models.DateTimeField(default=timezone.now)
+
+
+  def save(self, *args, **kwargs):
+    self.full_name = f"{self.first_name}{(
+      f" {self.middle_name}" if self.middle_name else ""
+    )} {self.last_name}"
+
+    super().save(*args, **kwargs)
+
 
   def save(self, args, **kwargs):
     self.full_name = f"{self.first_name}{(

@@ -79,7 +79,6 @@ class LoginScreen extends StatelessWidget {
         child: Padding(
           padding: AppConstants.kAppPadding,
           child: SingleChildScrollView(
-            clipBehavior: Clip.none,
             child: Center(
               child: AppResponsive(context).responsiveWidget(
                 small: Column(
