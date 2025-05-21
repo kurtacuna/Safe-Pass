@@ -59,14 +59,3 @@ class IdTypes(models.Model):
   class Meta:
     verbose_name = "ID Type"
     verbose_name_plural = "ID Types"
-
-
-class VisitPurposes(models.Model):
-  purpose = models.CharField(max_length=255)
-
-  def __str__(self):
-    return self.purpose
-
-  class Meta:
-    verbose_name = "Visit Purpose"
-    verbose_name_plural = "Visitor Purposes"
