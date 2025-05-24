@@ -1,0 +1,7 @@
+safepass_venv
+.dockerignore
+.env.development
+.gitignore
+db.sqlite
+
+__pycache__
