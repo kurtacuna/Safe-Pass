@@ -7,12 +7,12 @@ from django.db.models import UniqueConstraint
 # Create your models here.
 class VisitorDetails(models.Model):
   def custom_upload_to(instance, filename):
-    name, ext = os.path.splitext(filename)
-    full_name = f"{instance.first_name}{(
-      f" {instance.middle_name}" if instance.middle_name else ""
-    )} {instance.last_name}"
+      name, ext = os.path.splitext(filename)
+      full_name = f"{instance.first_name}{(
+        f" {instance.middle_name}" if instance.middle_name else ""
+      )} {instance.last_name}"
+      return os.path.join('visitor_photos', f'{instance.id_number}_{full_name}{ext}')
 
-    return os.path.join('visitor_photos', f'{instance.id_number}{full_name}{ext}')
 
   class StatusChoices(models.TextChoices):
     APPROVED = "Approved"
@@ -38,6 +38,7 @@ class VisitorDetails(models.Model):
     )} {self.last_name}"
 
     super().save(*args, **kwargs) 
+
 
 
   def __str__(self):
