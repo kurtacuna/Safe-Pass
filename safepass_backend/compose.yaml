@@ -8,8 +8,8 @@ services:
     volumes:
       - .:/safepass_backend
     environment:
-        PYTHONPATH: .
-        DJANGO_SETTINGS_MODULE: safepass_backend.settings  
+      PYTHONPATH: .
+      DJANGO_SETTINGS_MODULE: safepass_backend.settings
 
 volumes:
   .:
