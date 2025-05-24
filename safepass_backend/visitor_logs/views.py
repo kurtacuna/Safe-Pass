@@ -8,8 +8,8 @@ class VisitorLogsView(APIView):
     def get(self, request):
 
         try:
-            visitor_details = models.visitor_logs.objects.all()
-            serializer = serializers.VisitorDetailsSerializer(visitor_details, many = True)
+            visitor_logs = models.visitor_logs.objects.all()
+            serializer = serializers.VisitorLogsSerializers(visitor_logs, many = True)
             return Response(serializer.data, status = status.HTTP_200_OK)
 
         except Exception as e:

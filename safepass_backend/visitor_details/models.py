@@ -6,13 +6,13 @@ from django.db.models import UniqueConstraint
 
 # Create your models here.
 class VisitorDetails(models.Model):
-  # def custom_upload_to(instance, filename):
-  #     name, ext = os.path.splitext(filename)
-  #     full_name = f"{instance.first_name}{(
-  #       f" {instance.middle_name}" if instance.middle_name else ""
-  #     )} {instance.last_name}"
+  def custom_upload_to(instance, filename):
+      name, ext = os.path.splitext(filename)
+      full_name = f"{instance.first_name}{(
+        f" {instance.middle_name}" if instance.middle_name else ""
+      )} {instance.last_name}"
 
-  #     return os.path.join('visitor_photos', f'{instance.id_number}{full_name}{ext}')
+      return os.path.join('visitor_photos', f'{instance.id_number}{full_name}{ext}')
 
   
 
@@ -33,22 +33,16 @@ class VisitorDetails(models.Model):
   registration_date = models.DateTimeField(default=timezone.now)
 
 
-  def save(self, *args, **kwargs):
+  
+  def save(self, *args, **kwargs): # This is correct
     self.full_name = f"{self.first_name}{(
-      f" {self.middle_name}" if self.middle_name else ""
+        f" {self.middle_name}" if self.middle_name else ""
     )} {self.last_name}"
 
-    super().save(*args, **kwargs)
+    super().save(*args, **kwargs) 
 
 
-  def save(self, args, **kwargs):
-    self.full_name = f"{self.first_name}{(
-      f" {self.middle_name}" if self.middle_name else ""
-    )} {self.last_name}"
-
-    super().save(args, **kwargs)
-
-  def str(self):
+  def __str__(self):
     return self.id
 
   class Meta:
