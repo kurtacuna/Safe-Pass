@@ -5,6 +5,7 @@ import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/common_json_model.dart';
 
 class JwtNotifier with ChangeNotifier {
+  
   bool _isLoading = false;
   get getIsLoading => _isLoading;
   void toggleLoading() {
@@ -19,11 +20,10 @@ class JwtNotifier with ChangeNotifier {
   }) async {
     toggleLoading();
     int statusCode = -1;
+    notifyListeners();
 
     // TODO: encrypt data
     try {
-      print('JWT Create URL: ${ApiUrls.jwtCreateUrl}');
-
       var url = Uri.parse(ApiUrls.jwtCreateUrl);
       var response = await http.post(
         url,
@@ -38,18 +38,18 @@ class JwtNotifier with ChangeNotifier {
       );
 
       print(response.body);
-      
 
       if (response.statusCode == 200) {
-        
+        statusCode = 200;
+        // TODO: save tokens to local storage
       } else {
-        // if (context.mounted) {
-        //   // TODO: check if final
-        //   CommonJsonModel model = commonJsonModelFromJson(response.body);
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     SnackBar(content: Text(model.detail))
-        //   );
-        // }
+        if (context.mounted) {
+          // TODO: check if final
+          CommonJsonModel model = commonJsonModelFromJson(response.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(model.detail))
+          );
+        }
       }
       
 
