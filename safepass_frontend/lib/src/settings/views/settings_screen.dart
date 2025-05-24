@@ -11,13 +11,6 @@ import 'package:safepass_frontend/src/settings/widgets/settings_tab_widget.dart'
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  // Note to developer:
-  // When developing, change the value of _index in the sidebar_notifier.dart file
-  // found at ./entrypoint/controllers/sidebar_notifier.dart
-  // Do this so that every time Flutter hot restarts, it goes to your screen
-  
-  // Change _index to 0 after you're done developing your part
-
   static const List<Widget> tabs = [
     GeneralTab(),
     DatabaseTab(),
@@ -30,23 +23,20 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       body: Center(
-        child: SingleChildScrollView(
-          clipBehavior: Clip.none,
-          child: AppResponsive(context).responsiveWidget(
-            small: SettingsContainer(
-              appContainerWidget: AppContainerWidget(
-                width: double.infinity, 
-                height: 550, 
-                child: tabs[tabIndex]
-              ),
+        child: AppResponsive(context).responsiveWidget(
+          small: SettingsContainer(
+            appContainerWidget: AppContainerWidget(
+              width: double.infinity, 
+              height: double.infinity, 
+              child: tabs[tabIndex]
             ),
-            large: SettingsContainer(
-              appContainerWidget: AppContainerWidget(
-                width: 1500, 
-                height: 550, 
-                child: tabs[tabIndex]
-              ),
-            )
+          ),
+          large: SettingsContainer(
+            appContainerWidget: AppContainerWidget(
+              width: 1500, 
+              height: double.infinity, 
+              child: tabs[tabIndex]
+            ),
           )
         )
       )
@@ -64,25 +54,37 @@ class SettingsContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ScrollController tabsHorizontalScrollController = ScrollController();
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            SettingsTabWidget(
-              text: "General", 
-              index: 0
-            ),
-            SettingsTabWidget(
-              text: "Database", 
-              index: 1
-            ),
-            SettingsTabWidget(
-              text: "Policies", 
-              index: 2
-            ),
-          ]
+        Scrollbar(
+          controller: tabsHorizontalScrollController,
+          child: SingleChildScrollView(
+            controller: tabsHorizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            child: MediaQuery.sizeOf(context).height < 150
+              ? Container()
+              : Row(
+                  children: [
+                    SettingsTabWidget(
+                      text: "General", 
+                      index: 0
+                    ),
+                    SettingsTabWidget(
+                      text: "Database", 
+                      index: 1
+                    ),
+                    SettingsTabWidget(
+                      text: "Policies", 
+                      index: 2
+                    ),
+                  ]
+                ),
+          ),
         ),
-        appContainerWidget,
+        Expanded(child: appContainerWidget),
       ]
     );
   }
