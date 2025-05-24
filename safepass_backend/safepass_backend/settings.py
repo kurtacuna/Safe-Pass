@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-b-)cfb8jw16nob)mvdmal6f2&)(mip+^)m-bj5t77(#mv&nbru
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "10.0.2.2"]
 
 
 # Application definition
@@ -41,14 +41,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'custom_user',
     'visitor_details',
     'rest_framework',
     'visitor_logs',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -106,6 +109,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'custom_user.CustomUser'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -133,13 +138,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
-}
-
 SIMPLE_JWT = {
     # TODO: check if final
     # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
@@ -148,3 +146,39 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(hours=1),
     "AUTH_HEADER_TYPES": ('Bearer',),
 }
+
+# settings.py
+
+DJOSER = {
+    'LOGIN_FIELD': 'email', # This is the crucial setting for Djoser
+    # Other Djoser settings you might have:
+    # 'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+    # 'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}', # You might want to remove this if you're not using usernames
+    # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
+    # 'SEND_ACTIVATION_EMAIL': True,
+    # 'SERIALIZERS': {
+    #     'user_create': 'accounts.serializers.CustomUserCreateSerializer', # If you have a custom user creation serializer
+    #     'current_user': 'accounts.serializers.CustomUserSerializer',
+    # },
+}
+
+# If you're using Djoser with Simple JWT, ensure this is also configured
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+# If you need to send emails for activation/password reset, configure your email backend
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # For development, prints emails to console
+# EMAIL_HOST = 'smtp.sendgrid.net'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your_sendgrid_username'
+# EMAIL_HOST_PASSWORD = 'your_sendgrid_password'
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
