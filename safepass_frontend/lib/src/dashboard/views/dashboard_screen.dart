@@ -5,6 +5,8 @@ import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/src/dashboard/widgets/app_container_widget_offset.dart';
 import 'package:safepass_frontend/src/dashboard/widgets/app_stat_card_widget.dart';
 import 'package:safepass_frontend/src/dashboard/widgets/app_visitor_logs.dart';
+import 'package:safepass_frontend/src/dashboard/models/visitor_stats_model.dart';
+import 'package:safepass_frontend/src/dashboard/services/visitor_stats_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -14,6 +16,34 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  VisitorStats? _visitorStats;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVisitorStats();
+  }
+
+  Future<void> _loadVisitorStats() async {
+    try {
+      print('Starting to load visitor stats...'); // Debug print
+      final stats = await VisitorStatsService.getVisitorStats();
+      print('Received visitor stats: ${stats.totalVisitors}, ${stats.checkedIn}, ${stats.checkedOut}, ${stats.newRegistrants}'); // Debug print
+      setState(() {
+        _visitorStats = stats;
+        _isLoading = false;
+      });
+      print('Stats updated in state: ${_visitorStats?.totalVisitors}, ${_visitorStats?.checkedIn}, ${_visitorStats?.checkedOut}, ${_visitorStats?.newRegistrants}'); // Debug print
+    } catch (e) {
+      print('Error loading stats: $e'); // Debug print
+      setState(() {
+        _isLoading = false;
+      });
+      // You might want to show an error message here
+    }
+  }
+
   Widget _buildTopBar() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -56,6 +86,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCards() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    print('Building stat cards with stats: ${_visitorStats?.totalVisitors}, ${_visitorStats?.checkedIn}, ${_visitorStats?.checkedOut}, ${_visitorStats?.newRegistrants}'); // Debug print
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 52,
+      runSpacing: 52,
+      children: [
+        AppStatCardWidget(
+          count: _visitorStats?.totalVisitors.toString() ?? '0',
+          label: 'Total Visitors',
+          totalIconPath: 'assets/images/total_icon.png',
+          bottomIconPath: 'assets/images/total_visitors.png',
+        ),
+        AppStatCardWidget(
+          count: _visitorStats?.checkedIn.toString() ?? '0',
+          label: 'Checked-in',
+          totalIconPath: 'assets/images/checked_in_visitors.png',
+          bottomIconPath: 'assets/images/checked_in_visitors.png',
+        ),
+        AppStatCardWidget(
+          count: _visitorStats?.checkedOut.toString() ?? '0',
+          label: 'Checked-out',
+          totalIconPath: 'assets/images/total_icon.png',
+          bottomIconPath: 'assets/images/checked_out_stats_icon.png',
+        ),
+        AppStatCardWidget(
+          count: _visitorStats?.newRegistrants.toString() ?? '0',
+          label: 'New Registrants',
+          totalIconPath: 'assets/images/total_icon.png',
+          bottomIconPath: 'assets/images/pending_stats_icon.png',
         ),
       ],
     );
@@ -120,37 +190,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                       const SizedBox(height: 48),
 
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 52,
-                        runSpacing: 52,
-                        children: const [
-                          AppStatCardWidget(
-                            count: '105',
-                            label: 'Total Visitors',
-                            totalIconPath: 'assets/images/total_icon.png',
-                            bottomIconPath: 'assets/images/total_visitors.png',
-                          ),
-                          AppStatCardWidget(
-                            count: '80',
-                            label: 'Checked-in',
-                            totalIconPath: 'assets/images/checked_in_visitors.png',
-                            bottomIconPath: 'assets/images/checked_in_visitors.png',
-                          ),
-                          AppStatCardWidget(
-                            count: '30',
-                            label: 'Checked-out',
-                            totalIconPath: 'assets/images/total_icon.png',
-                            bottomIconPath: 'assets/images/checked_out_stats_icon.png',
-                          ),
-                          AppStatCardWidget(
-                            count: '5',
-                            label: 'New Registrants',
-                            totalIconPath: 'assets/images/total_icon.png',
-                            bottomIconPath: 'assets/images/pending_stats_icon.png',
-                          ),
-                        ],
-                      ),
+                      _buildStatCards(),
 
                       const SizedBox(height: 42),
 
