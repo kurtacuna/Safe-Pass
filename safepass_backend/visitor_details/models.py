@@ -16,10 +16,20 @@ class VisitorDetails(models.Model):
 
   
 
+  def custom_upload_to(instance, filename):
+      name, ext = os.path.splitext(filename)
+      full_name = f"{instance.first_name}{(
+        f" {instance.middle_name}" if instance.middle_name else ""
+      )} {instance.last_name}"
+      return os.path.join('visitor_photos', f'{instance.id_number}_{full_name}{ext}')
+
+
+
   class StatusChoices(models.TextChoices):
     APPROVED = "Approved"
     PENDING = "Pending"
     DENIED = "Denied"
+
 
   # photo = models.ImageField(upload_to=custom_upload_to, default="media/default_photo/no_photo.png")
   first_name = models.CharField(max_length=255)
@@ -42,8 +52,9 @@ class VisitorDetails(models.Model):
     super().save(*args, **kwargs) 
 
 
+
   def __str__(self):
-    return self.id
+    return str(self.id)
 
   class Meta:
     verbose_name = "Visitor Detail"
@@ -57,8 +68,8 @@ class VisitorDetails(models.Model):
     ]
 
 
-class IdTypes(models.Model):
-  type = models.CharField(max_length=255)
+  class IdTypes(models.Model):
+    type = models.CharField(max_length=255)
 
   def __str__(self):
     return self.type
