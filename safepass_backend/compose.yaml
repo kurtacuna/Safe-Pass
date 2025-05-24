@@ -6,7 +6,10 @@ services:
     ports:
       - '8000:8000'
     volumes:
-      - .:/strativa_backend
+      - .:/safepass_backend
     environment:
         PYTHONPATH: .
         DJANGO_SETTINGS_MODULE: safepass_backend.settings  
+
+volumes:
+  .:
