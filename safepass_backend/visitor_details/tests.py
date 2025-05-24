@@ -6,22 +6,37 @@ import json
 # Create your tests here.
 class TestIdTypesView(APITestCase):
   def setUp(self):
-    models.IdTypes.objects.create(
+    id_type1 = models.IdTypes.objects.create(
       type="Passport"
     )
     models.IdTypes.objects.create(
       type="National ID"
     )
+
+    models.VisitorDetails.objects.create(
+      first_name="test",
+      last_name="tester",
+      contact_number = "123",
+      id_type = id_type1,
+      id_number="456",
+      status="Approved"
+    )
+
     self.client = APIClient()
   
-  # def test_id_types_view(self):
-  #   url = reverse('id-types')
-  #   response = self.client.get(url)
+
+  def test_id_types_view(self):
+    # print(models.VisitorDetails.objects.all().values())
+
+    url = reverse('id-types')
+    response = self.client.get(url)
+
 
   #   print(response.content)
 
   def test_registration(self):
-    print(models.VisitorDetails.objects.all().values())
+    print("hello")
+    print(models .VisitorDetails.objects.all().values())
     url = reverse('visitor-registration')
     response = self.client.post(
       url,
@@ -38,7 +53,7 @@ class TestIdTypesView(APITestCase):
         })
       )
     
-    print(response.content)
+    print(response.status_code)
     print(models.VisitorDetails.objects.all().values())
 
 
