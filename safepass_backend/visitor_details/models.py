@@ -3,6 +3,7 @@ import os
 from django.utils import timezone
 from django.db.models import UniqueConstraint
 
+
 # Create your models here.
 class VisitorDetails(models.Model):
   def custom_upload_to(instance, filename):
@@ -10,14 +11,17 @@ class VisitorDetails(models.Model):
       full_name = f"{instance.first_name}{(
         f" {instance.middle_name}" if instance.middle_name else ""
       )} {instance.last_name}"
-      return os.path.join('visitor_photos', f'{instance.id_number}_{full_name}{ext}')
+
+      return os.path.join('visitor_photos', f'{instance.id_number}{full_name}{ext}')
+
   
+
   class StatusChoices(models.TextChoices):
     APPROVED = "Approved"
     PENDING = "Pending"
     DENIED = "Denied"
 
-  photo = models.ImageField(upload_to=custom_upload_to)
+  # photo = models.ImageField(upload_to=custom_upload_to)
   first_name = models.CharField(max_length=255)
   middle_name = models.CharField(max_length=255, blank=True)
   last_name = models.CharField(max_length=255)
@@ -28,12 +32,15 @@ class VisitorDetails(models.Model):
   status = models.CharField(max_length=255, choices=StatusChoices, default=StatusChoices.PENDING)
   registration_date = models.DateTimeField(default=timezone.now)
 
-  def save(self, *args, **kwargs):
+
+  
+  def save(self, *args, **kwargs): # This is correct
     self.full_name = f"{self.first_name}{(
-      f" {self.middle_name}" if self.middle_name else ""
+        f" {self.middle_name}" if self.middle_name else ""
     )} {self.last_name}"
 
-    super().save(*args, **kwargs)
+    super().save(*args, **kwargs) 
+
 
   def __str__(self):
     return self.id
