@@ -16,5 +16,51 @@
             "groups": [],
             "user_permissions": []
         }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 1,
+        "fields": {
+            "type": "National ID"
+        }
+    },
+    {
+        "model": "visitor_details.visitordetails",
+        "pk": 1,
+        "fields": {
+            "first_name": "Test User",
+            "middle_name": "T",
+            "last_name": "Tester",
+            "contact_number": "1234",
+            "id_type": 1,
+            "id_number": "NID-123",
+            "status": "Approved"
+        }
+    },
+    {
+        "model": "visitor_logs.visitpurposes",
+        "pk": 1,
+        "fields": {
+            "purpose": "Legal Visit"
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_status",
+        "pk": 1,
+        "fields": {
+            "status": "Checked-Out"
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 1,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "14:00:00",
+            "check_out": "11:00:00",
+            "visit_date": "2025-06-15",
+            "purpose": 1,
+            "status": 1
+        }
     }
 ]
