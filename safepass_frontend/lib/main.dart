@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/utils/routes.dart';
+import 'package:safepass_frontend/src/auth/controller/jwt_notifier.dart';
 import 'package:safepass_frontend/src/auth/controller/password_notifier.dart';
 import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.dart';
 import 'package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart';
 
-void main() {
+void main() async {
+  await dotenv.load(fileName: '.env.development');
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => SidebarNotifier()),
       ChangeNotifierProvider(create: (_) => PasswordNotifier()),
       ChangeNotifierProvider(create: (_) => SettingsTabNotifier()),
+      ChangeNotifierProvider(create: (_) => JwtNotifier()),
     ],
     child: MyApp()
   ));
