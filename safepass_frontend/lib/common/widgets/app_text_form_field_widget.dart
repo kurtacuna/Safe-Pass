@@ -17,6 +17,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
     this.obscureText = false,
     this.digitsOnly = false,
     this.inputFormatters,
+    this.keyboardType,
     super.key
   });
 
@@ -50,6 +51,9 @@ class AppTextFormFieldWidget extends StatelessWidget {
   // Custom input formatters
   final List<TextInputFormatter>? inputFormatters;
 
+  // The type of keyboard to use for editing the text
+  final TextInputType? keyboardType;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -59,7 +63,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
       obscureText: obscureText ? true : false,
       controller: controller,
       focusNode: focusNode,
-      keyboardType: TextInputType.text,
+      keyboardType: keyboardType ?? TextInputType.text,
       onEditingComplete: onEditingComplete,
       onTapOutside: onEditingComplete != null
         ? (event) => onEditingComplete!()
