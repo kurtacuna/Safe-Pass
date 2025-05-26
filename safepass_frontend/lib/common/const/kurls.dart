@@ -6,7 +6,7 @@ class ApiUrls {
   // URLs with trailing slashes are those that require bodies in the request
   // Define your URLs here
 
-  static String jwtCreateUrl = "$_appBaseUrl/auth/jwt/create/";
+  static String jwtLogin = "$_appBaseUrl/auth/login/";
   static String jwtRefreshUrl = "$_appBaseUrl/auth/jwt/refresh/";
   
 }
