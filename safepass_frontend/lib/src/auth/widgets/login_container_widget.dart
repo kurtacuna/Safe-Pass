@@ -125,24 +125,26 @@ class _LoginContainerWidgetState extends State<LoginContainerWidget> {
         
               AppButtonWidget(
                 onTap: () async {
-                  // TODO: handle login
+                  print("Login button tapped");
                   if (_loginKey.currentState!.validate()) {
+                    print("Form validation passed");
+                    print("Attempting login with email: ${_email.text}");
                     int result = await context.read<JwtNotifier>().login(
                       context: context,
                       email: _email.text,
                       password: _password.text
                     );
         
+                    print("Login result status code: $result");
                     if (result == 200) {
                       if (context.mounted){
+                        print("Navigation to entrypoint");
                         context.go(AppRoutes.kEntrypoint);
                       }
-                      
                     }
-                    
-                    // TODO: input red if unauthorized
+                  } else {
+                    print("Form validation failed");
                   }
-                  
                 },
                 text: "Log In"
               ),

@@ -19,6 +19,7 @@ class JwtNotifier with ChangeNotifier {
     required String email,
     required String password
   }) async {
+    print("JwtNotifier: Starting login"); // Debug print
     toggleLoading();
     int statusCode = -1;
     notifyListeners();
@@ -26,6 +27,7 @@ class JwtNotifier with ChangeNotifier {
     // TODO: encrypt data
     try {
       var url = Uri.parse(ApiUrls.jwtCreateUrl);
+      print("JwtNotifier: Making API call to ${url}"); // Debug print
       var response = await http.post(
         url,
         headers: {
@@ -38,7 +40,8 @@ class JwtNotifier with ChangeNotifier {
         )
       );
 
-      print(response.body);
+      print("JwtNotifier: Response status code: ${response.statusCode}"); // Debug print
+      print("JwtNotifier: Response body: ${response.body}"); // Debug print
 
       if (response.statusCode == 200) {
         // JwtModel model = jwtModelFromJson(response.body);
@@ -49,6 +52,7 @@ class JwtNotifier with ChangeNotifier {
         if (context.mounted) {
           // TODO: check if final
           CommonJsonModel model = commonJsonModelFromJson(response.body);
+          print("JwtNotifier: Error message: ${model.detail}"); // Debug print
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(model.detail))
           );
@@ -58,12 +62,13 @@ class JwtNotifier with ChangeNotifier {
 
 
     } catch (e) {
-      print("JwtNotifier");
+      print("JwtNotifier: Error during login:"); // Debug print
       print(e);
     } finally {
       toggleLoading();
     }
 
+    print("JwtNotifier: Returning status code: $statusCode"); // Debug print
     return statusCode;
   }
   // TODO: create register function
