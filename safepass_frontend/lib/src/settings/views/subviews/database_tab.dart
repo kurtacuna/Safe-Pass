@@ -217,51 +217,54 @@ class _DatabaseTabState extends State<DatabaseTab> {
       padding: AppConstants.kAppPadding,
       child: Column(
         children: [
-          SearchBarWidget(
-            searchQuery: searchQuery, 
-            onSearchChanged: (searchbarValue) {
-              setState(() {
-                searchQuery = searchbarValue;
-              });
-            }, 
-            onSearchPressed: () {
-              // TODO: handle search
-            }, 
-            onToggleFilter: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return Dialog(
-                    child: StatefulBuilder(
-                      builder: (context, setDialogState) {
-                        return FilterPopupWidget(
-                          startDate: startDate, 
-                          endDate: endDate, 
-                          onStartDatePicked: (pickedDate) {
-                            setState(() {
-                              setDialogState(() {
-                                startDate = pickedDate;
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SearchBarWidget(
+              searchQuery: searchQuery, 
+              onSearchChanged: (searchbarValue) {
+                setState(() {
+                  searchQuery = searchbarValue;
+                });
+              }, 
+              onSearchPressed: () {
+                // TODO: handle search
+              }, 
+              onToggleFilter: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return Dialog(
+                      child: StatefulBuilder(
+                        builder: (context, setDialogState) {
+                          return FilterPopupWidget(
+                            startDate: startDate, 
+                            endDate: endDate, 
+                            onStartDatePicked: (pickedDate) {
+                              setState(() {
+                                setDialogState(() {
+                                  startDate = pickedDate;
+                                });
                               });
-                            });
-                          }, 
-                          onEndDatePicked: (pickedDate) {
-                            setState(() {
-                              setDialogState(() {
-                                endDate = pickedDate;
+                            }, 
+                            onEndDatePicked: (pickedDate) {
+                              setState(() {
+                                setDialogState(() {
+                                  endDate = pickedDate;
+                                });
                               });
-                            });
-                          }, 
-                          onConfirm: () {
-                            context.pop();
-                          }
-                        );
-                      }
-                    )
-                  );
-                }
-              );
-            }, 
-            isFilterVisible: false, // TODO:
+                            }, 
+                            onConfirm: () {
+                              context.pop();
+                            }
+                          );
+                        }
+                      )
+                    );
+                  }
+                );
+              }, 
+              isFilterVisible: false, // TODO: clarify
+            ),
           ),
           SizedBox(height: 20),
           Flexible(
