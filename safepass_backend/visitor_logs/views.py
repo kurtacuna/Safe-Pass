@@ -1,13 +1,14 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Count
 from . import models, serializers
 
 class VisitorLogsView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         try:
             visitor_logs = models.visitor_logs.objects.all()
@@ -18,6 +19,7 @@ class VisitorLogsView(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class VisitorStatsView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         try:
             today = timezone.now().date()
