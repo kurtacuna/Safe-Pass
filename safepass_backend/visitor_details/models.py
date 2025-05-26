@@ -68,12 +68,12 @@ class VisitorDetails(models.Model):
     ]
 
 
-  class IdTypes(models.Model):
-    type = models.CharField(max_length=255)
+class IdTypes(models.Model):
+  type = models.CharField(max_length=255)
 
-  def __str__(self):
-    return self.type
+def __str__(self):
+  return self.type
 
-  class Meta:
-    verbose_name = "ID Type"
-    verbose_name_plural = "ID Types"
+class Meta:
+  verbose_name = "ID Type"
+  verbose_name_plural = "ID Types"
