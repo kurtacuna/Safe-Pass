@@ -1,156 +1,136 @@
-import "package:flutter/material.dart";
-// import 'package:http/http.dart' as http;
-// import '../models/visitor_logs_model.dart';
-// import '../constants/api_urls.dart';
-// import '../../common/widgets/snackbar_widget.dart';
-// import '../../utils/storage.dart';
-// import '../../utils/storage_keys.dart';
-// import '../../utils/refetch.dart';
-// import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../models/visitor_logs_model.dart';
+import '../../utils/storage.dart';
+import '../../utils/storage_keys.dart';
+import '../../utils/refetch.dart';
+import '../../widgets/snackbar_widget.dart';
+import 'dart:developer' as developer;
+import 'package:safepass_frontend/common/const/kurls.dart';
+import 'dart:convert';
 
-class VisitorlogsController with ChangeNotifier {
-//   bool _isLoading = false;
-//   int _statusCode = -1;
-//   List<VisitorLogsModel> _visitorLogs = [];
+class VisitorLogsController with ChangeNotifier {
+  bool _isLoading = false;
+  int _statusCode = -1;
+  List<VisitorLog> _visitorLogs = [];
+  String? _error;
 
-//   bool get getIsLoading => _isLoading;
-//   int get getStatusCode => _statusCode;
-//   List<VisitorLogsModel> get getVisitorLogs => _visitorLogs;
+  bool get isLoading => _isLoading;
+  int get statusCode => _statusCode;
+  List<VisitorLog> get visitorLogs => _visitorLogs;
+  String? get error => _error;
 
-//   Future<void> fetchVisitorLogs(BuildContext context) async {
-//     _statusCode = -1;
-//     _isLoading = true;
-//     notifyListeners();
+  Future<void> getVisitorLogs(BuildContext context) async {
+    if (_isLoading) return; // Prevent multiple simultaneous calls
 
-//     try {
-//       String? accessToken = Storage().getString(StorageKeys.accessTokenKey);
-//       var url = Uri.parse(VisitorLogsApiUrls.getVisitorLogsUrl);
-//       var response = await http.get(
-//         url,
-//         headers: {
-//           "Content-Type": "application/json",
-//           "Authorization": "Bearer $accessToken"
-//         },
-//       );
+    developer.log('Starting to fetch visitor logs');
+    _statusCode = -1;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-//       if (response.statusCode == 200) {
-//         _statusCode = response.statusCode;
-//         // Parse the response and update the visitor logs list
-//         List<dynamic> logsJson = json.decode(response.body);
-//         _visitorLogs = logsJson.map((log) => VisitorLogsModel.fromJson(log)).toList();
-//       } else if (response.statusCode == 401) {
-//         if (context.mounted) {
-//           await refetch(
-//             fetch: () => fetchVisitorLogs(context)
-//           );
-//         }
-//       } else {
-//         if (context.mounted) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             appErrorSnackBarWidget(context: context, text: "Failed to fetch visitor logs")
-//           );
-//         }
-//       }
-//     } catch (e) {
-//       print("VisitorlogsController fetchVisitorLogs:");
-//       print(e);
-//     } finally {
-//       _isLoading = false;
-//       notifyListeners();
-//     }
-//   }
+    try {
+      String? accessToken = Storage().getString(StorageKeys.accessTokenKey);
+      developer.log('Access token: ${accessToken ?? 'No token found'}');
 
-//   Future<void> createVisitorLog(
-//     BuildContext context,
-//     VisitorLogsModel visitorLog,
-//   ) async {
-//     _statusCode = -1;
-//     _isLoading = true;
-//     notifyListeners();
+      if (accessToken == null) {
+        throw Exception('No access token found. Please log in again.');
+      }
 
-//     try {
-//       String? accessToken = Storage().getString(StorageKeys.accessTokenKey);
-//       var url = Uri.parse(VisitorLogsApiUrls.createVisitorLogUrl);
-//       var response = await http.post(
-//         url,
-//         headers: {
-//           "Content-Type": "application/json",
-//           "Authorization": "Bearer $accessToken"
-//         },
-//         body: visitorLogsModelToJson(visitorLog)
-//       );
+      final url = ApiUrls.visitorLogsUrl;
+      developer.log('Fetching from URL: $url');
 
-//       if (response.statusCode == 201) {
-//         _statusCode = response.statusCode;
-//         if (context.mounted) {
-//           await fetchVisitorLogs(context); // Refresh the list
-//         }
-//       } else if (response.statusCode == 401) {
-//         if (context.mounted) {
-//           await refetch(
-//             fetch: () => createVisitorLog(context, visitorLog)
-//           );
-//         }
-//       } else {
-//         if (context.mounted) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             appErrorSnackBarWidget(context: context, text: "Failed to create visitor log")
-//           );
-//         }
-//       }
-//     } catch (e) {
-//       print("VisitorlogsController createVisitorLog:");
-//       print(e);
-//     } finally {
-//       _isLoading = false;
-//       notifyListeners();
-//     }
-//   }
+      if (url.contains('ERROR')) {
+        throw Exception('Invalid base URL. Check your .env.development file.');
+      }
 
-//   Future<void> updateVisitorLog(
-//     BuildContext context,
-//     VisitorLogsModel visitorLog,
-//   ) async {
-//     _statusCode = -1;
-//     _isLoading = true;
-//     notifyListeners();
+      // Add timeout to the request
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $accessToken",
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Request timed out');
+        },
+      );
 
-//     try {
-//       String? accessToken = Storage().getString(StorageKeys.accessTokenKey);
-//       var url = Uri.parse(VisitorLogsApiUrls.updateVisitorLogUrl);
-//       var response = await http.put(
-//         url,
-//         headers: {
-//           "Content-Type": "application/json",
-//           "Authorization": "Bearer $accessToken"
-//         },
-//         body: visitorLogsModelToJson(visitorLog)
-//       );
+      developer.log('Response status: ${response.statusCode}');
+      developer.log('Response body: ${response.body}');
 
-//       if (response.statusCode == 200) {
-//         _statusCode = response.statusCode;
-//         if (context.mounted) {
-//           await fetchVisitorLogs(context); // Refresh the list
-//         }
-//       } else if (response.statusCode == 401) {
-//         if (context.mounted) {
-//           await refetch(
-//             fetch: () => updateVisitorLog(context, visitorLog)
-//           );
-//         }
-//       } else {
-//         if (context.mounted) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             appErrorSnackBarWidget(context: context, text: "Failed to update visitor log")
-//           );
-//         }
-//       }
-//     } catch (e) {
-//       print("VisitorlogsController updateVisitorLog:");
-//       print(e);
-//     } finally {
-//       _isLoading = false;
-//       notifyListeners();
-//     }
-//   }
+      if (response.statusCode == 200) {
+        try {
+          // For debugging, let's try to parse the response manually
+          final jsonData = json.decode(response.body);
+          developer.log('Parsed JSON: $jsonData');
+
+          _visitorLogs = visitorLogsFromJson(response.body);
+          _statusCode = response.statusCode;
+          _error = null;
+          developer.log('Successfully loaded ${_visitorLogs.length} logs');
+        } catch (e) {
+          developer.log('Error parsing response: $e');
+          _error = 'Failed to parse server response: $e';
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              appErrorSnackBarWidget(
+                context: context,
+                text: "Error parsing data: $e"
+              )
+            );
+          }
+        }
+      } else if (response.statusCode == 401) {
+        _error = 'Session expired. Please log in again.';
+        developer.log('Unauthorized access - token expired or invalid');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            appErrorSnackBarWidget(
+              context: context,
+              text: "Session expired. Please log in again."
+            )
+          );
+          // Here you might want to navigate to login screen
+          // Navigator.of(context).pushReplacementNamed('/login');
+        }
+      } else {
+        _error = 'Server returned ${response.statusCode}';
+        developer.log('Error response: ${response.statusCode} - ${response.body}');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            appErrorSnackBarWidget(
+              context: context,
+              text: "Failed to fetch visitor logs (${response.statusCode})"
+            )
+          );
+        }
+      }
+    } catch (e) {
+      developer.log('Exception in getVisitorLogs:', error: e);
+      _error = e.toString();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          appErrorSnackBarWidget(
+            context: context,
+            text: "Error: $e"
+          )
+        );
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+      developer.log('Finished fetch attempt. Success: ${_error == null}');
+    }
+  }
+}
+
+class TimeoutException implements Exception {
+  final String message;
+  TimeoutException(this.message);
+  
+  @override
+  String toString() => message;
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:safepass_frontend/src/dashboard/models/visitor_log_model.dart';
-import 'package:safepass_frontend/common/utils/widgets/visitor_logs.dart';
+import 'package:provider/provider.dart';
+import '../controllers/visitorlogs_controller.dart';
+import '../models/visitor_logs_model.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kconstants.dart';
 import 'package:safepass_frontend/src/logs/widgets/filter_popup_widget.dart';
 import 'package:safepass_frontend/src/logs/widgets/search_bar_widget.dart';
-import 'package:safepass_frontend/src/logs/widgets/visitor_log_row.dart';
 
 class LogsScreen extends StatefulWidget {
   const LogsScreen({super.key});
@@ -24,21 +24,32 @@ class _LogsScreenState extends State<LogsScreen> {
   DateTime? startDate;
   DateTime? endDate;
 
-  List<VisitorLog> get filteredLogs {
-    return visitorLogList.where((log) {
-      final matchesSearch = log.name.toLowerCase().contains(searchQuery.toLowerCase());
+  @override
+  void initState() {
+    super.initState();
+    // Fetch visitor logs when the screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<VisitorLogsController>().getVisitorLogs(context);
+    });
+  }
+
+  List<VisitorLog> _getFilteredLogs(List<VisitorLog> logs) {
+    return logs.where((log) {
+      final matchesSearch = log.visitorName.toLowerCase().contains(searchQuery.toLowerCase());
       final matchesStatus = selectedStatus == null || log.status == selectedStatus;
       return matchesSearch && matchesStatus;
     }).toList();
   }
 
-  List<VisitorLog> get paginatedLogs {
+  List<VisitorLog> _getPaginatedLogs(List<VisitorLog> filteredLogs) {
     final start = currentPage * logsPerPage;
     final end = (start + logsPerPage).clamp(0, filteredLogs.length);
     return filteredLogs.sublist(start, end);
   }
 
-  int get totalPages => (filteredLogs.length / logsPerPage).ceil();
+  int _getTotalPages(List<VisitorLog> filteredLogs) {
+    return (filteredLogs.length / logsPerPage).ceil();
+  }
 
   void _resetFilters() {
     setState(() {
@@ -51,60 +62,104 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   void _showFilterDialog() {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        child: FilterPopupWidget(
-          startDate: startDate,
-          endDate: endDate,
-          onStartDatePicked: (picked) => setState(() => startDate = picked),
-          onEndDatePicked: (picked) => setState(() => endDate = picked),
-          onConfirm: () => Navigator.of(context).pop(),
-        ),
-      );
-    },
-  );
-}
-
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: FilterPopupWidget(
+            startDate: startDate,
+            endDate: endDate,
+            onStartDatePicked: (picked) => setState(() => startDate = picked),
+            onEndDatePicked: (picked) => setState(() => endDate = picked),
+            onConfirm: () => Navigator.of(context).pop(),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.kWhite,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1200),
+        child: Consumer<VisitorLogsController>(
+          builder: (context, controller, _) {
+            if (controller.isLoading) {
+              return const Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildHeader(),
-                    const SizedBox(height: 32),
-                    SearchBarWidget(
-                      searchQuery: searchQuery,
-                      onSearchChanged: (value) => setState(() {
-                        searchQuery = value;
-                        currentPage = 0;
-                      }),
-                      onSearchPressed: () => setState(() => currentPage = 0),
-                      onToggleFilter: _showFilterDialog,
-                      isFilterVisible: false,
-                      filterPopup: null,
-                    ),
-                    const SizedBox(height: 24),
-                    _buildTable(),
-                    const SizedBox(height: 24),
-                    _buildPagination(),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Loading visitor logs...'),
                   ],
                 ),
+              );
+            }
+
+            if (controller.error != null) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(controller.error!),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => controller.getVisitorLogs(context),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (controller.visitorLogs.isEmpty) {
+              return const Center(
+                child: Text('No visitor logs found'),
+              );
+            }
+
+            final filteredLogs = _getFilteredLogs(controller.visitorLogs);
+            final paginatedLogs = _getPaginatedLogs(filteredLogs);
+            final totalPages = _getTotalPages(filteredLogs);
+
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildHeader(),
+                        const SizedBox(height: 32),
+                        SearchBarWidget(
+                          searchQuery: searchQuery,
+                          onSearchChanged: (value) => setState(() {
+                            searchQuery = value;
+                            currentPage = 0;
+                          }),
+                          onSearchPressed: () => setState(() => currentPage = 0),
+                          onToggleFilter: _showFilterDialog,
+                          isFilterVisible: false,
+                          filterPopup: null,
+                        ),
+                        const SizedBox(height: 24),
+                        _buildTable(paginatedLogs),
+                        const SizedBox(height: 24),
+                        _buildPagination(totalPages),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
@@ -143,7 +198,7 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  Widget _buildTable() {
+  Widget _buildTable(List<VisitorLog> logs) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -160,7 +215,7 @@ class _LogsScreenState extends State<LogsScreen> {
         children: [
           _buildTableHeader(),
           const Divider(),
-          ...paginatedLogs.map((log) => VisitorLogRow(log: log)).toList(),
+          ...logs.map((log) => _buildLogRow(log)).toList(),
         ],
       ),
     );
@@ -172,15 +227,46 @@ class _LogsScreenState extends State<LogsScreen> {
         _HeaderText('Name'),
         _HeaderText('Check-in Time'),
         _HeaderText('Check-out Time'),
-        _HeaderText('Date'),
         _HeaderText('Visit Purpose'),
         _HeaderText('Status'),
-        _HeaderText('Actions'),
       ],
     );
   }
 
-  Widget _buildPagination() {
+  Widget _buildLogRow(VisitorLog log) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(child: Text(log.visitorName)),
+          Expanded(child: Text(log.checkInTime)),
+          Expanded(child: Text(log.checkOutTime ?? '-')),
+          Expanded(child: Text(log.purpose)),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: log.status.toLowerCase() == 'active' 
+                    ? Colors.green.withOpacity(0.2)
+                    : Colors.red.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                log.status,
+                style: TextStyle(
+                  color: log.status.toLowerCase() == 'active' 
+                      ? Colors.green.shade800
+                      : Colors.red.shade800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPagination(int totalPages) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
