@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Count
+from visitor_details import models as visitor_details_models
 from . import models, serializers
 
 class VisitorLogsView(APIView):
@@ -29,36 +30,39 @@ class VisitorStatsView(APIView):
             all_logs = models.visitor_logs.objects.all()
             print(f"All visitor logs: {list(all_logs.values())}")
             
-            # Get total unique visitors who have ever visited
-            total_visitors = models.visitor_logs.objects.values('visitor_details').distinct().count()
-            print(f"Total unique visitors: {total_visitors}")
+            # Get all statuses for debugging
+            all_statuses = models.visitor_status.objects.all()
+            print(f"All available statuses: {list(all_statuses.values())}")
             
-            # Get currently checked in visitors for today
+            # Get total visitors for today (all visitors who checked in today)
+            total_visitors = models.visitor_logs.objects.filter(
+                visit_date=today
+            ).count()
+            print(f"Total visitors today: {total_visitors}")
+            
+            # Get currently checked in visitors for today (those with no check_out time)
             checked_in_logs = models.visitor_logs.objects.filter(
                 visit_date=today,
-                status__status='Checked-in'
+                check_out__isnull=True
             )
             checked_in = checked_in_logs.count()
             print(f"Checked in visitors today: {checked_in}")
             print(f"Checked in logs: {list(checked_in_logs.values())}")
             
-            # Get checked out visitors for today
+            # Get checked out visitors for today (those with a check_out time)
             checked_out_logs = models.visitor_logs.objects.filter(
                 visit_date=today,
-                status__status='Checked-out'
+                check_out__isnull=False
             )
             checked_out = checked_out_logs.count()
             print(f"Checked out visitors today: {checked_out}")
             print(f"Checked out logs: {list(checked_out_logs.values())}")
             
-            # Get new registrants from the last 24 hours
-            yesterday = timezone.now() - timedelta(days=1)
-            new_registrant_logs = models.visitor_logs.objects.filter(
-                visitor_details__registration_date__gte=yesterday
-            ).values('visitor_details').distinct()
-            new_registrants = new_registrant_logs.count()
-            print(f"New registrants since {yesterday}: {new_registrants}")
-            print(f"New registrant logs: {list(new_registrant_logs)}")
+            # Get new registrants directly from VisitorDetails model
+            new_registrants = visitor_details_models.VisitorDetails.objects.filter(
+                registration_date__date=today
+            ).count()
+            print(f"New registrants today: {new_registrants}")
             
             stats = {
                 'total_visitors': total_visitors,
