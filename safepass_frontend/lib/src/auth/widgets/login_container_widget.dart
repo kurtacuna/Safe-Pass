@@ -123,16 +123,25 @@ class _LoginContainerWidgetState extends State<LoginContainerWidget> {
             SizedBox(height: 30),
 
             AppButtonWidget(
-              onTap: () {
+              onTap: () async {
                 // TODO: handle login
-                // if (_loginKey.currentState!.validate()) {
-                //   context.read<JwtNotifier>().login(
-                //     context: context,
-                //     email: _email.text,
-                //     password: _password.text
-                //   );
-                // }
-                context.go(AppRoutes.kEntrypoint);
+                if (_loginKey.currentState!.validate()) {
+                  int result = await context.read<JwtNotifier>().login(
+                    context: context,
+                    email: _email.text,
+                    password: _password.text
+                  );
+
+                  if (result == 200) {
+                    if (context.mounted){
+                      context.go(AppRoutes.kEntrypoint);
+                    }
+                    
+                  }
+                  
+                  // TODO: input red if unauthorized
+                }
+                
               },
               text: "Log In"
             ),
