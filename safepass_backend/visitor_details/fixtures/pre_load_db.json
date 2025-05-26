@@ -1,4 +1,21 @@
-[
+[   
+    {
+        "model": "custom_user.customuser",
+        "pk": 1,
+        "fields": {
+        "password": "pbkdf2_sha256$1000000$704UyidaKGVfeZdYjzjQxi$iOkU1pLZivUzbFUwsFgH2J40Wiqvx36XVL2wf9k4MGU=",
+        "last_login": "2025-05-26T04:21:50.680Z",
+        "is_superuser": true,
+        "first_name": "",
+        "last_name": "",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2025-05-26T04:20:33.182Z",
+        "email": "admin@email.com",
+        "groups": [],
+        "user_permissions": []
+        }
+    },
     {
         "model": "visitor_details.idtypes",
         "pk": 1,
