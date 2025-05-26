@@ -22,6 +22,8 @@ dependencies:
   flutter_svg: ^2.0.7  
   flutter_dotenv: ^5.2.1
   http: ^1.4.0
+  shared_preferences: ^2.5.3
+  http: ^1.4.0
 
 dev_dependencies:
   flutter_test:
@@ -34,3 +36,4 @@ flutter:
 
   assets:
     - assets/images/
+    - .env.development

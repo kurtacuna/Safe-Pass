@@ -10,6 +10,7 @@ import 'package:safepass_frontend/common/widgets/app_button_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_text_button_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart';
+import 'package:safepass_frontend/src/auth/controller/jwt_notifier.dart';
 import 'package:safepass_frontend/src/auth/controller/password_notifier.dart';
 
 class LoginContainerWidget extends StatefulWidget {
@@ -125,7 +126,11 @@ class _LoginContainerWidgetState extends State<LoginContainerWidget> {
               onTap: () {
                 // TODO: handle login
                 // if (_loginKey.currentState!.validate()) {
-                //   context.go(AppRoutes.kEntrypoint);
+                //   context.read<JwtNotifier>().login(
+                //     context: context,
+                //     email: _email.text,
+                //     password: _password.text
+                //   );
                 // }
                 context.go(AppRoutes.kEntrypoint);
               },

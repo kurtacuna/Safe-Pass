@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('check_in', models.TimeField()),
-                ('check_out', models.TimeField()),
+                ('check_out', models.TimeField(blank=True, null=True)),
                 ('visit_date', models.DateField()),
                 ('visitor_details', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='visitor_details.visitordetails')),
                 ('status', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='visitor_logs.visitor_status')),

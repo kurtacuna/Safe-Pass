@@ -21,6 +21,9 @@ class visitor_logs(models.Model):
 class visitor_status(models.Model):
     status = models.CharField(max_length=255)
 
+    def __str__(self):
+      return self.status
+
     class Meta:
         verbose_name = "Status"
         verbose_name_plural = "Statuses"

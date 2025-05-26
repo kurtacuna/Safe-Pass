@@ -1,23 +1,5 @@
 [
     {
-        "model": "auth.user",
-        "pk": 1,
-        "fields": {
-            "password": "pbkdf2_sha256$1000000$aZ7Syozxdqd0yxsMrMLqlP$wRcRp98a3Qnt6cm7UsJ6vKIleDDjoCVTJDRODDr0DvY=",
-            "last_login": null,
-            "is_superuser": true,
-            "username": "admin",
-            "first_name": "",
-            "last_name": "",
-            "email": "admin@email.com",
-            "is_staff": true,
-            "is_active": true,
-            "date_joined": "2025-05-21T11:12:37.073Z",
-            "groups": [],
-            "user_permissions": []
-        }
-    },
-    {
         "model": "visitor_details.idtypes",
         "pk": 1,
         "fields": {
@@ -54,6 +36,30 @@
     {
         "model": "visitor_logs.visitor_logs",
         "pk": 1,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "14:00:00",
+            "check_out": "11:00:00",
+            "visit_date": "2025-05-24",
+            "purpose": 1,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 2,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "14:00:00",
+            "check_out": "11:00:00",
+            "visit_date": "2025-05-24",
+            "purpose": 1,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 3,
         "fields": {
             "visitor_details": 1,
             "check_in": "14:00:00",
