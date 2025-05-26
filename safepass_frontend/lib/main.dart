@@ -7,9 +7,13 @@ import 'package:safepass_frontend/src/auth/controller/jwt_notifier.dart';
 import 'package:safepass_frontend/src/auth/controller/password_notifier.dart';
 import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.dart';
 import 'package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart';
+import 'package:safepass_frontend/src/logs/controllers/visitorlogs_controller.dart';
+import 'package:safepass_frontend/src/utils/storage.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env.development');
+  await Storage().init();  // Initialize storage
 
   runApp(MultiProvider(
     providers: [
@@ -17,6 +21,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => PasswordNotifier()),
       ChangeNotifierProvider(create: (_) => SettingsTabNotifier()),
       ChangeNotifierProvider(create: (_) => JwtNotifier()),
+      ChangeNotifierProvider(create: (_) => VisitorLogsController()),
     ],
     child: MyApp()
   ));
