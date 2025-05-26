@@ -29,6 +29,13 @@ class _LoginContainerWidgetState extends State<LoginContainerWidget> {
   static final GlobalKey<FormState> _loginKey = AppGlobalKeys.login;
 
   @override
+  void initState() {
+    _email.text = "admin@email.com";
+    _password.text = "adminsafepass";
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _email.dispose();
     _password.dispose();

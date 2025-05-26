@@ -141,36 +141,47 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SIMPLE_JWT = {
     # TODO: check if final
     # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=5),
+    "AUTH_TOKEN_LIFETIME": timedelta(seconds=5),
     # "REFRESH_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(hours=1),
     "AUTH_HEADER_TYPES": ('Bearer',),
+    
+    'AUTH_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
+    'AUTH_COOKIE_DOMAIN': None,     # A string like "example.com", or None for standard domain cookie.
+    'AUTH_COOKIE_SECURE': False,    # Whether the auth cookies should be secure (https:// only).
+    'AUTH_COOKIE_HTTP_ONLY' : True, # Http only cookie flag.It's not fetch by javascript.
+    'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
+    'AUTH_COOKIE_SAMESITE': 'None',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
 }
 
-# settings.py
+# # settings.py
 
-DJOSER = {
-    'LOGIN_FIELD': 'email', # This is the crucial setting for Djoser
-    # Other Djoser settings you might have:
-    # 'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    # 'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}', # You might want to remove this if you're not using usernames
-    # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    # 'SEND_ACTIVATION_EMAIL': True,
-    # 'SERIALIZERS': {
-    #     'user_create': 'accounts.serializers.CustomUserCreateSerializer', # If you have a custom user creation serializer
-    #     'current_user': 'accounts.serializers.CustomUserSerializer',
-    # },
-}
+# DJOSER = {
+#     'LOGIN_FIELD': 'email', # This is the crucial setting for Djoser
+#     # Other Djoser settings you might have:
+#     # 'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+#     # 'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}', # You might want to remove this if you're not using usernames
+#     # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
+#     # 'SEND_ACTIVATION_EMAIL': True,
+#     # 'SERIALIZERS': {
+#     #     'user_create': 'accounts.serializers.CustomUserCreateSerializer', # If you have a custom user creation serializer
+#     #     'current_user': 'accounts.serializers.CustomUserSerializer',
+#     # },
+# }
 
 # If you're using Djoser with Simple JWT, ensure this is also configured
 REST_FRAMEWORK = {
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+      'custom_user.authenticate.CustomAuthentication',
+  ),
 }
+
 
 # If you need to send emails for activation/password reset, configure your email backend
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # For development, prints emails to console
