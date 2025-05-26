@@ -19,7 +19,7 @@ class VisitorDetails(models.Model):
     PENDING = "Pending"
     DENIED = "Denied"
 
-  # photo = models.ImageField(upload_to=custom_upload_to)
+  photo = models.ImageField(upload_to='visitor_photos', null=True, blank=True)
   first_name = models.CharField(max_length=255)
   middle_name = models.CharField(max_length=255, blank=True)
   last_name = models.CharField(max_length=255)
@@ -42,7 +42,7 @@ class VisitorDetails(models.Model):
 
 
   def __str__(self):
-    return self.id
+    return f"{self.full_name} ({self.id_type} - {self.id_number})"
 
   class Meta:
     verbose_name = "Visitor Detail"

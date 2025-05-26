@@ -16,7 +16,7 @@ class AppButtonWidget extends StatelessWidget {
   });
 
   // The function to execute on tap
-  final void Function() onTap;
+  final void Function()? onTap;
   
   // A widget in place for the text at the center of the button
   // If provided, this will be displayed instead of text
@@ -48,7 +48,7 @@ class AppButtonWidget extends StatelessWidget {
           width: width ?? 340,
           height: height ?? 48,
           decoration: BoxDecoration(
-            color: color ?? AppColors.kDarkBlue,
+            color: onTap == null ? AppColors.kGray : (color ?? AppColors.kDarkBlue),
             borderRadius: AppConstants.kAppBorderRadius
           ),
           child: Center(
