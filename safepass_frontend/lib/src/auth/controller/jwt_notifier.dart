@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/common_json_model.dart';
+import 'package:safepass_frontend/src/auth/models/jwt_model.dart';
 
 class JwtNotifier with ChangeNotifier {
   
@@ -40,6 +41,8 @@ class JwtNotifier with ChangeNotifier {
       print(response.body);
 
       if (response.statusCode == 200) {
+        // JwtModel model = jwtModelFromJson(response.body);
+        
         statusCode = 200;
         // TODO: save tokens to local storage
       } else {

@@ -19,7 +19,7 @@ class VisitorDetails(models.Model):
     PENDING = "Pending"
     DENIED = "Denied"
 
-  photo = models.ImageField(upload_to=custom_upload_to, default="media/default_photo/no_photo.png")
+  photo = models.ImageField(upload_to=custom_upload_to, default="default_photo/no_photo.png")
   first_name = models.CharField(max_length=255)
   middle_name = models.CharField(max_length=255, blank=True)
   last_name = models.CharField(max_length=255)
