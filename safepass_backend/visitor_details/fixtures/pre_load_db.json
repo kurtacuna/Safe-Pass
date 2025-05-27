@@ -1,19 +1,19 @@
-[   
+[
     {
         "model": "custom_user.customuser",
         "pk": 1,
         "fields": {
-        "password": "pbkdf2_sha256$1000000$704UyidaKGVfeZdYjzjQxi$iOkU1pLZivUzbFUwsFgH2J40Wiqvx36XVL2wf9k4MGU=",
-        "last_login": "2025-05-26T04:21:50.680Z",
-        "is_superuser": true,
-        "first_name": "",
-        "last_name": "",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2025-05-26T04:20:33.182Z",
-        "email": "admin@email.com",
-        "groups": [],
-        "user_permissions": []
+            "password": "pbkdf2_sha256$1000000$704UyidaKGVfeZdYjzjQxi$iOkU1pLZivUzbFUwsFgH2J40Wiqvx36XVL2wf9k4MGU=",
+            "last_login": "2025-05-26T04:21:50.680Z",
+            "is_superuser": true,
+            "first_name": "",
+            "last_name": "",
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2025-05-26T04:20:33.182Z",
+            "email": "admin@email.com",
+            "groups": [],
+            "user_permissions": []
         }
     },
     {
@@ -38,6 +38,48 @@
         }
     },
     {
+        "model": "visitor_details.visitordetails",
+        "pk": 2,
+        "fields": {
+            "first_name": "Alice",
+            "middle_name": "M",
+            "last_name": "Smith",
+            "full_name": "Alice M Smith",
+            "contact_number": "5678",
+            "id_type": 1,
+            "id_number": "NID-456",
+            "status": "Approved"
+        }
+    },
+    {
+        "model": "visitor_details.visitordetails",
+        "pk": 3,
+        "fields": {
+            "first_name": "Bob",
+            "middle_name": "J",
+            "last_name": "Williams",
+            "full_name": "Bob J Williams",
+            "contact_number": "9012",
+            "id_type": 1,
+            "id_number": "NID-789",
+            "status": "Approved"
+        }
+    },
+    {
+        "model": "visitor_details.visitordetails",
+        "pk": 4,
+        "fields": {
+            "first_name": "Carol",
+            "middle_name": "A",
+            "last_name": "Johnson",
+            "full_name": "Carol A Johnson",
+            "contact_number": "3456",
+            "id_type": 1,
+            "id_number": "NID-101",
+            "status": "Approved"
+        }
+    },
+    {
         "model": "visitor_logs.visitpurposes",
         "pk": 1,
         "fields": {
@@ -45,10 +87,24 @@
         }
     },
     {
+        "model": "visitor_logs.visitpurposes",
+        "pk": 2,
+        "fields": {
+            "purpose": "Family Visit"
+        }
+    },
+    {
         "model": "visitor_logs.visitor_status",
         "pk": 1,
         "fields": {
             "status": "Checked-Out"
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_status",
+        "pk": 2,
+        "fields": {
+            "status": "Checked-In"
         }
     },
     {
@@ -62,9 +118,7 @@
             "purpose": 1,
             "status": 1
         }
-        
     },
-
     {
         "model": "visitor_logs.visitor_logs",
         "pk": 2,
@@ -76,10 +130,8 @@
             "purpose": 1,
             "status": 1
         }
-        
     },
-
-     {
+    {
         "model": "visitor_logs.visitor_logs",
         "pk": 3,
         "fields": {
@@ -90,6 +142,113 @@
             "purpose": 1,
             "status": 1
         }
-        
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 4,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "08:00:00",
+            "check_out": "10:00:00",
+            "visit_date": "2025-06-16",
+            "purpose": 1,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 5,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "09:00:00",
+            "check_out": "11:00:00",
+            "visit_date": "2025-06-17",
+            "purpose": 1,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 6,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "10:00:00",
+            "check_out": null,
+            "visit_date": "2025-06-18",
+            "purpose": 1,
+            "status": 2
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 7,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "11:00:00",
+            "check_out": null,
+            "visit_date": "2025-06-19",
+            "purpose": 1,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 8,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "12:00:00",
+            "check_out": null,
+            "visit_date": "2025-06-20",
+            "purpose": 1,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 9,
+        "fields": {
+            "visitor_details": 2,
+            "check_in": "10:00:00",
+            "check_out": "12:00:00",
+            "visit_date": "2025-06-21",
+            "purpose": 2,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 10,
+        "fields": {
+            "visitor_details": 3,
+            "check_in": "13:00:00",
+            "check_out": "15:00:00",
+            "visit_date": "2025-06-21",
+            "purpose": 2,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 11,
+        "fields": {
+            "visitor_details": 3,
+            "check_in": "09:30:00",
+            "check_out": null,
+            "visit_date": "2025-06-22",
+            "purpose": 1,
+            "status": 2
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 12,
+        "fields": {
+            "visitor_details": 4,
+            "check_in": "14:30:00",
+            "check_out": "16:00:00",
+            "visit_date": "2025-06-23",
+            "purpose": 2,
+            "status": 1
+        }
     }
 ]
