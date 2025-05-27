@@ -18,6 +18,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
     this.digitsOnly = false,
     this.inputFormatters,
     this.keyboardType,
+    this.enabled = true,
     super.key
   });
 
@@ -54,9 +55,13 @@ class AppTextFormFieldWidget extends StatelessWidget {
   // The type of keyboard to use for editing the text
   final TextInputType? keyboardType;
 
+  // Whether the text field is enabled
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      enabled: enabled,
       inputFormatters: digitsOnly == true
         ? [FilteringTextInputFormatter.allow(RegExp('[0-9]'))]
         : inputFormatters,
@@ -86,7 +91,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
         hintText: hintText,
         contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
         filled: true,
-        fillColor: AppColors.kLighterGray,
+        fillColor: enabled ? AppColors.kLighterGray : AppColors.kLighterGray.withOpacity(0.5),
         enabledBorder: AppConstants.enabledBorder,
         focusedBorder: AppConstants.focusedBorder,
         errorBorder: AppConstants.errorBorder,

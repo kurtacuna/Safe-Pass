@@ -74,91 +74,105 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: SingleChildScrollView(
             controller: scrollController,
             scrollDirection: Axis.vertical,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1000),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.min,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 16),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: _buildTopBar(),
+                ),
+
+                const SizedBox(height: 20),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
                     children: [
-                      const SizedBox(height: 16),
-
-                      _buildTopBar(),
-
-                      const SizedBox(height: 20),
-
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 20,
-                        runSpacing: 52,
-                        children: [
-                          AppIconCardWidget(
-                            svgAssetPath: 'assets/images/new_visitor_symbol.svg',
-                            label: 'New User Registration',
-                            onTap: () {
-                              context.go('/entrypoint/dashboard/register');
-                            },
-                          ),
-                          AppIconCardWidget(
-                            svgAssetPath: 'assets/images/check_in_symbol.svg',
-                            label: 'Check In',
-                            onTap: () {
-                              context.go('/entrypoint/dashboard/checkin');
-                            },
-                          ),
-                          AppIconCardWidget(
-                            svgAssetPath: 'assets/images/check_out_symbol.svg',
-                            label: 'Check Out',
-                            onTap: () {
-                              context.go('/entrypoint/dashboard/checkout');
-                            },
-                          ),
-                        ],
+                      Expanded(
+                        child: AppIconCardWidget(
+                          svgAssetPath: 'assets/images/new_visitor_symbol.svg',
+                          label: 'New Visitor Registration',
+                          onTap: () {
+                            context.go('/entrypoint/dashboard/register');
+                          },
+                        ),
                       ),
-
-                      const SizedBox(height: 48),
-
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 52,
-                        runSpacing: 52,
-                        children: const [
-                          AppStatCardWidget(
-                            count: '105',
-                            label: 'Total Visitors',
-                            totalIconPath: 'assets/images/total_icon.png',
-                            bottomIconPath: 'assets/images/total_visitors.png',
-                          ),
-                          AppStatCardWidget(
-                            count: '80',
-                            label: 'Checked-in',
-                            totalIconPath: 'assets/images/checked_in_visitors.png',
-                            bottomIconPath: 'assets/images/checked_in_visitors.png',
-                          ),
-                          AppStatCardWidget(
-                            count: '30',
-                            label: 'Checked-out',
-                            totalIconPath: 'assets/images/total_icon.png',
-                            bottomIconPath: 'assets/images/checked_out_stats_icon.png',
-                          ),
-                          AppStatCardWidget(
-                            count: '5',
-                            label: 'New Registrants',
-                            totalIconPath: 'assets/images/total_icon.png',
-                            bottomIconPath: 'assets/images/pending_stats_icon.png',
-                          ),
-                        ],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: AppIconCardWidget(
+                          svgAssetPath: 'assets/images/check_in_symbol.svg',
+                          label: 'Check In',
+                          onTap: () {
+                            context.go('/entrypoint/dashboard/checkin');
+                          },
+                        ),
                       ),
-
-                      const SizedBox(height: 42),
-
-                      const VisitorLogsWidget(),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: AppIconCardWidget(
+                          svgAssetPath: 'assets/images/check_out_symbol.svg',
+                          label: 'Check Out',
+                          onTap: () {
+                            context.go('/entrypoint/dashboard/checkout');
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ),
+
+                const SizedBox(height: 48),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    children: const [
+                      Expanded(
+                        child: AppStatCardWidget(
+                          count: '105',
+                          label: 'Total Visitors',
+                          totalIconPath: 'assets/images/total_icon.png',
+                          bottomIconPath: 'assets/images/total_visitors.png',
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: AppStatCardWidget(
+                          count: '80',
+                          label: 'Checked-in',
+                          totalIconPath: 'assets/images/checked_in_visitors.png',
+                          bottomIconPath: 'assets/images/checked_in_visitors.png',
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: AppStatCardWidget(
+                          count: '30',
+                          label: 'Checked-out',
+                          totalIconPath: 'assets/images/total_icon.png',
+                          bottomIconPath: 'assets/images/checked_out_stats_icon.png',
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: AppStatCardWidget(
+                          count: '5',
+                          label: 'New Registrants',
+                          totalIconPath: 'assets/images/total_icon.png',
+                          bottomIconPath: 'assets/images/pending_stats_icon.png',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 42),
+
+                const VisitorLogsWidget(),
+              ],
             ),
           ),
         ),

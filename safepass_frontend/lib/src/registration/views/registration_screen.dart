@@ -157,232 +157,244 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Stack(
-              children: [
-                // Back to Dashboard Button
-                Positioned(
-                  top: 50,
-                  right: 50,
-                  child: TextButton.icon(
-                    onPressed: _isLoading 
-                      ? null 
-                      : () => context.go('/entrypoint'),
-                    icon: const Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
-                    label: Text(
-                      'Back to Dashboard',
-                      style: AppTextStyles.bigStyle.copyWith(
-                        color: AppColors.kDarkBlue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            // Back to Dashboard Button
+            Positioned(
+              top: 50,
+              right: 50,
+              child: TextButton.icon(
+                onPressed: _isLoading 
+                  ? null 
+                  : () => context.go('/entrypoint'),
+                icon: const Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
+                label: Text(
+                  'Back to Dashboard',
+                  style: AppTextStyles.bigStyle.copyWith(
+                    color: AppColors.kDarkBlue,
+                    decoration: TextDecoration.underline,
                   ),
                 ),
-
-                // Logo
-                Positioned(
-                  top: 50,
-                  left: 50,
-                  child: Image.asset(
-                    AppImages.logoDark,
-                    height: 50,
-                  ),
-                ),
-
-                // Main Content - Centered
-                Padding(
-                  padding: const EdgeInsets.only(top: 120.0),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1200),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Left side - Visitor Details Form
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Visitor\'s Details',
-                                    style: AppTextStyles.biggestStyle.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.kDark,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 40),
-                                  ConstrainedBox(
-                                    constraints: const BoxConstraints(maxWidth: 400),
-                                    child: Form(
-                                      key: _formKey,
-                                      child: Column(
-                                        children: [
-                                          AppTextFormFieldWidget(
-                                            controller: _firstNameController,
-                                            hintText: 'Enter your first name',
-                                            validatorText: 'Please enter your first name',
-                                          ),
-                                          const SizedBox(height: 20),
-                                          AppTextFormFieldWidget(
-                                            controller: _middleNameController,
-                                            hintText: 'Enter your middle name',
-                                          ),
-                                          const SizedBox(height: 20),
-                                          AppTextFormFieldWidget(
-                                            controller: _lastNameController,
-                                            hintText: 'Enter your last name',
-                                            validatorText: 'Please enter your last name',
-                                          ),
-                                          const SizedBox(height: 20),
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              color: AppColors.kLighterGray,
-                                              borderRadius: AppConstants.kAppBorderRadius,
-                                              border: Border.all(color: AppColors.kGray),
-                                            ),
-                                            child: DropdownButtonHideUnderline(
-                                              child: DropdownButtonFormField<String>(
-                                                value: _selectedIdType,
-                                                hint: const Text('ID Type'),
-                                                style: AppTextStyles.defaultStyle,
-                                                isExpanded: true,
-                                                decoration: const InputDecoration(
-                                                  border: InputBorder.none,
-                                                  contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                                                ),
-                                                items: _idTypes.map((String type) {
-                                                  return DropdownMenuItem(
-                                                    value: type,
-                                                    child: Text(type),
-                                                  );
-                                                }).toList(),
-                                                onChanged: (String? value) {
-                                                  setState(() {
-                                                    _selectedIdType = value;
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 20),
-                                          AppTextFormFieldWidget(
-                                            controller: _idNumberController,
-                                            hintText: 'Enter your ID Number',
-                                            validatorText: 'Please enter your ID number',
-                                          ),
-                                          const SizedBox(height: 20),
-                                          AppTextFormFieldWidget(
-                                            controller: _contactNumberController,
-                                            hintText: 'Enter your contact number',
-                                            validatorText: 'Please enter your contact number',
-                                            keyboardType: TextInputType.phone,
-                                            digitsOnly: true,
-                                          ),
-                                          const SizedBox(height: 30),
-                                          AppButtonWidget(
-                                            width: double.infinity,
-                                            onTap: _isLoading 
-                                              ? null 
-                                              : () => _registerVisitor(),
-                                            text: _isLoading ? 'Processing...' : 'Enter Visitor',
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          
-                          // Right side - Face Recognition
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Visitor Registration',
-                                    style: AppTextStyles.biggestStyle.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.kDark,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    'Facial Recognition',
-                                    style: AppTextStyles.biggerStyle.copyWith(
-                                      color: AppColors.kDarkGray,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 30),
-                                  ConstrainedBox(
-                                    constraints: const BoxConstraints(maxWidth: 400),
-                                    child: AppContainerWidget(
-                                      width: double.infinity,
-                                      height: 500,
-                                      child: Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              width: double.infinity,
-                                              height: 350,
-                                              margin: const EdgeInsets.symmetric(horizontal: 20),
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue.withOpacity(0.1),
-                                                borderRadius: AppConstants.kAppBorderRadius,
-                                              ),
-                                              child: const Center(
-                                                child: Icon(
-                                                  Icons.camera_alt,
-                                                  size: 50,
-                                                  color: AppColors.kDarkGray,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 20),
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                                              child: AppButtonWidget(
-                                                width: double.infinity,
-                                                onTap: _isLoading 
-                                                  ? null 
-                                                  : () => _scanFace(),
-                                                text: _isLoading ? 'Scanning...' : 'SCAN FACE',
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (_isLoading)
-            Container(
-              color: Colors.black54,
-              child: const Center(
-                child: CircularProgressIndicator(),
               ),
             ),
-        ],
+
+            // Logo
+            Positioned(
+              top: 50,
+              left: 50,
+              child: Image.asset(
+                AppImages.logoDark,
+                height: 50,
+              ),
+            ),
+
+            // Main Content - Centered
+            Padding(
+              padding: const EdgeInsets.only(top: 200.0),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left side - Visitor Details Form
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Visitor\'s Details',
+                                style: AppTextStyles.biggestStyle.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.kDark,
+                                ),
+                              ),
+                              const SizedBox(height: 40),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 400),
+                                child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    children: [
+                                      AppTextFormFieldWidget(
+                                        controller: _firstNameController,
+                                        hintText: 'Enter your first name',
+                                        validatorText: 'Please enter your first name',
+                                      ),
+                                      const SizedBox(height: 20),
+                                      AppTextFormFieldWidget(
+                                        controller: _middleNameController,
+                                        hintText: 'Enter your middle name',
+                                      ),
+                                      const SizedBox(height: 20),
+                                      AppTextFormFieldWidget(
+                                        controller: _lastNameController,
+                                        hintText: 'Enter your last name',
+                                        validatorText: 'Please enter your last name',
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: AppColors.kLighterGray,
+                                          borderRadius: AppConstants.kAppBorderRadius,
+                                          border: Border.all(color: AppColors.kGray),
+                                        ),
+                                        child: DropdownButtonHideUnderline(
+                                          child: DropdownButtonFormField<String>(
+                                            value: _selectedIdType,
+                                            hint: const Text('ID Type'),
+                                            style: AppTextStyles.defaultStyle,
+                                            isExpanded: true,
+                                            decoration: const InputDecoration(
+                                              border: InputBorder.none,
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                                            ),
+                                            items: _idTypes.map((String type) {
+                                              return DropdownMenuItem(
+                                                value: type,
+                                                child: Text(type),
+                                              );
+                                            }).toList(),
+                                            onChanged: (String? value) {
+                                              setState(() {
+                                                _selectedIdType = value;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      AppTextFormFieldWidget(
+                                        controller: _idNumberController,
+                                        hintText: 'Enter your ID Number',
+                                        validatorText: 'Please enter your ID number',
+                                      ),
+                                      const SizedBox(height: 20),
+                                      AppTextFormFieldWidget(
+                                        controller: _contactNumberController,
+                                        hintText: 'Enter your contact number',
+                                        validatorText: 'Please enter your contact number',
+                                        keyboardType: TextInputType.phone,
+                                        digitsOnly: true,
+                                      ),
+                                      const SizedBox(height: 30),
+                                      AppButtonWidget(
+                                        width: double.infinity,
+                                        onTap: _isLoading ? null : _registerVisitor,
+                                        text: _isLoading ? 'Registering...' : 'Enter Visitor',
+                                        isLoading: _isLoading,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      
+                      // Right side - Face Recognition
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'New Visitor Registration',
+                                style: AppTextStyles.biggestStyle.copyWith(
+                                  color: AppColors.kDarkBlue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Face Identity Registration',
+                                style: AppTextStyles.biggerStyle.copyWith(
+                                  color: AppColors.kDark,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 30),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 600),
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 400,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.1),
+                                    borderRadius: AppConstants.kAppBorderRadius,
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Face Not Registered',
+                                          style: AppTextStyles.bigStyle.copyWith(
+                                            color: AppColors.kDarkGray,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        AppButtonWidget(
+                                          width: 200,
+                                          onTap: _isLoading 
+                                            ? null 
+                                            : () => _scanFace(),
+                                          text: _isLoading ? 'Scanning...' : 'TAKE A PHOTO',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 600),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    AppButtonWidget(
+                                      width: 150,
+                                      onTap: () {
+                                        // Clear form and reset
+                                        _firstNameController.clear();
+                                        _middleNameController.clear();
+                                        _lastNameController.clear();
+                                        _idNumberController.clear();
+                                        _contactNumberController.clear();
+                                        setState(() {
+                                          _selectedIdType = null;
+                                        });
+                                      },
+                                      text: 'Reset Form',
+                                      color: AppColors.kGray,
+                                    ),
+                                    const SizedBox(width: 20),
+                                    AppButtonWidget(
+                                      width: 150,
+                                      onTap: _isLoading ? null : () => _registerVisitor(),
+                                      text: _isLoading ? 'Registering...' : 'Register',
+                                      isLoading: _isLoading,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

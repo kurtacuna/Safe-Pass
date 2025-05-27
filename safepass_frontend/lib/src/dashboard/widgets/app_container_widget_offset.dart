@@ -54,8 +54,8 @@ class _AppIconCardWidgetState extends State<AppIconCardWidget> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 280,
-          height: 116,
+          width: 350,
+          height: 160,
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: AppConstants.kAppBorderRadius,
@@ -67,7 +67,7 @@ class _AppIconCardWidgetState extends State<AppIconCardWidget> {
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -75,17 +75,18 @@ class _AppIconCardWidgetState extends State<AppIconCardWidget> {
               children: [
                 SvgPicture.asset(
                   widget.svgAssetPath,
-                  width: 24,
-                  height: 24,
+                  width: 32,
+                  height: 32,
                   colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 32),
                 Flexible(
                   child: Text(
                     widget.label,
                     style: AppTextStyles.bigStyle.copyWith(
                       fontWeight: FontWeight.w700,
                       color: textColor,
+                      fontSize: 20,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
