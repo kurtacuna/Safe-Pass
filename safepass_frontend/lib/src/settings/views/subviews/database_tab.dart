@@ -230,40 +230,54 @@ class _DatabaseTabState extends State<DatabaseTab> {
                 // TODO: handle search
               }, 
               onToggleFilter: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return Dialog(
-                      child: StatefulBuilder(
-                        builder: (context, setDialogState) {
-                          return FilterPopupWidget(
-                            startDate: startDate, 
-                            endDate: endDate, 
-                            onStartDatePicked: (pickedDate) {
-                              setState(() {
-                                setDialogState(() {
-                                  startDate = pickedDate;
-                                });
-                              });
-                            }, 
-                            onEndDatePicked: (pickedDate) {
-                              setState(() {
-                                setDialogState(() {
-                                  endDate = pickedDate;
-                                });
-                              });
-                            }, 
-                            onConfirm: () {
-                              context.pop();
-                            }
-                          );
-                        }
-                      )
-                    );
-                  }
-                );
-              }, 
-              isFilterVisible: false, // TODO: clarify
+                 showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    child: StatefulBuilder(
+                      builder: (context, setDialogState) {
+                        // Temporary filter values for dialog only
+                        DateTime? tempStartDate = startDate;
+                        DateTime? tempEndDate = endDate;
+                        String? tempSelectedStatus = selectedStatus;
+
+                        return FilterPopupWidget(
+                          startDate: tempStartDate,
+                          endDate: tempEndDate,
+                          selectedStatus: tempSelectedStatus,
+                          onStartDatePicked: (pickedDate) {
+                            setDialogState(() {
+                              tempStartDate = pickedDate;
+                            });
+                          },
+                          onEndDatePicked: (pickedDate) {
+                            setDialogState(() {
+                              tempEndDate = pickedDate;
+                            });
+                          },
+                          onStatusChanged: (status) {
+                            setDialogState(() {
+                              tempSelectedStatus = status;
+                            });
+                          },
+                          onConfirm: () {
+                            // Apply all changes only when user clicks Apply
+                            setState(() {
+                              startDate = tempStartDate;
+                              endDate = tempEndDate;
+                              selectedStatus = tempSelectedStatus;
+                              currentPage = 0; // optional reset pagination
+                            });
+                            context.pop();
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            }, 
+                          isFilterVisible: false, // TODO: clarify
             ),
           ),
           SizedBox(height: 20),

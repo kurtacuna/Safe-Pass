@@ -18,6 +18,7 @@ class LogsScreen extends StatefulWidget {
 class _LogsScreenState extends State<LogsScreen> {
   static const int logsPerPage = 10;
   int currentPage = 0;
+  bool isFilterVisible = false;
 
   String searchQuery = '';
   String? selectedStatus;
@@ -27,19 +28,28 @@ class _LogsScreenState extends State<LogsScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch visitor logs when the screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VisitorLogsController>().getVisitorLogs(context);
     });
   }
 
   List<VisitorLog> _getFilteredLogs(List<VisitorLog> logs) {
-    return logs.where((log) {
-      final matchesSearch = log.visitorName.toLowerCase().contains(searchQuery.toLowerCase());
-      final matchesStatus = selectedStatus == null || log.status == selectedStatus;
-      return matchesSearch && matchesStatus;
-    }).toList();
-  }
+  return logs.where((log) {
+    final matchesSearch = log.visitorName.toLowerCase().contains(searchQuery.toLowerCase());
+
+    final matchesStatus = selectedStatus == null ||
+        log.status.toLowerCase() == selectedStatus!.toLowerCase(); // Case-insensitive
+
+    final visitDate = DateTime.tryParse(log.visitDate);
+    final matchesStart = startDate == null ||
+        (visitDate != null && visitDate.isAfter(startDate!.subtract(const Duration(days: 1))));
+    final matchesEnd = endDate == null ||
+        (visitDate != null && visitDate.isBefore(endDate!.add(const Duration(days: 1))));
+
+    return matchesSearch && matchesStatus && matchesStart && matchesEnd;
+  }).toList();
+}
+
 
   List<VisitorLog> _getPaginatedLogs(List<VisitorLog> filteredLogs) {
     final start = currentPage * logsPerPage;
@@ -62,22 +72,49 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: FilterPopupWidget(
-            startDate: startDate,
-            endDate: endDate,
-            onStartDatePicked: (picked) => setState(() => startDate = picked),
-            onEndDatePicked: (picked) => setState(() => endDate = picked),
-            onConfirm: () => Navigator.of(context).pop(),
-          ),
-        );
-      },
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, void Function(void Function()) setModalState) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            child: FilterPopupWidget(
+              startDate: startDate,
+              endDate: endDate,
+              selectedStatus: selectedStatus,
+              onStartDatePicked: (picked) {
+                setState(() {
+                  startDate = picked;
+                  currentPage = 0;
+                });
+                setModalState(() {});
+              },
+              onEndDatePicked: (picked) {
+                setState(() {
+                  endDate = picked;
+                  currentPage = 0;
+                });
+                setModalState(() {});
+              },
+              onStatusChanged: (status) {
+                setState(() {
+                  selectedStatus = status;
+                  currentPage = 0;
+                });
+                setModalState(() {});
+              },
+              onConfirm: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -149,6 +186,19 @@ class _LogsScreenState extends State<LogsScreen> {
                           isFilterVisible: false,
                           filterPopup: null,
                         ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _resetFilters,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text("Reset Filters"),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.kDarkBlue,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         const SizedBox(height: 24),
                         _buildTable(paginatedLogs),
                         const SizedBox(height: 24),
@@ -227,6 +277,7 @@ class _LogsScreenState extends State<LogsScreen> {
         _HeaderText('Name'),
         _HeaderText('Check-in Time'),
         _HeaderText('Check-out Time'),
+        _HeaderText('Visit Date'), 
         _HeaderText('Visit Purpose'),
         _HeaderText('Status'),
       ],
@@ -241,6 +292,7 @@ class _LogsScreenState extends State<LogsScreen> {
           Expanded(child: Text(log.visitorName)),
           Expanded(child: Text(log.checkInTime)),
           Expanded(child: Text(log.checkOutTime ?? '-')),
+          Expanded(child: Text(log.visitDate)),
           Expanded(child: Text(log.purpose)),
           Expanded(
             child: Container(

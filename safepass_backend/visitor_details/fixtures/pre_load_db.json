@@ -77,5 +77,19 @@
             "status": 1
         }
         
+    },
+
+     {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 3,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "14:00:00",
+            "check_out": "11:00:00",
+            "visit_date": "2025-05-27",
+            "purpose": 1,
+            "status": 1
+        }
+        
     }
 ]
