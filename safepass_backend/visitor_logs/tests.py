@@ -22,9 +22,17 @@ class VisitorLogsTest(APITestCase):
             contact_number = "09777237273",
             id_type = id_type,
             id_number = "23671986387216",
-            status = "Approved"
+            status = "Approved",
         )
 
+        models.visitor_logs.objects.create(
+            visitor_details = visitor_details,
+            check_in=time(9, 0),     
+            check_out=time(11, 30),  
+            visit_date=date(2025, 5, 21),
+            purpose = purpose,
+            status = status,
+        )
         models.visitor_logs.objects.create(
             visitor_details = visitor_details,
             check_in=time(9, 0),     
