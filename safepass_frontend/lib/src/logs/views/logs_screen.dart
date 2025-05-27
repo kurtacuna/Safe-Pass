@@ -22,6 +22,7 @@ class _LogsScreenState extends State<LogsScreen> {
 
   String searchQuery = '';
   String? selectedStatus;
+  String? selectedPurpose;
   DateTime? startDate;
   DateTime? endDate;
 
@@ -38,15 +39,16 @@ class _LogsScreenState extends State<LogsScreen> {
     final matchesSearch = log.visitorName.toLowerCase().contains(searchQuery.toLowerCase());
 
     final matchesStatus = selectedStatus == null ||
-        log.status.toLowerCase() == selectedStatus!.toLowerCase(); // Case-insensitive
-
+        log.status.toLowerCase() == selectedStatus!.toLowerCase();
+    final matchesPurpose = selectedPurpose == null || 
+    log.purpose.toLowerCase() == selectedPurpose!.toLowerCase();
     final visitDate = DateTime.tryParse(log.visitDate);
     final matchesStart = startDate == null ||
         (visitDate != null && visitDate.isAfter(startDate!.subtract(const Duration(days: 1))));
     final matchesEnd = endDate == null ||
         (visitDate != null && visitDate.isBefore(endDate!.add(const Duration(days: 1))));
 
-    return matchesSearch && matchesStatus && matchesStart && matchesEnd;
+    return matchesSearch && matchesStatus && matchesStart && matchesEnd && matchesPurpose;
   }).toList();
 }
 
@@ -64,6 +66,7 @@ class _LogsScreenState extends State<LogsScreen> {
   void _resetFilters() {
     setState(() {
       selectedStatus = null;
+      selectedPurpose = null;
       startDate = null;
       endDate = null;
       searchQuery = '';
@@ -100,6 +103,14 @@ class _LogsScreenState extends State<LogsScreen> {
               onStatusChanged: (status) {
                 setState(() {
                   selectedStatus = status;
+                  currentPage = 0;
+                });
+                setModalState(() {});
+              },
+              selectedPurpose: selectedPurpose,
+              onPurposeChanged: (purpose) {
+                setState(() {
+                  selectedPurpose = purpose;
                   currentPage = 0;
                 });
                 setModalState(() {});
@@ -285,6 +296,8 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   Widget _buildLogRow(VisitorLog log) {
+    final statusLower = log.status.toLowerCase();
+    final isPositiveStatus = statusLower == 'active' || statusLower == 'checked-in';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -298,17 +311,17 @@ class _LogsScreenState extends State<LogsScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: log.status.toLowerCase() == 'active' 
-                    ? Colors.green.withOpacity(0.2)
-                    : Colors.red.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                log.status,
-                style: TextStyle(
-                  color: log.status.toLowerCase() == 'active' 
-                      ? Colors.green.shade800
-                      : Colors.red.shade800,
+                color: isPositiveStatus
+                  ? Colors.green.withOpacity(0.2)
+                  : Colors.red.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              log.status,
+              style: TextStyle(
+                color: isPositiveStatus
+                    ? Colors.green.shade800
+                    : Colors.red.shade800,
                 ),
               ),
             ),

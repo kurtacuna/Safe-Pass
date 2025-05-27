@@ -5,7 +5,7 @@ class visitor_logs(models.Model):
 
     visitor_details = models.ForeignKey(visitor_details_model.VisitorDetails,on_delete=models.PROTECT)
     check_in = models.TimeField()
-    check_out = models.TimeField()
+    check_out = models.TimeField(blank = True, null = True)
     visit_date = models.DateField()
     purpose = models.ForeignKey('VisitPurposes', on_delete=models.PROTECT)
     status = models.ForeignKey('visitor_status', on_delete=models.PROTECT)

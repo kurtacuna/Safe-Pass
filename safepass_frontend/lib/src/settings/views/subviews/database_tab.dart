@@ -240,11 +240,12 @@ class _DatabaseTabState extends State<DatabaseTab> {
                         DateTime? tempStartDate = startDate;
                         DateTime? tempEndDate = endDate;
                         String? tempSelectedStatus = selectedStatus;
-
+                        String? tempSelectedPurpose = selectedStatus;
                         return FilterPopupWidget(
                           startDate: tempStartDate,
                           endDate: tempEndDate,
                           selectedStatus: tempSelectedStatus,
+                          selectedPurpose: tempSelectedPurpose,
                           onStartDatePicked: (pickedDate) {
                             setDialogState(() {
                               tempStartDate = pickedDate;
@@ -260,13 +261,18 @@ class _DatabaseTabState extends State<DatabaseTab> {
                               tempSelectedStatus = status;
                             });
                           },
+                          onPurposeChanged: (purpose) {
+                          setDialogState(() {
+                            tempSelectedPurpose = purpose;
+                          });
+                        },
                           onConfirm: () {
-                            // Apply all changes only when user clicks Apply
+                            
                             setState(() {
                               startDate = tempStartDate;
                               endDate = tempEndDate;
                               selectedStatus = tempSelectedStatus;
-                              currentPage = 0; // optional reset pagination
+                              currentPage = 0; 
                             });
                             context.pop();
                           },
