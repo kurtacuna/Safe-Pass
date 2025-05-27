@@ -7,6 +7,10 @@ import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kconstants.dart';
 import 'package:safepass_frontend/src/logs/widgets/filter_popup_widget.dart';
 import 'package:safepass_frontend/src/logs/widgets/search_bar_widget.dart';
+import 'dart:convert';
+import 'dart:html' as html;
+import 'package:csv/csv.dart';
+
 
 class LogsScreen extends StatefulWidget {
   const LogsScreen({super.key});
@@ -251,17 +255,55 @@ class _LogsScreenState extends State<LogsScreen> {
             ),
           ],
         ),
-        ElevatedButton.icon(
-          onPressed: () {
-            // export logic
-          },
-          icon: const Icon(Icons.download),
-          label: const Text("Export CSV"),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.kDarkBlue,
-            foregroundColor: Colors.white,
-          ),
-        ),
+       ElevatedButton.icon(
+  onPressed: () {
+    final controller = context.read<VisitorLogsController>();
+    final logs = _getFilteredLogs(controller.visitorLogs);
+
+    if (logs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No logs available to export.")),
+      );
+      return;
+    }
+
+    // Convert logs to CSV format
+    final csvData = [
+      ['ID', 'Visitor Name', 'Purpose', 'Check-In Time', 'Check-Out Time', 'Visit Date', 'Status'],
+      ...logs.map((log) => [
+        log.id.toString(),
+        log.visitorName,
+        log.purpose,
+        log.checkInTime,
+        log.checkOutTime ?? '',
+        log.visitDate,
+        log.status,
+      ])
+    ];
+
+    final csv = const ListToCsvConverter().convert(csvData);
+    final bytes = utf8.encode(csv);
+    final blob = html.Blob([bytes]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute("download", "visitor_logs.csv")
+      ..click();
+
+    html.Url.revokeObjectUrl(url);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("CSV file downloaded.")),
+    );
+  },
+  icon: const Icon(Icons.download),
+  label: const Text("Export CSV"),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: AppColors.kDarkBlue,
+    foregroundColor: Colors.white,
+  ),
+),
+
       ],
     );
   }
