@@ -20,9 +20,9 @@ class AppStatCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 170,
-      height: 208,
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      width: 230,
+      height: 200,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.kWhite,
         borderRadius: AppConstants.kAppBorderRadius,
@@ -39,20 +39,20 @@ class AppStatCardWidget extends StatelessWidget {
           Text(
             count,
             style: AppTextStyles.bigStyle.copyWith(
-              fontSize: 48,
+              fontSize: 42,
               color: AppColors.kDarkGray,
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
                 totalIconPath,
-                width: 16,
-                height: 16,
+                width: 18,
+                height: 18,
                 color: AppColors.kDarkGray,
               ),
               const SizedBox(width: 6),
@@ -61,11 +61,12 @@ class AppStatCardWidget extends StatelessWidget {
                 style: AppTextStyles.defaultStyle.copyWith(
                   color: AppColors.kDarkGray,
                   fontWeight: FontWeight.w400,
+                  fontSize: 14,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Expanded(
             child: Align(
               alignment: Alignment.bottomCenter,
@@ -74,8 +75,8 @@ class AppStatCardWidget extends StatelessWidget {
                 children: [
                   Image.asset(
                     bottomIconPath,
-                    width: 20,
-                    height: 20,
+                    width: 22,
+                    height: 22,
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -83,6 +84,7 @@ class AppStatCardWidget extends StatelessWidget {
                     style: AppTextStyles.defaultStyle.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.kDark,
+                      fontSize: 15,
                     ),
                   ),
                 ],
