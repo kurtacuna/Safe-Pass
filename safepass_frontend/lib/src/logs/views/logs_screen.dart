@@ -160,7 +160,7 @@ class _LogsScreenState extends State<LogsScreen> {
         children: [
           _buildTableHeader(),
           const Divider(),
-          ...paginatedLogs.map((log) => VisitorLogRow(log: log)).toList(),
+          ...paginatedLogs.map((log) => VisitorLogRow(log: log)),
         ],
       ),
     );

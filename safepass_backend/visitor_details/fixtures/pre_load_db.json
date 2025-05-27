@@ -27,13 +27,64 @@
         "model": "visitor_details.visitordetails",
         "pk": 1,
         "fields": {
-            "first_name": "Test User",
-            "middle_name": "T",
-            "last_name": "Tester",
-            "contact_number": "1234",
+            "photo": "default_photo/no_photo.png",
+            "first_name": "Juan",
+            "middle_name": "Santos",
+            "last_name": "Dela Cruz",
+            "full_name": "Juan Santos Dela Cruz",
+            "contact_number": "09171234567",
             "id_type": 1,
-            "id_number": "NID-123",
-            "status": "Approved"
+            "id_number": "NID-001",
+            "status": "Approved",
+            "registration_date": "2025-05-26T04:20:33.182Z"
+        }
+    },
+    {
+        "model": "visitor_details.visitordetails",
+        "pk": 2,
+        "fields": {
+            "photo": "default_photo/no_photo.png",
+            "first_name": "Maria",
+            "middle_name": "Garcia",
+            "last_name": "Santos",
+            "full_name": "Maria Garcia Santos",
+            "contact_number": "09182345678",
+            "id_type": 1,
+            "id_number": "NID-002",
+            "status": "Approved",
+            "registration_date": "2025-05-26T09:15:00.000Z"
+        }
+    },
+    {
+        "model": "visitor_details.visitordetails",
+        "pk": 3,
+        "fields": {
+            "photo": "default_photo/no_photo.png",
+            "first_name": "Pedro",
+            "middle_name": "Reyes",
+            "last_name": "Mendoza",
+            "full_name": "Pedro Reyes Mendoza",
+            "contact_number": "09193456789",
+            "id_type": 1,
+            "id_number": "NID-003",
+            "status": "Approved",
+            "registration_date": "2025-05-25T10:30:00.000Z"
+        }
+    },
+    {
+        "model": "visitor_details.visitordetails",
+        "pk": 4,
+        "fields": {
+            "photo": "default_photo/no_photo.png",
+            "first_name": "Ana",
+            "middle_name": "Luna",
+            "last_name": "Ramos",
+            "full_name": "Ana Luna Ramos",
+            "contact_number": "09204567890",
+            "id_type": 1,
+            "id_number": "NID-004",
+            "status": "Approved",
+            "registration_date": "2025-05-25T11:45:00.000Z"
         }
     },
     {
@@ -47,17 +98,60 @@
         "model": "visitor_logs.visitor_status",
         "pk": 1,
         "fields": {
-            "status": "Checked-Out"
+            "status": "Checked-in"
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_status",
+        "pk": 2,
+        "fields": {
+            "status": "Checked-out"
         }
     },
     {
         "model": "visitor_logs.visitor_logs",
         "pk": 1,
         "fields": {
-            "visitor_details": 1,
-            "check_in": "14:00:00",
+            "visitor_details": 1,  
+            "check_in": "09:00:00",
             "check_out": "11:00:00",
-            "visit_date": "2025-06-15",
+            "visit_date": "2025-05-28",
+            "purpose": 1,
+            "status": 2
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 2,
+        "fields": {
+            "visitor_details": 2,  
+            "check_in": "10:00:00",
+            "check_out": "12:00:00",
+            "visit_date": "2025-05-28",
+            "purpose": 1,
+            "status": 2
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 3,
+        "fields": {
+            "visitor_details": 3,  
+            "check_in": "14:00:00",
+            "check_out": null,
+            "visit_date": "2025-05-28",
+            "purpose": 1,
+            "status": 1
+        }
+    },
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 4,
+        "fields": {
+            "visitor_details": 4,  
+            "check_in": "15:00:00",
+            "check_out": null,
+            "visit_date": "2025-05-28",
             "purpose": 1,
             "status": 1
         }

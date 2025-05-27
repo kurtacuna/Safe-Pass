@@ -33,6 +33,14 @@ class VisitorLogsTest(APITestCase):
             purpose = purpose,
             status = status,
         )
+        models.visitor_logs.objects.create(
+            visitor_details = visitor_details,
+            check_in=time(9, 0),     
+            check_out=time(11, 30),  
+            visit_date=date(2025, 5, 21),
+            purpose = purpose,
+            status = status,
+        )
         self.client = APIClient()
     def test_logs(self):
         url = reverse("visitor_logs")

@@ -7,6 +7,7 @@ import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kglobal_keys.dart';
 import 'package:safepass_frontend/common/const/kroutes.dart';
 import 'package:safepass_frontend/common/widgets/app_button_widget.dart';
+import 'package:safepass_frontend/common/widgets/app_circular_progress_indicator_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_text_button_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart';
@@ -130,27 +131,26 @@ class _LoginContainerWidgetState extends State<LoginContainerWidget> {
         
               SizedBox(height: 30),
         
-              AppButtonWidget(
-                onTap: () async {
-                  if (_loginKey.currentState!.validate()) {
-                    int result = await context.read<JwtNotifier>().login(
-                      context: context,
-                      email: _email.text,
-                      password: _password.text
-                    );
-        
-                    if (result == 200) {
-                      if (context.mounted){
-                        context.go(AppRoutes.kEntrypoint);
-                      }
-                    }
-                    
-                    // TODO: input red if unauthorized
-                  }
-                  
-                },
-                text: "Log In"
-              ),
+              context.watch<JwtNotifier>().getIsLoading
+                ? AppCircularProgressIndicatorWidget()
+                : AppButtonWidget(
+                    onTap: () async {
+                      if (_loginKey.currentState!.validate()) {
+                        int result = await context.read<JwtNotifier>().login(
+                          context: context,
+                          email: _email.text,
+                          password: _password.text
+                        );
+
+                        if (result == 200) {
+                          if (context.mounted){
+                            context.go(AppRoutes.kEntrypoint);
+                          }
+                        }
+                      } 
+                    },
+                    text: "Log In"
+                  ),
         
               SizedBox(height: 10),
               
