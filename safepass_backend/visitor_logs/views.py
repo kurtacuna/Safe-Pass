@@ -6,6 +6,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Count
 from visitor_details import models as visitor_details_models
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from . import models, serializers
 import pytz
 from django.conf import settings
@@ -14,7 +16,7 @@ class VisitorLogsView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         try:
-            visitor_logs = models.visitor_logs.objects.all()
+            visitor_logs = models.visitor_logs.objects.all().order_by('-log_datetime')
             serializer = serializers.VisitorLogsSerializers(visitor_logs, many = True)
             return Response(serializer.data, status = status.HTTP_200_OK)
         except Exception as e:

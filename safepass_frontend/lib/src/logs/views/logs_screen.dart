@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:safepass_frontend/src/dashboard/models/visitor_log_model.dart';
-import 'package:safepass_frontend/common/utils/widgets/visitor_logs.dart';
+import 'package:provider/provider.dart';
+import '../controllers/visitorlogs_controller.dart';
+import '../models/visitor_logs_model.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kconstants.dart';
 import 'package:safepass_frontend/src/logs/widgets/filter_popup_widget.dart';
 import 'package:safepass_frontend/src/logs/widgets/search_bar_widget.dart';
-import 'package:safepass_frontend/src/logs/widgets/visitor_log_row.dart';
+import 'dart:convert';
+import 'dart:html' as html;
+import 'package:csv/csv.dart';
+
 
 class LogsScreen extends StatefulWidget {
   const LogsScreen({super.key});
@@ -18,31 +22,59 @@ class LogsScreen extends StatefulWidget {
 class _LogsScreenState extends State<LogsScreen> {
   static const int logsPerPage = 10;
   int currentPage = 0;
+  bool isFilterVisible = false;
 
   String searchQuery = '';
+  String tempSearchQuery = '';
   String? selectedStatus;
+  String? selectedPurpose;
   DateTime? startDate;
   DateTime? endDate;
+  
 
-  List<VisitorLog> get filteredLogs {
-    return visitorLogList.where((log) {
-      final matchesSearch = log.name.toLowerCase().contains(searchQuery.toLowerCase());
-      final matchesStatus = selectedStatus == null || log.status == selectedStatus;
-      return matchesSearch && matchesStatus;
-    }).toList();
+
+  @override
+  void initState() {
+    super.initState();
+    tempSearchQuery = searchQuery;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<VisitorLogsController>().getVisitorLogs(context);
+    });
   }
 
-  List<VisitorLog> get paginatedLogs {
+  List<VisitorLog> _getFilteredLogs(List<VisitorLog> logs) {
+  return logs.where((log) {
+    final matchesSearch = log.visitorName.toLowerCase().contains(searchQuery.toLowerCase());
+
+    final matchesStatus = selectedStatus == null ||
+        log.status.toLowerCase() == selectedStatus!.toLowerCase();
+    final matchesPurpose = selectedPurpose == null || 
+    log.purpose.toLowerCase() == selectedPurpose!.toLowerCase();
+    final visitDate = DateTime.tryParse(log.visitDate);
+    final matchesStart = startDate == null ||
+        (visitDate != null && visitDate.isAfter(startDate!.subtract(const Duration(days: 1))));
+    final matchesEnd = endDate == null ||
+        (visitDate != null && visitDate.isBefore(endDate!.add(const Duration(days: 1))));
+
+    return matchesSearch && matchesStatus && matchesStart && matchesEnd && matchesPurpose;
+  }).toList();
+}
+
+
+  List<VisitorLog> _getPaginatedLogs(List<VisitorLog> filteredLogs) {
     final start = currentPage * logsPerPage;
     final end = (start + logsPerPage).clamp(0, filteredLogs.length);
     return filteredLogs.sublist(start, end);
   }
 
-  int get totalPages => (filteredLogs.length / logsPerPage).ceil();
+  int _getTotalPages(List<VisitorLog> filteredLogs) {
+    return (filteredLogs.length / logsPerPage).ceil();
+  }
 
   void _resetFilters() {
     setState(() {
       selectedStatus = null;
+      selectedPurpose = null;
       startDate = null;
       endDate = null;
       searchQuery = '';
@@ -54,15 +86,49 @@ class _LogsScreenState extends State<LogsScreen> {
   showDialog(
     context: context,
     builder: (context) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        child: FilterPopupWidget(
-          startDate: startDate,
-          endDate: endDate,
-          onStartDatePicked: (picked) => setState(() => startDate = picked),
-          onEndDatePicked: (picked) => setState(() => endDate = picked),
-          onConfirm: () => Navigator.of(context).pop(),
-        ),
+      return StatefulBuilder(
+        builder: (BuildContext context, void Function(void Function()) setModalState) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            child: FilterPopupWidget(
+              startDate: startDate,
+              endDate: endDate,
+              selectedStatus: selectedStatus,
+              onStartDatePicked: (picked) {
+                setState(() {
+                  startDate = picked;
+                  currentPage = 0;
+                });
+                setModalState(() {});
+              },
+              onEndDatePicked: (picked) {
+                setState(() {
+                  endDate = picked;
+                  currentPage = 0;
+                });
+                setModalState(() {});
+              },
+              onStatusChanged: (status) {
+                setState(() {
+                  selectedStatus = status;
+                  currentPage = 0;
+                });
+                setModalState(() {});
+              },
+              selectedPurpose: selectedPurpose,
+              onPurposeChanged: (purpose) {
+                setState(() {
+                  selectedPurpose = purpose;
+                  currentPage = 0;
+                });
+                setModalState(() {});
+              },
+              onConfirm: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          );
+        },
       );
     },
   );
@@ -74,37 +140,98 @@ class _LogsScreenState extends State<LogsScreen> {
     return Scaffold(
       backgroundColor: AppColors.kWhite,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1200),
+        child: Consumer<VisitorLogsController>(
+          builder: (context, controller, _) {
+            if (controller.isLoading) {
+              return const Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildHeader(),
-                    const SizedBox(height: 32),
-                    SearchBarWidget(
-                      searchQuery: searchQuery,
-                      onSearchChanged: (value) => setState(() {
-                        searchQuery = value;
-                        currentPage = 0;
-                      }),
-                      onSearchPressed: () => setState(() => currentPage = 0),
-                      onToggleFilter: _showFilterDialog,
-                      isFilterVisible: false,
-                      filterPopup: null,
-                    ),
-                    const SizedBox(height: 24),
-                    _buildTable(),
-                    const SizedBox(height: 24),
-                    _buildPagination(),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Loading visitor logs...'),
                   ],
                 ),
+              );
+            }
+
+            if (controller.error != null) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(controller.error!),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => controller.getVisitorLogs(context),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (controller.visitorLogs.isEmpty) {
+              return const Center(
+                child: Text('No visitor logs found'),
+              );
+            }
+
+            final filteredLogs = _getFilteredLogs(controller.visitorLogs);
+            final paginatedLogs = _getPaginatedLogs(filteredLogs);
+            final totalPages = _getTotalPages(filteredLogs);
+
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildHeader(),
+                        const SizedBox(height: 32),
+                        SearchBarWidget(
+  searchQuery: tempSearchQuery,
+  onSearchChanged: (value) => setState(() {
+    tempSearchQuery = value;
+  }),
+  onSearchPressed: () => setState(() {
+    searchQuery = tempSearchQuery;
+    currentPage = 0;
+  }),
+  onToggleFilter: _showFilterDialog,
+  isFilterVisible: false,
+  filterPopup: null,
+),
+
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _resetFilters,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text("Reset Filters"),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.kDarkBlue,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
+                        _buildTable(paginatedLogs),
+                        const SizedBox(height: 24),
+                        _buildPagination(totalPages),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
@@ -128,22 +255,60 @@ class _LogsScreenState extends State<LogsScreen> {
             ),
           ],
         ),
-        ElevatedButton.icon(
-          onPressed: () {
-            // export logic
-          },
-          icon: const Icon(Icons.download),
-          label: const Text("Export CSV"),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.kDarkBlue,
-            foregroundColor: Colors.white,
-          ),
-        ),
+       ElevatedButton.icon(
+  onPressed: () {
+    final controller = context.read<VisitorLogsController>();
+    final logs = _getFilteredLogs(controller.visitorLogs);
+
+    if (logs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No logs available to export.")),
+      );
+      return;
+    }
+
+    // Convert logs to CSV format
+    final csvData = [
+      ['ID', 'Visitor Name', 'Purpose', 'Check-In Time', 'Check-Out Time', 'Visit Date', 'Status'],
+      ...logs.map((log) => [
+        log.id.toString(),
+        log.visitorName,
+        log.purpose,
+        log.checkInTime,
+        log.checkOutTime ?? '',
+        log.visitDate,
+        log.status,
+      ])
+    ];
+
+    final csv = const ListToCsvConverter().convert(csvData);
+    final bytes = utf8.encode(csv);
+    final blob = html.Blob([bytes]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute("download", "visitor_logs.csv")
+      ..click();
+
+    html.Url.revokeObjectUrl(url);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("CSV file downloaded.")),
+    );
+  },
+  icon: const Icon(Icons.download),
+  label: const Text("Export CSV"),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: AppColors.kDarkBlue,
+    foregroundColor: Colors.white,
+  ),
+),
+
       ],
     );
   }
 
-  Widget _buildTable() {
+  Widget _buildTable(List<VisitorLog> logs) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -160,7 +325,7 @@ class _LogsScreenState extends State<LogsScreen> {
         children: [
           _buildTableHeader(),
           const Divider(),
-          ...paginatedLogs.map((log) => VisitorLogRow(log: log)),
+          ...logs.map((log) => _buildLogRow(log)).toList(),
         ],
       ),
     );
@@ -172,15 +337,50 @@ class _LogsScreenState extends State<LogsScreen> {
         _HeaderText('Name'),
         _HeaderText('Check-in Time'),
         _HeaderText('Check-out Time'),
-        _HeaderText('Date'),
+        _HeaderText('Visit Date'), 
         _HeaderText('Visit Purpose'),
         _HeaderText('Status'),
-        _HeaderText('Actions'),
       ],
     );
   }
 
-  Widget _buildPagination() {
+  Widget _buildLogRow(VisitorLog log) {
+    final statusLower = log.status.toLowerCase();
+    final isPositiveStatus = statusLower == 'active' || statusLower == 'checked-in';
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(child: Text(log.visitorName)),
+          Expanded(child: Text(log.checkInTime)),
+          Expanded(child: Text(log.checkOutTime ?? '-')),
+          Expanded(child: Text(log.visitDate)),
+          Expanded(child: Text(log.purpose)),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: isPositiveStatus
+                  ? Colors.green.withOpacity(0.2)
+                  : Colors.red.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              log.status,
+              style: TextStyle(
+                color: isPositiveStatus
+                    ? Colors.green.shade800
+                    : Colors.red.shade800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPagination(int totalPages) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
