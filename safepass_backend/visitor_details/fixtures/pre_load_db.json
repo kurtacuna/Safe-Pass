@@ -30,6 +30,7 @@
             "first_name": "Test User",
             "middle_name": "T",
             "last_name": "Tester",
+            "full_name": "Test T Tester",
             "contact_number": "1234",
             "id_type": 1,
             "id_number": "NID-123",
@@ -61,5 +62,20 @@
             "purpose": 1,
             "status": 1
         }
+        
+    },
+
+    {
+        "model": "visitor_logs.visitor_logs",
+        "pk": 2,
+        "fields": {
+            "visitor_details": 1,
+            "check_in": "14:00:00",
+            "check_out": "11:00:00",
+            "visit_date": "2025-06-15",
+            "purpose": 1,
+            "status": 1
+        }
+        
     }
 ]
