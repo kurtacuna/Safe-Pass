@@ -21,14 +21,18 @@ class _LogsScreenState extends State<LogsScreen> {
   bool isFilterVisible = false;
 
   String searchQuery = '';
+  String tempSearchQuery = '';
   String? selectedStatus;
   String? selectedPurpose;
   DateTime? startDate;
   DateTime? endDate;
+  
+
 
   @override
   void initState() {
     super.initState();
+    tempSearchQuery = searchQuery;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VisitorLogsController>().getVisitorLogs(context);
     });
@@ -187,16 +191,19 @@ class _LogsScreenState extends State<LogsScreen> {
                         _buildHeader(),
                         const SizedBox(height: 32),
                         SearchBarWidget(
-                          searchQuery: searchQuery,
-                          onSearchChanged: (value) => setState(() {
-                            searchQuery = value;
-                            currentPage = 0;
-                          }),
-                          onSearchPressed: () => setState(() => currentPage = 0),
-                          onToggleFilter: _showFilterDialog,
-                          isFilterVisible: false,
-                          filterPopup: null,
-                        ),
+  searchQuery: tempSearchQuery,
+  onSearchChanged: (value) => setState(() {
+    tempSearchQuery = value;
+  }),
+  onSearchPressed: () => setState(() {
+    searchQuery = tempSearchQuery;
+    currentPage = 0;
+  }),
+  onToggleFilter: _showFilterDialog,
+  isFilterVisible: false,
+  filterPopup: null,
+),
+
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
