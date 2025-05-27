@@ -12,11 +12,12 @@ class AppButtonWidget extends StatelessWidget {
     this.width,
     this.height,
     this.color,
+    this.isLoading = false,
     super.key
   });
 
   // The function to execute on tap
-  final void Function() onTap;
+  final void Function()? onTap;
   
   // A widget in place for the text at the center of the button
   // If provided, this will be displayed instead of text
@@ -38,27 +39,39 @@ class AppButtonWidget extends StatelessWidget {
   // Default value is kDarkBlue
   final Color? color;
 
+  // Whether the button is in loading state
+  final bool isLoading;
+
   @override
   Widget build(BuildContext context) {
     return Material(
       child: InkWell(
-        onTap: onTap,
+        onTap: isLoading ? null : onTap,
         borderRadius: AppConstants.kAppBorderRadius,
         child: Ink(
           width: width ?? 340,
           height: height ?? 48,
           decoration: BoxDecoration(
-            color: color ?? AppColors.kDarkBlue,
+            color: (isLoading || onTap == null) ? AppColors.kGray : (color ?? AppColors.kDarkBlue),
             borderRadius: AppConstants.kAppBorderRadius
           ),
           child: Center(
-            child: child ?? Text(
-              text ?? "Add a text",
-              style: AppTextStyles.bigStyle.copyWith(
-                fontWeight: FontWeight.w900,
-                color: AppColors.kWhite,
-              )
-            ),
+            child: isLoading
+              ? SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.kWhite),
+                  ),
+                )
+              : (child ?? Text(
+                  text ?? "Add a text",
+                  style: AppTextStyles.bigStyle.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.kWhite,
+                  )
+                )),
           )
         )
       )

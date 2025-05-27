@@ -39,6 +39,9 @@ class _LogsScreenState extends State<LogsScreen> {
     tempSearchQuery = searchQuery;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VisitorLogsController>().getVisitorLogs(context);
+      if (context.read<VisitorLogsController>().visitorLogs == []) {
+        context.read<VisitorLogsController>().getVisitorLogs(context);
+      }
     });
   }
 

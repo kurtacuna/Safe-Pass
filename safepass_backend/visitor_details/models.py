@@ -40,7 +40,7 @@ class VisitorDetails(models.Model):
 
 
   def __str__(self):
-    return str(self.id)
+    return f"{self.full_name} ({self.id_type} - {self.id_number})"
 
   class Meta:
     verbose_name = "Visitor Detail"

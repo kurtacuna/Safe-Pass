@@ -78,6 +78,7 @@ class VisitorLogsController with ChangeNotifier {
           }
         }
       }  else if (response.statusCode == 401) {
+        developer.log('Refetching logs');
         if (context.mounted) {
           await refetch(context, fetch: () => getVisitorLogs(context));
         }
