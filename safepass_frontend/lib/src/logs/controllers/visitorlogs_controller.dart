@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import '../models/visitor_logs_model.dart';
-import '../../utils/storage.dart';
-import '../../utils/storage_keys.dart';
-import '../../utils/refetch.dart';
+
 import '../../widgets/snackbar_widget.dart';
+
 import 'dart:developer' as developer;
 import 'package:safepass_frontend/common/const/kurls.dart';
 import 'dart:convert';
@@ -21,7 +21,7 @@ class VisitorLogsController with ChangeNotifier {
   String? get error => _error;
 
   Future<void> getVisitorLogs(BuildContext context) async {
-    if (_isLoading) return; // Prevent multiple simultaneous calls
+    if (_isLoading) return;
 
     developer.log('Starting to fetch visitor logs');
     _statusCode = -1;
@@ -30,13 +30,6 @@ class VisitorLogsController with ChangeNotifier {
     notifyListeners();
 
     try {
-      String? accessToken = Storage().getString(StorageKeys.accessTokenKey);
-      developer.log('Access token: ${accessToken ?? 'No token found'}');
-
-      if (accessToken == null) {
-        throw Exception('No access token found. Please log in again.');
-      }
-
       final url = ApiUrls.visitorLogsUrl;
       developer.log('Fetching from URL: $url');
 
@@ -44,12 +37,11 @@ class VisitorLogsController with ChangeNotifier {
         throw Exception('Invalid base URL. Check your .env.development file.');
       }
 
-      // Add timeout to the request
       final response = await http.get(
         Uri.parse(url),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer $accessToken",
+          // Skip Authorization header for now
         },
       ).timeout(
         const Duration(seconds: 10),
@@ -63,7 +55,6 @@ class VisitorLogsController with ChangeNotifier {
 
       if (response.statusCode == 200) {
         try {
-          // For debugging, let's try to parse the response manually
           final jsonData = json.decode(response.body);
           developer.log('Parsed JSON: $jsonData');
 
@@ -78,23 +69,10 @@ class VisitorLogsController with ChangeNotifier {
             ScaffoldMessenger.of(context).showSnackBar(
               appErrorSnackBarWidget(
                 context: context,
-                text: "Error parsing data: $e"
-              )
+                text: "Error parsing data: $e",
+              ),
             );
           }
-        }
-      } else if (response.statusCode == 401) {
-        _error = 'Session expired. Please log in again.';
-        developer.log('Unauthorized access - token expired or invalid');
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            appErrorSnackBarWidget(
-              context: context,
-              text: "Session expired. Please log in again."
-            )
-          );
-          // Here you might want to navigate to login screen
-          // Navigator.of(context).pushReplacementNamed('/login');
         }
       } else {
         _error = 'Server returned ${response.statusCode}';
@@ -103,8 +81,8 @@ class VisitorLogsController with ChangeNotifier {
           ScaffoldMessenger.of(context).showSnackBar(
             appErrorSnackBarWidget(
               context: context,
-              text: "Failed to fetch visitor logs (${response.statusCode})"
-            )
+              text: "Failed to fetch visitor logs (${response.statusCode})",
+            ),
           );
         }
       }
@@ -115,8 +93,8 @@ class VisitorLogsController with ChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(
           appErrorSnackBarWidget(
             context: context,
-            text: "Error: $e"
-          )
+            text: "Error: $e",
+          ),
         );
       }
     } finally {
@@ -130,7 +108,7 @@ class VisitorLogsController with ChangeNotifier {
 class TimeoutException implements Exception {
   final String message;
   TimeoutException(this.message);
-  
+
   @override
   String toString() => message;
 }

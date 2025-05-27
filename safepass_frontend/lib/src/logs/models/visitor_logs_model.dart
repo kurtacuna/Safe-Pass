@@ -1,5 +1,11 @@
 import 'dart:convert';
 
+List<VisitorLog> visitorLogsFromJson(String str) =>
+    List<VisitorLog>.from(json.decode(str).map((x) => VisitorLog.fromJson(x)));
+
+String visitorLogsToJson(List<VisitorLog> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
 class VisitorLog {
   final int id;
   final String visitorName;
@@ -19,25 +25,19 @@ class VisitorLog {
 
   factory VisitorLog.fromJson(Map<String, dynamic> json) => VisitorLog(
         id: json["id"],
-        visitorName: json["visitor_name"],
-        purpose: json["purpose"],
-        checkInTime: json["check_in_time"],
-        checkOutTime: json["check_out_time"],
-        status: json["status"],
+        visitorName: json["visitor_details"]?["full_name"] ?? "Unknown",
+        purpose: json["purpose"]?["purpose"] ?? "No Purpose",
+        checkInTime: json["check_in"] ?? "",
+        checkOutTime: json["check_out"], // nullable
+        status: json["status"]?["status"] ?? "Unknown",
       );
 
   Map<String, dynamic> toJson() => {
         "id": id,
-        "visitor_name": visitorName,
-        "purpose": purpose,
-        "check_in_time": checkInTime,
-        "check_out_time": checkOutTime,
-        "status": status,
+        "visitor_details": {"full_name": visitorName},
+        "purpose": {"purpose": purpose},
+        "check_in": checkInTime,
+        "check_out": checkOutTime,
+        "status": {"status": status},
       };
 }
-
-List<VisitorLog> visitorLogsFromJson(String str) =>
-    List<VisitorLog>.from(json.decode(str).map((x) => VisitorLog.fromJson(x)));
-
-String visitorLogsToJson(List<VisitorLog> data) =>
-    json.encode(List<dynamic>.from(data.map((x) => x.toJson()))); 
