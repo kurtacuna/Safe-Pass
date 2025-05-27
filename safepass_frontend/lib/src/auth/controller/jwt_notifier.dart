@@ -61,7 +61,7 @@ class JwtNotifier with ChangeNotifier {
       }
 
     } catch (e) {
-      print("JwtNotifier");
+      print("JwtNotifier: Error during login:"); // Debug print
       print(e);
     } finally {
       toggleLoading();

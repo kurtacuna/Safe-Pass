@@ -8,5 +8,5 @@ class ApiUrls {
 
   static String jwtLogin = "$_appBaseUrl/auth/login/";
   static String jwtRefreshUrl = "$_appBaseUrl/auth/refresh/";
-  
+  static String statsUrl = "$_appBaseUrl/api/visitor_logs/stats/";
 }

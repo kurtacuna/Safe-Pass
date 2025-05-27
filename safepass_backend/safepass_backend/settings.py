@@ -149,7 +149,7 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'custom_user.CustomUser'
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=5),
     'ACCESS_TOKEN': 'access_token',
     "REFRESH_TOKEN_LIFETIME": timedelta(hours=24),
     'REFRESH_TOKEN': 'refresh_token',
@@ -172,3 +172,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5000", # For dev
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+USE_TZ = True
+TIME_ZONE = 'Asia/Manila'
