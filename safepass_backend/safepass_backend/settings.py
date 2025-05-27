@@ -45,13 +45,15 @@ INSTALLED_APPS = [
     'visitor_details',
     'rest_framework',
     'visitor_logs',
-    'corsheaders'
+    'corsheaders',
+
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -109,8 +111,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'custom_user.CustomUser'
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -137,59 +137,38 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'custom_user.authenticate.CustomAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+AUTH_USER_MODEL = 'custom_user.CustomUser'
 
 SIMPLE_JWT = {
-    # TODO: check if final
-    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "AUTH_TOKEN_LIFETIME": timedelta(seconds=5),
-    # "REFRESH_TOKEN_LIFETIME": timedelta(minutes=15),
-    "REFRESH_TOKEN_LIFETIME": timedelta(hours=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    'ACCESS_TOKEN': 'access_token',
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=24),
+    'REFRESH_TOKEN': 'refresh_token',
     "AUTH_HEADER_TYPES": ('Bearer',),
-    
-    'AUTH_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
-    'AUTH_COOKIE_DOMAIN': None,     # A string like "example.com", or None for standard domain cookie.
-    'AUTH_COOKIE_SECURE': False,    # Whether the auth cookies should be secure (https:// only).
-    'AUTH_COOKIE_HTTP_ONLY' : True, # Http only cookie flag.It's not fetch by javascript.
-    'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
-    'AUTH_COOKIE_SAMESITE': 'None',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
+
+    'AUTH_COOKIE_SECURE': True,
+    'AUTH_COOKIE_HTTP_ONLY' : True,
+    'AUTH_COOKIE_SAMESITE': 'None',
 }
 
-# # settings.py
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://localhost:5000",
+    "http://localhost:5000"
+]
 
-# DJOSER = {
-#     'LOGIN_FIELD': 'email', # This is the crucial setting for Djoser
-#     # Other Djoser settings you might have:
-#     # 'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-#     # 'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}', # You might want to remove this if you're not using usernames
-#     # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
-#     # 'SEND_ACTIVATION_EMAIL': True,
-#     # 'SERIALIZERS': {
-#     #     'user_create': 'accounts.serializers.CustomUserCreateSerializer', # If you have a custom user creation serializer
-#     #     'current_user': 'accounts.serializers.CustomUserSerializer',
-#     # },
-# }
-
-# If you're using Djoser with Simple JWT, ensure this is also configured
-REST_FRAMEWORK = {
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
-    # ),
-    # 'DEFAULT_PERMISSION_CLASSES': (
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-      'custom_user.authenticate.CustomAuthentication',
-  ),
-}
-
-
-# If you need to send emails for activation/password reset, configure your email backend
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # For development, prints emails to console
-# EMAIL_HOST = 'smtp.sendgrid.net'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your_sendgrid_username'
-# EMAIL_HOST_PASSWORD = 'your_sendgrid_password'
-
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://localhost:5000",
+    "http://localhost:5000", # For dev
+]
 CORS_ALLOW_CREDENTIALS = True

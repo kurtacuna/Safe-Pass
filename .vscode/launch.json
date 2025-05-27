@@ -8,21 +8,8 @@
             "name": "safepass_frontend",
             "cwd": "safepass_frontend",
             "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "safepass_frontend (profile mode)",
-            "cwd": "safepass_frontend",
-            "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "safepass_frontend (release mode)",
-            "cwd": "safepass_frontend",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
+            "args": ["-d", "chrome", "--web-port", "5000"],
         }
     ]
 }
