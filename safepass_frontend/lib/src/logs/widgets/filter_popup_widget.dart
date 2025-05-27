@@ -8,6 +8,8 @@ class FilterPopupWidget extends StatelessWidget {
   final ValueChanged<DateTime?> onStartDatePicked;
   final ValueChanged<DateTime?> onEndDatePicked;
   final VoidCallback onConfirm;
+  final String? selectedStatus;
+  final ValueChanged<String?> onStatusChanged;
 
   const FilterPopupWidget({
     super.key,
@@ -16,6 +18,8 @@ class FilterPopupWidget extends StatelessWidget {
     required this.onStartDatePicked,
     required this.onEndDatePicked,
     required this.onConfirm,
+    required this.selectedStatus,
+    required this.onStatusChanged,
   });
 
   @override
@@ -45,6 +49,30 @@ class FilterPopupWidget extends StatelessWidget {
           const SizedBox(height: 12),
           _buildDateField(context, "End Date", endDate, onEndDatePicked),
           const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          const Text(
+            "Filter by Status",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          DropdownButton<String>(
+            value: selectedStatus,
+            dropdownColor: AppColors.kDarkBlue,
+            items: const [
+              DropdownMenuItem(
+                value: "Checked-In",
+                child: Text("Checked-In", style: TextStyle(color: Colors.white)),
+              ),
+              DropdownMenuItem(
+                value: "Checked-Out",
+                child: Text("Checked-Out", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+            onChanged: onStatusChanged,
+            hint: const Text("Select status", style: TextStyle(color: Colors.white)),
+            iconEnabledColor: Colors.white,
+            style: const TextStyle(color: Colors.white),
+          ),
           Align(
             alignment: Alignment.centerRight,
             child: ElevatedButton(

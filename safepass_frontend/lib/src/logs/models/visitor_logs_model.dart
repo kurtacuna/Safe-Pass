@@ -12,6 +12,7 @@ class VisitorLog {
   final String purpose;
   final String checkInTime;
   final String? checkOutTime;
+  final String visitDate;
   final String status;
 
   VisitorLog({
@@ -20,6 +21,7 @@ class VisitorLog {
     required this.purpose,
     required this.checkInTime,
     this.checkOutTime,
+    required this.visitDate,
     required this.status,
   });
 
@@ -29,6 +31,7 @@ class VisitorLog {
         purpose: json["purpose"]?["purpose"] ?? "No Purpose",
         checkInTime: json["check_in"] ?? "",
         checkOutTime: json["check_out"], // nullable
+        visitDate: json["visit_date"] ?? "",
         status: json["status"]?["status"] ?? "Unknown",
       );
 
@@ -38,6 +41,7 @@ class VisitorLog {
         "purpose": {"purpose": purpose},
         "check_in": checkInTime,
         "check_out": checkOutTime,
+        "visit_date": visitDate,
         "status": {"status": status},
       };
 }
