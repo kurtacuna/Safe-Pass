@@ -20,9 +20,7 @@ class CustomAuthentication(JWTAuthentication):
       # should validate the refresh_token and send back another access_token
       if refresh_token is not None:
         try: 
-          print("refresh token is not none")
           refresh = RefreshToken(refresh_token)
-          print("refresh_token is valid")
           access_token = str(refresh.access_token)
           validated_token = self.get_validated_token(access_token)
           enforce_csrf(request)

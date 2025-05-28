@@ -5,4 +5,5 @@ class AppGlobalKeys {
   static final GlobalKey<ScaffoldState> drawer = GlobalKey<ScaffoldState>();
   
   static final GlobalKey<FormState> login = GlobalKey<FormState>();
+  static final GlobalKey<FormState> editVisitorDetails = GlobalKey<FormState>();
 }

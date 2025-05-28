@@ -299,7 +299,7 @@ class _DatabaseTabState extends State<DatabaseTab> {
                             ApiUrls.getImageUrl(row.photo),
                             width: 70,
                             height: 70,
-                          ) // TODO: change to Image.network
+                          )
                         ), 
                         TableCellWidget(
                           text: row.fullName
@@ -320,42 +320,21 @@ class _DatabaseTabState extends State<DatabaseTab> {
                           text: DateFormat('MMM d, y H:m').format(row.registrationDate)
                         ),
                         TableCellWidget(
-                          child: Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: [
-                              AppButtonWidget(
-                                onTap: () {
-                                  context.read<SettingsTabNotifier>().setVisitor = index;
-                                  context.read<SidebarNotifier>().setIndex = 3;
-                                },
+                          child: AppButtonWidget(
+                            onTap: () {
+                              context.read<SettingsTabNotifier>().setVisitor = index;
+                              context.read<SidebarNotifier>().setIndex = 3;
+                            },
+                            height: 30,
+                            child: Padding(
+                              padding: EdgeInsets.all(0),
+                              child: Image.asset(
+                                "assets/images/edit_icon.png",
                                 width: 20,
                                 height: 20,
-                                color: Colors.transparent,
-                                child: Padding(
-                                  padding: EdgeInsets.all(0),
-                                  child: Image.asset(
-                                    "assets/images/edit_icon.png",
-                                    width: 20,
-                                    height: 20,
-                                  )
-                                )
-                              ),
-                              AppButtonWidget(
-                                onTap: () {},
-                                width: 20,
-                                height: 20,
-                                color: Colors.transparent,
-                                child: Padding(
-                                  padding: EdgeInsets.all(0),
-                                  child: Image.asset(
-                                    "assets/images/archive_icon.png",
-                                    width: 20,
-                                    height: 20,
-                                  )
-                                )
-                              ),
-                            ]
+                                color: AppColors.kWhite,
+                              )
+                            )
                           )
                         )
                       ]
