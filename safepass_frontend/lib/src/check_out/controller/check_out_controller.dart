@@ -28,8 +28,6 @@ class CheckOutController with ChangeNotifier {
       print('Searching for visitors with query: $query');
       var client = http.BrowserClient();
       client.withCredentials = true;
-      
-      // Using the same search endpoint as check-in
       var url = Uri.parse('${ApiUrls.visitorSearchUrl}?query=$query');
       print('Search URL: $url');
       
@@ -71,10 +69,23 @@ class CheckOutController with ChangeNotifier {
     notifyListeners();
 
     try {
+      print('Checking out visitor with ID: $visitorId');
       var client = http.BrowserClient();
       client.withCredentials = true;
-      var url = Uri.parse('${ApiUrls.visitorCheckInUrl}$visitorId/');
-      var response = await client.post(url);
+      
+      // Using the visitor logs check-out endpoint
+      var url = Uri.parse(ApiUrls.visitorCheckOutUrl);
+      print('Check-out URL: $url');
+      
+      var response = await client.post(
+        url,
+        body: {
+          'visitor_id': visitorId,
+        },
+      );
+      
+      print('Check-out response status: ${response.statusCode}');
+      print('Check-out response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (context.mounted) {
@@ -104,6 +115,14 @@ class CheckOutController with ChangeNotifier {
     } catch (e) {
       print("CheckOutController checkOutVisitor error:");
       print(e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error checking out visitor: $e'),
+            backgroundColor: AppColors.kDarkRed,
+          ),
+        );
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

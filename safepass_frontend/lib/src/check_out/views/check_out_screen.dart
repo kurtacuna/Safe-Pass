@@ -327,13 +327,13 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                   // Search Bar
                   SizedBox(
                     width: 1000,
-                    child: AppTextFormFieldWidget(
+                          child: AppTextFormFieldWidget(
                       key: _searchFieldKey,
-                      controller: _searchController,
+                            controller: _searchController,
                       focusNode: _searchFocusNode,
-                      hintText: 'Search Visitor ID',
-                      prefixIcon: const Icon(Icons.search),
-                    ),
+                            hintText: 'Search Visitor ID',
+                            prefixIcon: const Icon(Icons.search),
+                          ),
                   ),
                   const SizedBox(height: 70),
                   // Two Column Layout
@@ -355,7 +355,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text( 
+                                      Text(
                                         'Visitor\'s Details',
                                         style: AppTextStyles.biggestStyle.copyWith(
                                           color: AppColors.kDark,
