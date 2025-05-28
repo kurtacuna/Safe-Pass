@@ -101,4 +101,14 @@ class VisitorRegistration(APIView):
       )
 
 
-   
+class VisitorsView(APIView):
+  permission_classes = [IsAuthenticated]
+
+  def get(self, request):
+    try:
+      visitors = models.VisitorDetails.objects.all()
+      serializer = serializers.VisitorDetailsSerializer(visitors, many=True)
+      return Response({"visitors": serializer.data}, status=status.HTTP_200_OK)
+    except Exception as e:
+      print(f"VisitorsView: {str(e)}")
+      return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

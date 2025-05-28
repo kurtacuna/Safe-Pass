@@ -15,4 +15,5 @@ class ApiUrls {
   static String registerFaceUrl = '$_appBaseUrl/api/visitor_details/register-face/';
   static String verifyFaceUrl = '$_appBaseUrl/api/visitor_details/verify-face/';
   static String visitPurposesUrl = '$_appBaseUrl/api/visitor_logs/visit-purposes';
+  static String visitorsUrl = '$_appBaseUrl/api/visitor_details/visitors/';
 }
