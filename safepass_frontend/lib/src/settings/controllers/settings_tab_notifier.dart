@@ -21,6 +21,10 @@ class SettingsTabNotifier with ChangeNotifier {
 
   Visitor? _visitor;
   Visitor? get getVisitor => _visitor;
+  set setVisitor(int id) {
+    _visitor = _visitorDetails[id];
+    notifyListeners();
+  }
 
   Future<void> fetchVisitors(BuildContext context) async {
     _isLoading = true;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/src/settings/models/visitor_details_model.dart';
 import '../widgets/visitor_header_widget.dart';
 import '../widgets/visitor_info_widget.dart';
@@ -46,17 +47,15 @@ class VisitorDetailsScreen extends StatelessWidget {
                               color: Colors.grey[200],
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.person,
-                                size: 64,
-                                color: Colors.grey,
-                              ),
-                            ),
+                            child: Image.network(
+                              ApiUrls.getImageUrl(visitorDetails!.photo),
+                              width: double.infinity,
+                              height: double.infinity
+                            )
                           ),
                           const SizedBox(width: 24),
-                          const Expanded(
-                            child: VisitorInfoWidget(),
+                          Expanded(
+                            child: VisitorInfoWidget(visitor: visitorDetails),
                           ),
                         ],
                       ),

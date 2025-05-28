@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/browser_client.dart' as http;
+import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
+import 'package:safepass_frontend/common/const/kroutes.dart';
 import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/common_json_model.dart';
+import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
 
 
 Future<void> refetch(BuildContext context, {
@@ -11,8 +15,25 @@ Future<void> refetch(BuildContext context, {
   int status = await refreshAccessToken(context);
 
   if (status == -1) {
-    // TODO: Log out the user
-    print('session expired');
+    if (context.mounted) {
+      showDialog(context: context, builder:(context) {
+        return Center(
+          child: AppContainerWidget(
+            boxShadow: [],
+            width: 200, 
+            height: 100, 
+            child: Center(
+              child: Text(
+                "Session Expired. Please log in again.", 
+                style: AppTextStyles.biggerStyleBold,
+                textAlign: TextAlign.center,
+              )
+            )
+          )
+        );
+      },);
+      context.go(AppRoutes.kAuth);
+    }
   } else {
     await fetch();
   }

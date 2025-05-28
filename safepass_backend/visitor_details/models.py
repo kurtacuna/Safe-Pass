@@ -14,7 +14,7 @@ class VisitorDetails(models.Model):
 
   STATUS_CHOICES = [
     ('Approved', 'Approved'),
-    ('Pending', 'Pending'),
+    ('Archived', 'Archived'),
     ('Denied', 'Denied')
   ]
 
@@ -28,7 +28,7 @@ class VisitorDetails(models.Model):
   contact_number = models.CharField(max_length=11)
   id_type = models.ForeignKey('IdTypes', on_delete=models.PROTECT)
   id_number = models.CharField(max_length=255)
-  status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Pending')
+  status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Approved')
   registration_date = models.DateTimeField(default=timezone.now)
 
 
