@@ -23,7 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('custom_user.urls')),
     path('api/visitor_details/', include('visitor_details.urls')),
-    path('api/visitor_logs/', include('visitor_logs.urls'))
+    path('api/visitor_logs/', include('visitor_logs.urls')),
+    path('api/settings/', include('settings.urls'))
 ]
 
 # For fetching images
