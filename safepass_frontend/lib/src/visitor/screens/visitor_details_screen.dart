@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:safepass_frontend/src/settings/models/visitor_details_model.dart';
 import '../widgets/visitor_header_widget.dart';
 import '../widgets/visitor_info_widget.dart';
 import '../widgets/visitor_action_buttons.dart';
 
 class VisitorDetailsScreen extends StatelessWidget {
-  const VisitorDetailsScreen({super.key});
+  const VisitorDetailsScreen({
+    required this.visitorDetails,
+    super.key
+  });
+
+  final Visitor? visitorDetails;
 
   @override
   Widget build(BuildContext context) {

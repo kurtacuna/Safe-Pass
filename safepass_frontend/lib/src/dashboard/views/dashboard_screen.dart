@@ -208,55 +208,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 42),
 
                 const VisitorLogsWidget(),
-
-                // const SizedBox(height: 48),
-
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                //   child: Row(
-                //     children: const [
-                //       Expanded(
-                //         child: AppStatCardWidget(
-                //           count: '105',
-                //           label: 'Total Visitors',
-                //           totalIconPath: 'assets/images/total_icon.png',
-                //           bottomIconPath: 'assets/images/total_visitors.png',
-                //         ),
-                //       ),
-                //       SizedBox(width: 16),
-                //       Expanded(
-                //         child: AppStatCardWidget(
-                //           count: '80',
-                //           label: 'Checked-in',
-                //           totalIconPath: 'assets/images/checked_in_visitors.png',
-                //           bottomIconPath: 'assets/images/checked_in_visitors.png',
-                //         ),
-                //       ),
-                //       SizedBox(width: 16),
-                //       Expanded(
-                //         child: AppStatCardWidget(
-                //           count: '30',
-                //           label: 'Checked-out',
-                //           totalIconPath: 'assets/images/total_icon.png',
-                //           bottomIconPath: 'assets/images/checked_out_stats_icon.png',
-                //         ),
-                //       ),
-                //       SizedBox(width: 16),
-                //       Expanded(
-                //         child: AppStatCardWidget(
-                //           count: '5',
-                //           label: 'New Registrants',
-                //           totalIconPath: 'assets/images/total_icon.png',
-                //           bottomIconPath: 'assets/images/pending_stats_icon.png',
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-
-                // const SizedBox(height: 42),
-
-                // const VisitorLogsWidget(),
               ],
             ),
           ),

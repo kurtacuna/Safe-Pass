@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:safepass_frontend/common/assets/images.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kconstants.dart';
 import 'package:safepass_frontend/common/widgets/app_button_widget.dart';
+import 'package:safepass_frontend/common/widgets/app_circular_progress_indicator_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart';
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
+import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controller.dart';
 
 class CheckInScreen extends StatefulWidget {
   const CheckInScreen({super.key});
@@ -26,6 +29,15 @@ class _CheckInScreenState extends State<CheckInScreen> {
   bool _isDenied = false;
   bool _showVerificationDialog = false;
 
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<VisitPurposesController>().fetchVisitPurposes(context);
+    });
+
+    super.initState();
+  }
+
   void _handleSearch() {
     // TODO: Implement search functionality
     // For now, simulate finding a visitor
@@ -36,15 +48,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
     });
   }
 
-  final List<String> _visitPurposes = [
-    'Legal Consultation',
-    'Family Visit',
-    'Official Visit',
-    'Religious Visit/Pastoral Counseling',
-    'Educational/Rehabilitative Program Visit',
-    'Media Visit',
-    'Other'
-  ];
+  List<String> _visitPurposes = [];
 
   @override
   void dispose() {
@@ -164,6 +168,12 @@ class _CheckInScreenState extends State<CheckInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<VisitPurposesController>().getIsLoading) {
+      return Center(child: AppCircularProgressIndicatorWidget());
+    }
+
+    _visitPurposes = context.read<VisitPurposesController>().getVisitPurposes.map((e) => e.purpose).toList();
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Stack(

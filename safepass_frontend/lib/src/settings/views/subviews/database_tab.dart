@@ -36,14 +36,13 @@ class _DatabaseTabState extends State<DatabaseTab> {
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SettingsTabNotifier>().fetchVisitors(context);
-      visitorDetails = context.read<SettingsTabNotifier>().getVisitorDetails;
     });
 
     super.initState();
   }
 
   List<Visitor> get filteredRows {
-    return visitorDetails!.where((row) {
+    return visitorDetails.where((row) {
       final matchesSearch = row.fullName.toLowerCase().contains(searchQuery.toLowerCase());
       final matchesStatus = selectedStatus == null || row.status == selectedStatus;
       return matchesSearch && matchesStatus;
@@ -135,9 +134,11 @@ class _DatabaseTabState extends State<DatabaseTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (context.watch<SettingsTabNotifier>().getIsLoading) {
+    if (context.watch<SettingsTabNotifier>().getIsLoading || visitorDetails == []) {
       return Center(child: AppCircularProgressIndicatorWidget());
     }
+
+    visitorDetails = context.read<SettingsTabNotifier>().getVisitorDetails;
 
     return Padding(
       padding: AppConstants.kAppPadding,
