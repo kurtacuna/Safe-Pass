@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
+import 'package:http/browser_client.dart' as http;
 import 'dart:convert';
 import 'package:safepass_frontend/common/assets/images.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kconstants.dart';
-import 'package:safepass_frontend/common/utils/api_urls.dart';
+import 'package:safepass_frontend/common/const/kurls.dart';
+import 'package:safepass_frontend/common/utils/cookies.dart';
+import 'package:safepass_frontend/common/utils/refresh_access_token.dart';
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
 import 'package:safepass_frontend/common/widgets/app_button_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
@@ -69,9 +71,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse(ApiUrls.registerVisitor),
-        headers: {'Content-Type': 'application/json'},
+      var client = http.BrowserClient();
+      client.withCredentials = true;
+      final response = await client.post(
+        Uri.parse(ApiUrls.registrationUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': AppCookies.getCSRFToken()
+        },
         body: json.encode({
           'first_name': _firstNameController.text,
           'middle_name': _middleNameController.text,
@@ -101,6 +108,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         // Show success message after state is updated
         if (mounted) {  // Check again before showing snackbar
           AppSnackbar.showSuccess(context, 'Registration successful! Ready for next visitor.');
+        }
+      } else if (response.statusCode == 401) {
+        if (context.mounted) {
+          await refetch(context, fetch: () => _registerVisitor());
         }
       } else {
         final errorData = json.decode(response.body);
@@ -135,7 +146,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      final response = await http.post(Uri.parse(ApiUrls.scanFace));
+      var client = http.BrowserClient();
+      client.withCredentials = true;
+      final response = await client.post(Uri.parse(ApiUrls.registerFaceUrl));
       
       if (response.statusCode == 200) {
         AppSnackbar.showSuccess(context, 'Face scan successful!');
@@ -191,7 +204,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
             // Main Content - Centered
             Padding(
-              padding: const EdgeInsets.only(top: 200.0),
+              padding: const EdgeInsets.only(top: 200.0, bottom: 50),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1200),
@@ -355,8 +368,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               const SizedBox(height: 20),
                               ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 600),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                child: Wrap(
+                                  spacing: 20,
+                                  runSpacing: 10,
                                   children: [
                                     AppButtonWidget(
                                       width: 150,
@@ -374,7 +388,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       text: 'Reset Form',
                                       color: AppColors.kGray,
                                     ),
-                                    const SizedBox(width: 20),
+                                    // const SizedBox(width: 20),
                                     AppButtonWidget(
                                       width: 150,
                                       onTap: _isLoading ? null : () => _registerVisitor(),

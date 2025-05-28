@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:safepass_frontend/common/utils/api_urls.dart';
+import 'package:http/browser_client.dart' as http;
+import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
 import 'dart:convert';
 
@@ -20,9 +20,10 @@ class VisitPurposesController with ChangeNotifier {
     notifyListeners();
 
     try {
-      var url = Uri.parse(ApiUrls.visitPurposes);
-      
-      var response = await http.get(
+      var client = http.BrowserClient();
+      client.withCredentials = true;
+      var url = Uri.parse(ApiUrls.visitPurposesUrl);
+      var response = await client.get(
         url,
         headers: {
           "Content-Type": "application/json",

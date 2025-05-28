@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:safepass_frontend/common/utils/api_urls.dart';
+import 'package:safepass_frontend/common/const/kurls.dart';
+import 'package:safepass_frontend/common/utils/cookies.dart';
+import 'package:safepass_frontend/common/utils/refresh_access_token.dart';
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
 import 'dart:convert';
 
@@ -25,7 +27,7 @@ class VisitorRegistrationNotifier with ChangeNotifier {
     notifyListeners();
 
     try {
-      var url = Uri.parse(ApiUrls.registerVisitor);
+      var url = Uri.parse(ApiUrls.registrationUrl);
       
       print("Registration URL: ${url.toString()}");
       
@@ -47,6 +49,7 @@ class VisitorRegistrationNotifier with ChangeNotifier {
           url,
           headers: {
             "Content-Type": "application/json",
+            "X-CSRFToken": AppCookies.getCSRFToken()
           },
           body: jsonEncode(registrationData)
         );
@@ -62,6 +65,12 @@ class VisitorRegistrationNotifier with ChangeNotifier {
               "Visitor registered successfully"
             );
           }
+        } else if (response.statusCode == 401) {
+          print("in reg controller response statuscode: ${response.statusCode}");
+          if (context.mounted) {
+            await refetch(context, fetch: () => registerVisitor(context, firstName, middleName, lastName, idType, idNumber, contactNumber));
+          }
+          print("in reg controller refetched");
         } else {
           if (context.mounted) {
             Map<String, dynamic> errorResponse = jsonDecode(response.body);

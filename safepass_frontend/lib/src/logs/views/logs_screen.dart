@@ -31,6 +31,7 @@ class _LogsScreenState extends State<LogsScreen> {
   DateTime? startDate;
   DateTime? endDate;
   
+  ScrollController scrollController = ScrollController();
 
 
   @override
@@ -197,19 +198,27 @@ class _LogsScreenState extends State<LogsScreen> {
                       children: [
                         _buildHeader(),
                         const SizedBox(height: 32),
-                        SearchBarWidget(
-  searchQuery: tempSearchQuery,
-  onSearchChanged: (value) => setState(() {
-    tempSearchQuery = value;
-  }),
-  onSearchPressed: () => setState(() {
-    searchQuery = tempSearchQuery;
-    currentPage = 0;
-  }),
-  onToggleFilter: _showFilterDialog,
-  isFilterVisible: false,
-  filterPopup: null,
-),
+                        Scrollbar(
+                          controller: scrollController,
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            scrollDirection: Axis.horizontal,
+                            child: SearchBarWidget(
+                              searchQuery: tempSearchQuery,
+                              onSearchChanged: (value) => setState(() {
+                                tempSearchQuery = value;
+                              }),
+                              onSearchPressed: () => setState(() {
+                                searchQuery = tempSearchQuery;
+                                currentPage = 0;
+                              }),
+                              onToggleFilter: _showFilterDialog,
+                              isFilterVisible: false,
+                              filterPopup: null,
+                            ),
+                          ),
+                        ),
 
                         const SizedBox(height: 8),
                         Align(

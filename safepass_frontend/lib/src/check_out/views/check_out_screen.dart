@@ -477,8 +477,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                 if (!_isFaceRecognized)
                                   ConstrainedBox(
                                     constraints: const BoxConstraints(maxWidth: 600),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                    child: Wrap(
+                                      spacing: 20,
+                                      runSpacing: 10,
                                       children: [
                                         AppButtonWidget(
                                           width: 150,
@@ -492,7 +493,6 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                           text: 'Deny Check-Out',
                                           color: AppColors.kGray,
                                         ),
-                                        const SizedBox(width: 20),
                                         AppButtonWidget(
                                           width: 150,
                                           onTap: _showReminderDialog,

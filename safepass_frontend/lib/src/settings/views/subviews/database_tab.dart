@@ -18,12 +18,15 @@ class DatabaseTab extends StatefulWidget {
 
 class _DatabaseTabState extends State<DatabaseTab> {
   String searchQuery = '';
+  String tempSearchQuery = '';
   DateTime? startDate;
   DateTime? endDate;
   String? selectedStatus;
 
   static const rowsPerPage = 10;
   int currentPage = 0;
+
+  ScrollController scrollController = ScrollController();
 
   // TODO: change values once backend is done
   List<VisitorDetails> visitorDetails = [
@@ -184,30 +187,85 @@ class _DatabaseTabState extends State<DatabaseTab> {
   
   List<VisitorDetails> get paginatedRows {
     final start = currentPage * rowsPerPage;
-    final end = (start + rowsPerPage).clamp(0, visitorDetails.length);
+    final end = (start + rowsPerPage).clamp(0, filteredRows.length);
+    print("debug: start $start end $end");
     return filteredRows.sublist(start, end);
   }
 
   int get totalPages => (filteredRows.length / rowsPerPage).ceil();
   Widget _buildPagination() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: currentPage > 0 ? () => setState(() => currentPage--) : null,
-          color: AppColors.kDarkBlue,
-        ),
-        Text(
-          '${currentPage + 1}/$totalPages',
-          style: AppTextStyles.defaultStyle,
-        ),
-        IconButton(
-          icon: const Icon(Icons.arrow_forward),
-          onPressed: currentPage < totalPages - 1 ? () => setState(() => currentPage++) : null,
-          color: AppColors.kDarkBlue,
-        ),
-      ],
+    return MediaQuery.sizeOf(context).height < 360
+      ? Container()
+      : Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: currentPage > 0 ? () => setState(() => currentPage--) : null,
+              color: AppColors.kDarkBlue,
+            ),
+            Text(
+              '${currentPage + 1}/$totalPages',
+              style: AppTextStyles.defaultStyle,
+            ),
+            IconButton(
+              icon: const Icon(Icons.arrow_forward),
+              onPressed: currentPage < totalPages - 1 ? () => setState(() => currentPage++) : null,
+              color: AppColors.kDarkBlue,
+            ),
+          ],
+        );
+  }
+
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, void Function(void Function()) setModalState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: FilterPopupWidget(
+                startDate: startDate,
+                endDate: endDate,
+                selectedStatus: selectedStatus,
+                onStartDatePicked: (picked) {
+                  setState(() {
+                    startDate = picked;
+                    currentPage = 0;
+                  });
+                  setModalState(() {});
+                },
+                onEndDatePicked: (picked) {
+                  setState(() {
+                    endDate = picked;
+                    currentPage = 0;
+                  });
+                  setModalState(() {});
+                },
+                onStatusChanged: (status) {
+                  setState(() {
+                    selectedStatus = status;
+                    currentPage = 0;
+                  });
+                  setModalState(() {});
+                },
+                // selectedPurpose: selectedPurpose,
+                // onPurposeChanged: (purpose) {
+                //   setState(() {
+                //     selectedPurpose = purpose;
+                //     currentPage = 0;
+                //   });
+                //   setModalState(() {});
+                // },
+                onConfirm: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -216,80 +274,46 @@ class _DatabaseTabState extends State<DatabaseTab> {
     return Padding(
       padding: AppConstants.kAppPadding,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SearchBarWidget(
-              searchQuery: searchQuery, 
-              onSearchChanged: (searchbarValue) {
-                setState(() {
-                  searchQuery = searchbarValue;
-                });
-              }, 
-              onSearchPressed: () {
-                // TODO: handle search
-              }, 
-              onToggleFilter: () {
-                 showDialog(
-                context: context,
-                builder: (context) {
-                  return Dialog(
-                    child: StatefulBuilder(
-                      builder: (context, setDialogState) {
-                        // Temporary filter values for dialog only
-                        DateTime? tempStartDate = startDate;
-                        DateTime? tempEndDate = endDate;
-                        String? tempSelectedStatus = selectedStatus;
-                        String? tempSelectedPurpose = selectedStatus;
-                        return FilterPopupWidget(
-                          startDate: tempStartDate,
-                          endDate: tempEndDate,
-                          selectedStatus: tempSelectedStatus,
-                          selectedPurpose: tempSelectedPurpose,
-                          onStartDatePicked: (pickedDate) {
-                            setDialogState(() {
-                              tempStartDate = pickedDate;
-                            });
-                          },
-                          onEndDatePicked: (pickedDate) {
-                            setDialogState(() {
-                              tempEndDate = pickedDate;
-                            });
-                          },
-                          onStatusChanged: (status) {
-                            setDialogState(() {
-                              tempSelectedStatus = status;
-                            });
-                          },
-                          onPurposeChanged: (purpose) {
-                          setDialogState(() {
-                            tempSelectedPurpose = purpose;
+          MediaQuery.sizeOf(context).height < 320
+            ? Container()
+            : Column(
+                children: [
+                  Scrollbar(
+                    controller: scrollController,
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: SearchBarWidget(
+                        searchQuery: tempSearchQuery, 
+                        onSearchChanged: (value) {
+                          setState(() {
+                            tempSearchQuery = value;
                           });
                         },
-                          onConfirm: () {
-                            
-                            setState(() {
-                              startDate = tempStartDate;
-                              endDate = tempEndDate;
-                              selectedStatus = tempSelectedStatus;
-                              currentPage = 0; 
-                            });
-                            context.pop();
-                          },
-                        );
-                      },
+                        onSearchPressed: () {
+                          // TODO: handle search
+                          setState(() {
+                            searchQuery = tempSearchQuery;
+                            currentPage = 0;
+                          });
+                        }, 
+                        onToggleFilter: _showFilterDialog,
+                        isFilterVisible: false, // TODO: clarify
+                      ),
                     ),
-                  );
-                },
-              );
-            }, 
-                          isFilterVisible: false, // TODO: clarify
-            ),
-          ),
-          SizedBox(height: 20),
+                  ),
+                  SizedBox(height: 20),
+                ]
+              ),
           Flexible(
             child: SingleChildScrollView(
               child: Table(
+                columnWidths: {
+                  7: FractionColumnWidth(0.1)
+                },
                 defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                 children: [
                   // Table Headers
@@ -358,12 +382,14 @@ class _DatabaseTabState extends State<DatabaseTab> {
                           text: DateFormat('MMM d, y H:m').format(row.registrationDate)
                         ),
                         TableCellWidget(
-                          child: Row(
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
                             children: [
                               AppButtonWidget(
                                 onTap: () {},
-                                width: 40,
-                                height: 40,
+                                width: 20,
+                                height: 20,
                                 color: Colors.transparent,
                                 child: Padding(
                                   padding: EdgeInsets.all(0),
@@ -373,7 +399,21 @@ class _DatabaseTabState extends State<DatabaseTab> {
                                     height: 20,
                                   )
                                 )
-                              ) // TODO: finalize
+                              ),
+                              AppButtonWidget(
+                                onTap: () {},
+                                width: 20,
+                                height: 20,
+                                color: Colors.transparent,
+                                child: Padding(
+                                  padding: EdgeInsets.all(0),
+                                  child: Image.asset(
+                                    "assets/images/archive_icon.png",
+                                    width: 20,
+                                    height: 20,
+                                  )
+                                )
+                              ),
                             ]
                           )
                         )
@@ -406,7 +446,8 @@ class TableHeader extends StatelessWidget {
     if (text != null) {
       return Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: 8
+          vertical: 8,
+          horizontal: 8,
         ),
         child: Text(
           text!,
@@ -439,6 +480,8 @@ class TableCellWidget extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.only(
           top: topPadding,
+          left: 8,
+          right: 8,
         ),
         child: Text(
           text!,
