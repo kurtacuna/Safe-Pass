@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from . import models, serializers
+from django.shortcuts import render
+from django.db.models import Q
+from django.utils import timezone
 
 # Create your views here.
 class IdTypesView(APIView):
@@ -116,3 +119,32 @@ class VisitorsView(APIView):
     except Exception as e:
       print(f"VisitorsView: {str(e)}")
       return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VisitorSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.GET.get('query', '')
+        if not query:
+            return Response({'results': []})
+
+        visitors = models.VisitorDetails.objects.filter(
+            Q(id_number__icontains=query) |
+            Q(full_name__icontains=query)
+        ).order_by('-registration_date')[:10]
+
+        results = []
+        for visitor in visitors:
+            # Get the last visit date for this visitor
+            last_visit = visitor.visitor_logs_set.order_by('-visit_date').first()
+            last_visit_date = last_visit.visit_date if last_visit else None
+
+            results.append({
+                'id': str(visitor.id),
+                'id_number': visitor.id_number,
+                'full_name': visitor.full_name,
+                'last_visit_date': last_visit_date.strftime('%Y-%m-%d') if last_visit_date else None
+            })
+
+        return Response({'results': results})

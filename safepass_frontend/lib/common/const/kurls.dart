@@ -17,4 +17,6 @@ class ApiUrls {
   static String visitPurposesUrl = '$_appBaseUrl/api/visitor_logs/purposes/';
   static String visitorsUrl = '$_appBaseUrl/api/visitor_details/visitors/';
   static String idTypesUrl = '$_appBaseUrl/api/visitor_details/id_types/';
+  static String visitorSearchUrl = '$_appBaseUrl/api/visitor_details/search/';
+  static String visitorCheckInUrl = '$_appBaseUrl/api/visitor_logs/check-in/';
 }
