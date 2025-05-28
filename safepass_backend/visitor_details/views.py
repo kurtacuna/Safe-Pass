@@ -8,10 +8,14 @@ from . import models, serializers
 class IdTypesView(APIView):
   permission_classes = [IsAuthenticated]
   def get(self, request):
-    id_types = models.IdTypes.objects.all()
-    serializer = serializers.IdTypesSerializer(id_types, many=True)
+    try:
+      id_types = models.IdTypes.objects.all()
+      serializer = serializers.IdTypesSerializer(id_types, many=True)
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+      return Response({"id_types": serializer.data}, status=status.HTTP_200_OK)
+    except Exception as e:
+      print(f"IdTypesView: {str(e)}")
+      return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class VisitorRegistration(APIView):

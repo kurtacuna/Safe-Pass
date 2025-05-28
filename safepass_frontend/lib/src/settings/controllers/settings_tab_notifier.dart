@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kurls.dart';
@@ -20,6 +18,9 @@ class SettingsTabNotifier with ChangeNotifier {
   List<Visitor> get getVisitorDetails => _visitorDetails;
   bool _isLoading = false;
   get getIsLoading => _isLoading;
+
+  Visitor? _visitor;
+  Visitor? get getVisitor => _visitor;
 
   Future<void> fetchVisitors(BuildContext context) async {
     _isLoading = true;

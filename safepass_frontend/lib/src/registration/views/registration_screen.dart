@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/browser_client.dart' as http;
+import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:safepass_frontend/common/assets/images.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
@@ -11,8 +12,11 @@ import 'package:safepass_frontend/common/utils/cookies.dart';
 import 'package:safepass_frontend/common/utils/refresh_access_token.dart';
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
 import 'package:safepass_frontend/common/widgets/app_button_widget.dart';
+import 'package:safepass_frontend/common/widgets/app_circular_progress_indicator_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart';
+import 'package:safepass_frontend/src/registration/controller/id_types_controller.dart';
+import 'package:safepass_frontend/src/registration/models/id_types_model.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -31,17 +35,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String? _selectedIdType;
   bool _isLoading = false;
 
-  final List<String> _idTypes = [
-    'Drivers License',
-    'Passport',
-    'National ID',
-    'Government-Issued ID',
-    'Professional Identification Card (PIC)',
-    'Postal ID',
-    'School ID',
-    'Company/Corporate ID',
-    'Other'
-  ];
+  List<String> _idTypes = [];
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<IdTypesController>().fetchIdTypes(context);
+    });
+
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -169,6 +172,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<IdTypesController>().getIsLoading) {
+      return Center(child: AppCircularProgressIndicatorWidget());
+    }
+
+    _idTypes = context.read<IdTypesController>().getIdTypes.map((e) => e.type).toList();
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Stack(

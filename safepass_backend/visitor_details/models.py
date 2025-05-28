@@ -4,13 +4,6 @@ from django.utils import timezone
 from django.db.models import UniqueConstraint
 import uuid
 
-def get_uuid(half=False):
-        if half:
-            return uuid.uuid4().hex[:16].upper()
-        else:
-            return uuid.uuid4().hex.upper()
-
-
 # Create your models here.
 class VisitorDetails(models.Model):
   def custom_upload_to(instance, filename):
@@ -42,9 +35,8 @@ class VisitorDetails(models.Model):
   
   def save(self, *args, **kwargs):
     self.full_name = f"{self.first_name}{' ' + self.middle_name if self.middle_name else ''} {self.last_name}"
-    if not self.id_number:
-       code = IdTypes.objects.get(id=self.id_type).code
-       self.id_number = f"{code}-{get_uuid(half=True)}"
+    code = IdTypes.objects.get(type=self.id_type).code
+    self.id_number = f"{code}-{self.id_number}"
     super().save(*args, **kwargs) 
 
 

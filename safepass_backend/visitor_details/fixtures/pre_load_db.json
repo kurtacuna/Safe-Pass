@@ -156,7 +156,7 @@
         "model": "visitor_logs.visitpurposes",
         "pk": 1,
         "fields": {
-            "purpose": "Legal Visit"
+            "purpose": "Legal Consultation"
         }
     },
     {
@@ -164,6 +164,41 @@
         "pk": 2,
         "fields": {
             "purpose": "Family Visit"
+        }
+    },
+    {
+        "model": "visitor_logs.visitpurposes",
+        "pk": 3,
+        "fields": {
+            "purpose": "Official Visit"
+        }
+    },
+    {
+        "model": "visitor_logs.visitpurposes",
+        "pk": 4,
+        "fields": {
+            "purpose": "Religious Visit/Pastoral Counseling"
+        }
+    },
+    {
+        "model": "visitor_logs.visitpurposes",
+        "pk": 5,
+        "fields": {
+            "purpose": "Educational/Rehabilitative Program Visit"
+        }
+    },
+    {
+        "model": "visitor_logs.visitpurposes",
+        "pk": 6,
+        "fields": {
+            "purpose": "Media Visit"
+        }
+    },
+    {
+        "model": "visitor_logs.visitpurposes",
+        "pk": 7,
+        "fields": {
+            "purpose": "Other"
         }
     },
     {

@@ -8,21 +8,24 @@ import 'package:safepass_frontend/src/dashboard/views/dashboard_screen.dart';
 import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.dart';
 import 'package:safepass_frontend/src/entrypoint/widgets/sidebar.dart';
 import 'package:safepass_frontend/src/logs/views/logs_screen.dart';
+import 'package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart';
 import 'package:safepass_frontend/src/settings/views/settings_screen.dart';
 import 'package:safepass_frontend/src/visitor/screens/visitor_details_screen.dart';
 
 class Entrypoint extends StatelessWidget {
   const Entrypoint({super.key});
 
-  static const List<Widget> screens = [
-    DashboardScreen(),
-    LogsScreen(),
-    SettingsScreen(),
-    VisitorDetailsScreen()
-  ];
-
   @override
   Widget build(BuildContext context) {
+    List<Widget> screens = [
+      DashboardScreen(),
+      LogsScreen(),
+      SettingsScreen(),
+      VisitorDetailsScreen(
+        visitorDetails: context.watch<SettingsTabNotifier>().getVisitor,
+      )
+    ];
+
     return Scaffold(
       // Sidebar in a drawer for when the window is small
       key: AppGlobalKeys.drawer,

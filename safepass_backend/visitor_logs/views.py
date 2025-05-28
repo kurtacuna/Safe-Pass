@@ -94,3 +94,16 @@ class VisitorStatsView(APIView):
                 {"error": "Failed to calculate visitor statistics", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+
+class VisitPurposesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            purposes = models.VisitPurposes.objects.all()
+            serializer = serializers.VisitPurposes(purposes, many=True)
+            return Response({"purposes": serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"VisitPurposesView: {str(e)}")
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

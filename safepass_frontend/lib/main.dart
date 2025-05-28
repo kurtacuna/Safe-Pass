@@ -5,7 +5,9 @@ import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/utils/routes.dart';
 import 'package:safepass_frontend/src/auth/controller/jwt_notifier.dart';
 import 'package:safepass_frontend/src/auth/controller/password_notifier.dart';
+import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controller.dart';
 import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.dart';
+import 'package:safepass_frontend/src/registration/controller/id_types_controller.dart';
 import 'package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart';
 import 'package:safepass_frontend/src/logs/controllers/visitorlogs_controller.dart';
 
@@ -20,6 +22,8 @@ void main() async {
       ChangeNotifierProvider(create: (_) => SettingsTabNotifier()),
       ChangeNotifierProvider(create: (_) => JwtNotifier()),
       ChangeNotifierProvider(create: (_) => VisitorLogsController()),
+      ChangeNotifierProvider(create: (_) => IdTypesController()),
+      ChangeNotifierProvider(create: (_) => VisitPurposesController()),
     ],
     child: MyApp()
   ));
