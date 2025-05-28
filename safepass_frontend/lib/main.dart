@@ -13,7 +13,7 @@ import 'package:safepass_frontend/src/logs/controllers/visitorlogs_controller.da
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env.development');
+  await dotenv.load(fileName: '.env.development'); //comment for checkpoint
 
   runApp(MultiProvider(
     providers: [
