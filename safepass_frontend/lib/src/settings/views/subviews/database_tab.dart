@@ -1,12 +1,14 @@
 import "package:flutter/material.dart";
-import "package:go_router/go_router.dart";
 import "package:intl/intl.dart";
+import "package:provider/provider.dart";
 import "package:safepass_frontend/common/const/app_theme/app_text_styles.dart";
 import "package:safepass_frontend/common/const/kcolors.dart";
 import "package:safepass_frontend/common/const/kconstants.dart";
 import "package:safepass_frontend/common/widgets/app_button_widget.dart";
+import "package:safepass_frontend/common/widgets/app_circular_progress_indicator_widget.dart";
 import "package:safepass_frontend/src/logs/widgets/filter_popup_widget.dart";
 import "package:safepass_frontend/src/logs/widgets/search_bar_widget.dart";
+import "package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart";
 import "package:safepass_frontend/src/settings/models/visitor_details_model.dart";
 
 class DatabaseTab extends StatefulWidget {
@@ -27,168 +29,30 @@ class _DatabaseTabState extends State<DatabaseTab> {
   int currentPage = 0;
 
   ScrollController scrollController = ScrollController();
+  List<Visitor> visitorDetails = [];
 
-  // TODO: change values once backend is done
-  List<VisitorDetails> visitorDetails = [
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/P1234567A_Maria_Gonzales.jpg",
-      firstName: "Maria",
-      middleName: "",
-      lastName: "Gonzales",
-      fullName: "Maria Gonzales",
-      contactNumber: "09171234567",
-      idType: "Philippine Passport",
-      idNumber: "P1234567A",
-      status: "Approved",
-      registrationDate: DateTime(2025, 5, 21, 15, 45, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/N01-23-456789_Juan_Reyes_Dela_Cruz.jpg",
-      firstName: "Juan",
-      middleName: "Reyes",
-      lastName: "Dela Cruz",
-      fullName: "Juan Reyes Dela Cruz",
-      contactNumber: "09209876543",
-      idType: "Driver's License",
-      idNumber: "N01-23-456789",
-      status: "Pending",
-      registrationDate: DateTime(2025, 5, 20, 10, 0, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/CRN-0001-2345678-9_Ana_Lim_Santos.jpg",
-      firstName: "Ana",
-      middleName: "Lim",
-      lastName: "Santos",
-      fullName: "Ana Lim Santos",
-      contactNumber: "09981122334",
-      idType: "UMID Card",
-      idNumber: "CRN-0001-2345678-9",
-      status: "Denied",
-      registrationDate: DateTime(2025, 5, 19, 11, 30, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/PHL-0000-0000-1234_Jose_Reyes.jpg",
-      firstName: "Jose",
-      middleName: "",
-      lastName: "Reyes",
-      fullName: "Jose Reyes",
-      contactNumber: "09175551234",
-      idType: "National ID",
-      idNumber: "PHL-0000-0000-1234",
-      status: "Approved",
-      registrationDate: DateTime(2025, 5, 18, 9, 15, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/V-98765432_Sofia_Garcia.jpg",
-      firstName: "Sofia",
-      middleName: "Cruz",
-      lastName: "Garcia",
-      fullName: "Sofia Cruz Garcia",
-      contactNumber: "09087654321",
-      idType: "Postal ID",
-      idNumber: "V-98765432",
-      status: "Pending",
-      registrationDate: DateTime(2025, 5, 17, 14, 0, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/B-11223344_Michael_Tan.jpg",
-      firstName: "Michael",
-      middleName: "",
-      lastName: "Tan",
-      fullName: "Michael Tan",
-      contactNumber: "09998765432",
-      idType: "PRC ID",
-      idNumber: "B-11223344",
-      status: "Approved",
-      registrationDate: DateTime(2025, 5, 16, 16, 30, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/C-55667788_Catherine_Lee.jpg",
-      firstName: "Catherine",
-      middleName: "Sy",
-      lastName: "Lee",
-      fullName: "Catherine Sy Lee",
-      contactNumber: "09182345678",
-      idType: "Philippine Passport",
-      idNumber: "C-55667788",
-      status: "Approved",
-      registrationDate: DateTime(2025, 5, 15, 8, 45, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/D-99001122_Robert_Lim.jpg",
-      firstName: "Robert",
-      middleName: "",
-      lastName: "Lim",
-      fullName: "Robert Lim",
-      contactNumber: "09273456789",
-      idType: "Driver's License",
-      idNumber: "D-99001122",
-      status: "Pending",
-      registrationDate: DateTime(2025, 5, 14, 13, 0, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/E-33445566_Patricia_Corpuz.jpg",
-      firstName: "Patricia",
-      middleName: "Diaz",
-      lastName: "Corpuz",
-      fullName: "Patricia Diaz Corpuz",
-      contactNumber: "09778901234",
-      idType: "UMID Card",
-      idNumber: "E-33445566",
-      status: "Denied",
-      registrationDate: DateTime(2025, 5, 13, 10, 10, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/F-77889900_Daniel_Santiago.jpg",
-      firstName: "Daniel",
-      middleName: "",
-      lastName: "Santiago",
-      fullName: "Daniel Santiago",
-      contactNumber: "09156789012",
-      idType: "National ID",
-      idNumber: "F-77889900",
-      status: "Approved",
-      registrationDate: DateTime(2025, 5, 12, 17, 0, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/G-11223344_Michelle_Chua.jpg",
-      firstName: "Michelle",
-      middleName: "Go",
-      lastName: "Chua",
-      fullName: "Michelle Go Chua",
-      contactNumber: "09091234567",
-      idType: "Postal ID",
-      idNumber: "G-11223344",
-      status: "Pending",
-      registrationDate: DateTime(2025, 5, 11, 9, 30, 0)
-    ),
-    VisitorDetails(
-      photo: "https://example.com/visitor_photos/H-55667788_Kevin_Yu.jpg",
-      firstName: "Kevin",
-      middleName: "",
-      lastName: "Yu",
-      fullName: "Kevin Yu",
-      contactNumber: "09170001122",
-      idType: "PRC ID",
-      idNumber: "H-55667788",
-      status: "Approved",
-      registrationDate: DateTime(2025, 5, 10, 14, 15, 0)
-    )
-  ];
-  // TODO: change values once backend is done
 
-  List<VisitorDetails> get filteredRows {
-    return visitorDetails.where((row) {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SettingsTabNotifier>().fetchVisitors(context);
+      visitorDetails = context.read<SettingsTabNotifier>().getVisitorDetails;
+    });
+
+    super.initState();
+  }
+
+  List<Visitor> get filteredRows {
+    return visitorDetails!.where((row) {
       final matchesSearch = row.fullName.toLowerCase().contains(searchQuery.toLowerCase());
       final matchesStatus = selectedStatus == null || row.status == selectedStatus;
       return matchesSearch && matchesStatus;
     }).toList();
   }
   
-  List<VisitorDetails> get paginatedRows {
+  List<Visitor> get paginatedRows {
     final start = currentPage * rowsPerPage;
     final end = (start + rowsPerPage).clamp(0, filteredRows.length);
-    print("debug: start $start end $end");
     return filteredRows.sublist(start, end);
   }
 
@@ -271,6 +135,10 @@ class _DatabaseTabState extends State<DatabaseTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<SettingsTabNotifier>().getIsLoading) {
+      return Center(child: AppCircularProgressIndicatorWidget());
+    }
+
     return Padding(
       padding: AppConstants.kAppPadding,
       child: Column(
@@ -370,7 +238,7 @@ class _DatabaseTabState extends State<DatabaseTab> {
                           text: row.contactNumber
                         ),
                         TableCellWidget(
-                          text: row.idType
+                          text: row.idType.type
                         ),
                         TableCellWidget(
                           text: row.idNumber

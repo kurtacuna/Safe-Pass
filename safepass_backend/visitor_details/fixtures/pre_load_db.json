@@ -20,7 +20,72 @@
         "model": "visitor_details.idtypes",
         "pk": 1,
         "fields": {
-            "type": "National ID"
+            "type": "Drivers License",
+            "code": "DL"
+        }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 2,
+        "fields": {
+            "type": "Passport",
+            "code": "P"
+        }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 3,
+        "fields": {
+            "type": "National ID",
+            "code": "NI"
+        }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 4,
+        "fields": {
+            "type": "Government-Issued ID",
+            "code": "GI"
+        }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 5,
+        "fields": {
+            "type": "Professional Identification Card",
+            "code": "PIC"
+        }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 6,
+        "fields": {
+            "type": "Postal ID",
+            "code": "PI"
+        }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 7,
+        "fields": {
+            "type": "School ID",
+            "code": "SI"
+        }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 8,
+        "fields": {
+            "type": "Company/Corporate ID",
+            "code": "CI"
+        }
+    },
+    {
+        "model": "visitor_details.idtypes",
+        "pk": 9,
+        "fields": {
+            "type": "Other",
+            "code": "O"
         }
     },
     {
@@ -34,7 +99,7 @@
             "full_name": "Juan Santos Dela Cruz",
             "contact_number": "09171234567",
             "id_type": 1,
-            "id_number": "NID-001",
+            "id_number": "DL-A1B2C3D4E5F67890",
             "status": "Approved",
             "registration_date": "2025-05-26T04:20:33.182Z"
         }
@@ -49,8 +114,8 @@
             "last_name": "Santos",
             "full_name": "Maria Garcia Santos",
             "contact_number": "09182345678",
-            "id_type": 1,
-            "id_number": "NID-002",
+            "id_type": 2,
+            "id_number": "P-9876543210FEDCBA",
             "status": "Approved",
             "registration_date": "2025-05-26T09:15:00.000Z"
         }
@@ -65,8 +130,8 @@
             "last_name": "Mendoza",
             "full_name": "Pedro Reyes Mendoza",
             "contact_number": "09193456789",
-            "id_type": 1,
-            "id_number": "NID-003",
+            "id_type": 3,
+            "id_number": "NI-F0E1D2C3B4A59687",
             "status": "Approved",
             "registration_date": "2025-05-25T10:30:00.000Z"
         }
@@ -81,55 +146,10 @@
             "last_name": "Ramos",
             "full_name": "Ana Luna Ramos",
             "contact_number": "09204567890",
-            "id_type": 1,
-            "id_number": "NID-004",
+            "id_type": 4,
+            "id_number": "GI-13579BDF02468ACE",
             "status": "Approved",
             "registration_date": "2025-05-25T11:45:00.000Z"
-        }
-    },
-    {
-        "model": "visitor_details.visitordetails",
-        "pk": 2,
-        "fields": {
-            "first_name": "Alice",
-            "middle_name": "M",
-            "last_name": "Smith",
-            "full_name": "Alice M Smith",
-            "contact_number": "5678",
-            "id_type": 1,
-            "id_number": "NID-456",
-            "status": "Approved",
-            "registration_date": "2025-05-27T11:45:00.000Z"
-        }
-    },
-    {
-        "model": "visitor_details.visitordetails",
-        "pk": 3,
-        "fields": {
-            "first_name": "Bob",
-            "middle_name": "J",
-            "last_name": "Williams",
-            "full_name": "Bob J Williams",
-            "contact_number": "9012",
-            "id_type": 1,
-            "id_number": "NID-789",
-            "status": "Approved",
-            "registration_date": "2025-05-27T11:45:00.000Z"
-        }
-    },
-    {
-        "model": "visitor_details.visitordetails",
-        "pk": 4,
-        "fields": {
-            "first_name": "Carol",
-            "middle_name": "A",
-            "last_name": "Johnson",
-            "full_name": "Carol A Johnson",
-            "contact_number": "3456",
-            "id_type": 1,
-            "id_number": "NID-101",
-            "status": "Approved",
-            "registration_date": "2025-05-28T11:45:00.000Z"
         }
     },
     {
