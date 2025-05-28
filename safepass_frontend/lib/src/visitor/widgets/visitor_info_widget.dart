@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:safepass_frontend/src/settings/models/visitor_details_model.dart';
 
 class VisitorInfoWidget extends StatelessWidget {
-  const VisitorInfoWidget({super.key});
+  const VisitorInfoWidget({
+    required this.visitor,
+    super.key
+  });
+
+  final Visitor? visitor;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInfoField('Name', 'John Manalo'),
+        _buildInfoField('Name', visitor!.fullName),
         const SizedBox(height: 16),
-        _buildInfoField('ID Number', '2024-787'),
+        _buildInfoField('ID Number', visitor!.idNumber),
         const SizedBox(height: 16),
-        _buildInfoField('Status', 'Approved'),
+        _buildInfoField('Status', visitor!.status),
         const SizedBox(height: 16),
-        _buildInfoField('Last Visit', '01-04-2024'),
+        _buildInfoField('Registration Date', DateFormat('MMM d, y H:m').format(visitor!.registrationDate)),
       ],
     );
   }
