@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'visitor_logs',
     'corsheaders',
     'django_extensions',
+    'settings'
 ]
 
 MIDDLEWARE = [
