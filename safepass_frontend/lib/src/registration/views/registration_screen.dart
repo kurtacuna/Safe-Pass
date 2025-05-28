@@ -191,7 +191,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
             // Main Content - Centered
             Padding(
-              padding: const EdgeInsets.only(top: 200.0),
+              padding: const EdgeInsets.only(top: 200.0, bottom: 50),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1200),
@@ -355,8 +355,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               const SizedBox(height: 20),
                               ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 600),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                child: Wrap(
+                                  spacing: 20,
+                                  runSpacing: 10,
                                   children: [
                                     AppButtonWidget(
                                       width: 150,
@@ -374,7 +375,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       text: 'Reset Form',
                                       color: AppColors.kGray,
                                     ),
-                                    const SizedBox(width: 20),
+                                    // const SizedBox(width: 20),
                                     AppButtonWidget(
                                       width: 150,
                                       onTap: _isLoading ? null : () => _registerVisitor(),
