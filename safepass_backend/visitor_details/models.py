@@ -7,9 +7,9 @@ import uuid
 # Create your models here.
 class VisitorDetails(models.Model):
   def custom_upload_to(instance, filename):
-      name, ext = os.path.splitext(filename)
+      # name, ext = os.path.splitext(filename)
       full_name = f"{instance.first_name}{' ' + instance.middle_name if instance.middle_name else ''} {instance.last_name}"
-      return os.path.join('visitor_photos', f'{instance.id_number}_{full_name}{ext}')
+      return os.path.join('visitor_photos', f'{instance.id_number}_{full_name}.jpeg')
 
 
   STATUS_CHOICES = [
@@ -35,8 +35,10 @@ class VisitorDetails(models.Model):
   
   def save(self, *args, **kwargs):
     self.full_name = f"{self.first_name}{' ' + self.middle_name if self.middle_name else ''} {self.last_name}"
-    code = IdTypes.objects.get(type=self.id_type).code
-    self.id_number = f"{code}-{self.id_number}"
+    dont_save = kwargs.pop('dont_save_id_number')
+    if not dont_save:
+      code = IdTypes.objects.get(type=self.id_type).code
+      self.id_number = f"{code}-{self.id_number}" 
     super().save(*args, **kwargs) 
 
 

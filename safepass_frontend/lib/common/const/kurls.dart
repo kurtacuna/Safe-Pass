@@ -17,6 +17,8 @@ class ApiUrls {
   static String visitPurposesUrl = '$_appBaseUrl/api/visitor_logs/purposes/';
   static String visitorsUrl = '$_appBaseUrl/api/visitor_details/visitors/';
   static String idTypesUrl = '$_appBaseUrl/api/visitor_details/id_types/';
+  static String updateVisitorDetailsUrl = '$_appBaseUrl/api/visitor_details/update_details/';
+  static String updatePhotoUrl = '$_appBaseUrl/api/visitor_details/update_photo/';
 
   static String getImageUrl(String photoUrl) {
     return _appBaseUrl + photoUrl;

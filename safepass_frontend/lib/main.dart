@@ -10,6 +10,7 @@ import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.da
 import 'package:safepass_frontend/src/registration/controller/id_types_controller.dart';
 import 'package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart';
 import 'package:safepass_frontend/src/logs/controllers/visitorlogs_controller.dart';
+import 'package:safepass_frontend/src/visitor/controllers/visitor_details_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => VisitorLogsController()),
       ChangeNotifierProvider(create: (_) => IdTypesController()),
       ChangeNotifierProvider(create: (_) => VisitPurposesController()),
+      ChangeNotifierProvider(create: (_) => VisitorDetailsController()),
     ],
     child: MyApp()
   ));
