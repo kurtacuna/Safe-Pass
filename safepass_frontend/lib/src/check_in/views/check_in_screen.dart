@@ -403,8 +403,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                 if (!_isFaceRecognized)
                                   ConstrainedBox(
                                     constraints: const BoxConstraints(maxWidth: 600),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                    child: Wrap(
+                                      spacing: 20,
+                                      runSpacing: 10,
                                       children: [
                                         AppButtonWidget(
                                           width: 150,
@@ -418,7 +419,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                           text: 'Deny Visitor',
                                           color: AppColors.kGray,
                                         ),
-                                        const SizedBox(width: 20),
                                         AppButtonWidget(
                                           width: 150,
                                           onTap: _showReminderDialog,

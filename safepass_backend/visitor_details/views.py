@@ -6,6 +6,7 @@ from . import models, serializers
 
 # Create your views here.
 class IdTypesView(APIView):
+  permission_classes = [IsAuthenticated]
   def get(self, request):
     id_types = models.IdTypes.objects.all()
     serializer = serializers.IdTypesSerializer(id_types, many=True)
@@ -14,6 +15,7 @@ class IdTypesView(APIView):
 
 
 class VisitorRegistration(APIView):
+  permission_classes = [IsAuthenticated]
   def post(self, request):
     try:
       print("Received registration request with data:", request.data)

@@ -5,7 +5,6 @@ import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
 import 'package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart';
 import 'package:safepass_frontend/src/settings/views/subviews/database_tab.dart';
 import 'package:safepass_frontend/src/settings/views/subviews/general_tab.dart';
-import 'package:safepass_frontend/src/settings/views/subviews/policies_tab.dart';
 import 'package:safepass_frontend/src/settings/widgets/settings_tab_widget.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -13,8 +12,7 @@ class SettingsScreen extends StatelessWidget {
 
   static const List<Widget> tabs = [
     GeneralTab(),
-    DatabaseTab(),
-    PoliciesTab()
+    DatabaseTab()
   ];
 
   @override
@@ -75,10 +73,6 @@ class SettingsContainer extends StatelessWidget {
                     SettingsTabWidget(
                       text: "Database", 
                       index: 1
-                    ),
-                    SettingsTabWidget(
-                      text: "Policies", 
-                      index: 2
                     ),
                   ]
                 ),

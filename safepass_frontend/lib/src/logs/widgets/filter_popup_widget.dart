@@ -11,7 +11,7 @@ class FilterPopupWidget extends StatelessWidget {
   final String? selectedStatus;
   final ValueChanged<String?> onStatusChanged;
   final String? selectedPurpose;
-  final ValueChanged<String?> onPurposeChanged;
+  final ValueChanged<String?>? onPurposeChanged;
 
 
   const FilterPopupWidget({
@@ -23,8 +23,8 @@ class FilterPopupWidget extends StatelessWidget {
     required this.onConfirm,
     required this.selectedStatus,
     required this.onStatusChanged,
-    required this.selectedPurpose,
-    required this.onPurposeChanged,
+    this.selectedPurpose,
+    this.onPurposeChanged,
   });
 
   @override
