@@ -12,6 +12,7 @@ import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
 import 'package:safepass_frontend/src/check_out/controller/check_out_controller.dart';
 import 'package:safepass_frontend/src/check_out/model/visitor_search_result.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CheckOutScreen extends StatefulWidget {
   const CheckOutScreen({super.key});
@@ -134,14 +135,6 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                 );
               }
 
-              if (controller.getSearchResults.isEmpty) {
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.white,
-                  child: const Text('No visitors found'),
-                );
-              }
-
               return Container(
                 constraints: const BoxConstraints(maxHeight: 200),
                 decoration: BoxDecoration(
@@ -207,12 +200,17 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Container(
             padding: const EdgeInsets.all(24),
-            width: 500,
+            width: 480,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,17 +236,17 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Are you sure you want to check out this visitor?',
+                  'Marking this visitor as verified will update their stored face data with the current photo.',
                   style: AppTextStyles.defaultStyle.copyWith(
-                    color: AppColors.kDarkGray,
+                    color: AppColors.kDarkerGray,
                     height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'This action cannot be undone.',
+                  'Proceed only if you\'re sure this is the correct person.',
                   style: AppTextStyles.defaultStyle.copyWith(
-                    color: AppColors.kDarkGray,
+                    color: AppColors.kDarkerGray,
                     height: 1.5,
                   ),
                 ),
@@ -262,8 +260,12 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            side: BorderSide(color: AppColors.kGray),
+                            side: BorderSide(
+                              color: AppColors.kDark.withOpacity(0.3),
+                              width: 1.5,
+                            ),
                           ),
+                          backgroundColor: Colors.white,
                         ),
                         child: Text(
                           'Cancel',
@@ -299,14 +301,19 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.kDarkBlue,
+                          backgroundColor: const Color(0xFF0F4C81),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
+                            side: const BorderSide(
+                              color: Color(0xFF0F4C81),
+                              width: 1.5,
+                            ),
                           ),
+                          elevation: 0,
                         ),
                         child: Text(
-                          'Confirm Check-Out',
+                          'Confirm and Update',
                           style: AppTextStyles.defaultStyle.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
@@ -337,7 +344,6 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
       return Container(
         padding: const EdgeInsets.all(16),
         color: Colors.white,
-        child: const Text('No visitors found'),
       );
     }
 
@@ -404,9 +410,44 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
             Positioned(
               top: 50,
               left: 50,
-              child: Image.asset(
-                AppImages.logoDark,
-                height: 50,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => context.go('/entrypoint'),
+                  child: Image.asset(
+                    AppImages.logoDark,
+                    height: 50,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 50,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/images/checked_out_icon2.svg',
+                      width: 34,
+                      height: 34,
+                      colorFilter: ColorFilter.mode(
+                        AppColors.kDarkBlue,
+                        BlendMode.srcIn
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Visitor Check-Out',
+                      style: AppTextStyles.biggestStyle.copyWith(
+                        color: AppColors.kDark,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             Positioned(
@@ -427,18 +468,10 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
 
             // Main Content
             Padding(
-              padding: const EdgeInsets.fromLTRB(50, 120, 50, 50),
+              padding: const EdgeInsets.fromLTRB(50, 150, 50, 50),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    'Visitor Check-Out',
-                    style: AppTextStyles.biggestStyle.copyWith(
-                      color: AppColors.kDark,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 50),
                   // Search Bar
                   SizedBox(
                     width: 1000,
@@ -448,7 +481,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                           key: _searchFieldKey,
                           controller: _searchController,
                           focusNode: _searchFocusNode,
-                          hintText: 'Search Visitor ID',
+                          hintText: 'Search Visitor ID or Name',
                           prefixIcon: const Icon(Icons.search),
                         ),
                         Consumer<CheckOutController>(
@@ -462,7 +495,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 70),
+                  const SizedBox(height: 50),
                   // Two Column Layout
                   Center(
                     child: ConstrainedBox(
@@ -516,7 +549,19 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                               width: double.infinity,
                                               onTap: () {
                                                 if (_formKey.currentState!.validate() && _selectedVisitor != null) {
-                                                  _showReminderDialog();
+                                                  context.read<CheckOutController>().checkOutVisitor(
+                                                    context,
+                                                    _selectedVisitor!.id,
+                                                  );
+                                                  // Clear the form after successful check-out
+                                                  setState(() {
+                                                    _selectedVisitor = null;
+                                                    _searchController.clear();
+                                                    _nameController.clear();
+                                                    _idNumberController.clear();
+                                                    _visitPurposeController.clear();
+                                                    _isFaceRecognized = false;
+                                                  });
                                                 }
                                               },
                                               text: 'Confirm Check-Out',
@@ -626,7 +671,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                         ),
                                         AppButtonWidget(
                                           width: 150,
-                                          onTap: _showReminderDialog,
+                                          onTap: () {
+                                            _showReminderDialog();
+                                          },
                                           text: 'Mark As Verified',
                                         ),
                                       ],

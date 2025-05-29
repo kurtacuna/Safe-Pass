@@ -9,7 +9,7 @@ VisitPurposesModel visitPurposesModelFromJson(String str) => VisitPurposesModel.
 String visitPurposesModelToJson(VisitPurposesModel data) => json.encode(data.toJson());
 
 class VisitPurposesModel {
-    List<Purpose> purposes;
+    final List<Purpose> purposes;
 
     VisitPurposesModel({
         required this.purposes,
@@ -25,8 +25,8 @@ class VisitPurposesModel {
 }
 
 class Purpose {
-    int id;
-    String purpose;
+    final int id;
+    final String purpose;
 
     Purpose({
         required this.id,

@@ -8,6 +8,7 @@ import 'package:safepass_frontend/src/dashboard/widgets/app_stat_card_widget.dar
 import 'package:safepass_frontend/src/dashboard/widgets/app_visitor_logs.dart';
 import 'package:safepass_frontend/src/dashboard/models/visitor_stats_model.dart';
 import 'package:safepass_frontend/src/dashboard/services/visitor_stats_service.dart';
+import 'dart:async';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,11 +20,22 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   VisitorStats? _visitorStats;
   bool _isLoading = true;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadVisitorStats();
+    // Set up periodic refresh every 5 seconds
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _loadVisitorStats();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadVisitorStats() async {
@@ -37,16 +49,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         });
       }
       print('Received visitor stats: ${stats?.totalVisitors}, ${stats?.checkedIn}, ${stats?.checkedOut}, ${stats?.newRegistrants}'); // Debug print
-      setState(() {
-        _visitorStats = stats;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _visitorStats = stats;
+          _isLoading = false;
+        });
+      }
       print('Stats updated in state: ${_visitorStats?.totalVisitors}, ${_visitorStats?.checkedIn}, ${_visitorStats?.checkedOut}, ${_visitorStats?.newRegistrants}'); // Debug print
     } catch (e) {
       print('Error loading stats: $e'); // Debug print
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       // You might want to show an error message here
     }
   }
@@ -119,7 +135,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         AppStatCardWidget(
           count: _visitorStats?.checkedIn.toString() ?? '0',
           label: 'Checked-in',
-          totalIconPath: 'assets/images/checked_in_visitors.png',
+          totalIconPath:  'assets/images/total_icon.png',
           bottomIconPath: 'assets/images/checked_in_visitors.png',
         ),
         AppStatCardWidget(
@@ -156,14 +172,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 16),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: _buildTopBar(),
                 ),
-
                 const SizedBox(height: 20),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
@@ -200,13 +213,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 48),
-
                 _buildStatCards(),
-
                 const SizedBox(height: 42),
-
                 const VisitorLogsWidget(),
               ],
             ),
