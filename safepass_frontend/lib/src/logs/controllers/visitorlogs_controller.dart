@@ -21,6 +21,17 @@ class VisitorLogsController with ChangeNotifier {
   List<VisitorLog> get visitorLogs => _visitorLogs;
   String? get error => _error;
 
+  List<VisitorLog> getTodayLogs() {
+  final today = DateTime.now();
+  return _visitorLogs.where((log) {
+    final logDate = DateTime.tryParse(log.visitDate);
+    return logDate != null &&
+        logDate.year == today.year &&
+        logDate.month == today.month &&
+        logDate.day == today.day;
+  }).toList();
+}
+
   Future<void> getVisitorLogs(BuildContext context) async {
     if (_isLoading) return;
 

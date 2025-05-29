@@ -9,7 +9,7 @@
             "cwd": "safepass_frontend",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "chrome", "--web-port", "5000"],
+            "args": ["-d", "edge", "--web-port", "5000"],
         }
     ]
 }
