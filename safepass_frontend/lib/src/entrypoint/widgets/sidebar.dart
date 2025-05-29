@@ -50,10 +50,8 @@ class Sidebar extends StatelessWidget {
                       context.pop();
                     }
                   },
-                  selected: sidebarNotifier.getIndex == 0
-                    ? true
-                    : false,
-                  leading: AppIcons.chartIcon,
+                  selected: sidebarNotifier.getIndex == 0,
+                  leading: AppIcons.dashboardIconWithColor(sidebarNotifier.getIndex == 0),
                   title: Center(
                     child: Text(
                       "Dashboard",
@@ -71,15 +69,16 @@ class Sidebar extends StatelessWidget {
                       context.pop();
                     }
                   },
-                  selected: sidebarNotifier.getIndex == 1 || sidebarNotifier.getIndex == 3
-                    ? true
-                    : false,
-                  leading: AppIcons.chartIcon,
+                  selected: sidebarNotifier.getIndex == 1 || sidebarNotifier.getIndex == 3,
+                  leading: AppIcons.logsIconWithColor(sidebarNotifier.getIndex == 1 || sidebarNotifier.getIndex == 3),
                   title: Center(
                     child: Text(
                       "Logs",
                       style: AppTextStyles.defaultStyle
                     ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10
                   ),
                 ),
                 ListTile(
@@ -89,10 +88,8 @@ class Sidebar extends StatelessWidget {
                       context.pop();
                     }
                   },
-                  selected: sidebarNotifier.getIndex == 2
-                    ? true
-                    : false,
-                  leading: AppIcons.chartIcon,
+                  selected: sidebarNotifier.getIndex == 2,
+                  leading: AppIcons.settingsIconWithColor(sidebarNotifier.getIndex == 2),
                   title: Center(
                     child: Text(
                       "Settings",

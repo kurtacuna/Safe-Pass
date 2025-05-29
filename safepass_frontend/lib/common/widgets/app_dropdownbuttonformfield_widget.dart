@@ -24,7 +24,7 @@ class AppDropdownButtonFormFieldWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: 5,
+      mainAxisSize: MainAxisSize.min,
       children: [
         DropdownButtonFormField(
           decoration: InputDecoration(
@@ -49,19 +49,17 @@ class AppDropdownButtonFormFieldWidget extends StatelessWidget {
           onChanged: onChanged,
         ),
 
-        // Input field for custom values
-        inputFieldController != null
-          ? chosenOption.label == "Custom"
-            ? AppTextFormFieldWidget(
-                controller: inputFieldController!,
-                digitsOnly: true,
-                onEditingComplete: () {
-                  onEditingComplete!();
-                  FocusScope.of(context).unfocus();
-                },
-              )
-            : Container()
-          : Container()
+        if (inputFieldController != null && chosenOption.label == "Custom") ...[
+          const SizedBox(height: 5),
+          AppTextFormFieldWidget(
+            controller: inputFieldController!,
+            digitsOnly: true,
+            onEditingComplete: () {
+              onEditingComplete!();
+              FocusScope.of(context).unfocus();
+            },
+          )
+        ]
       ],
     );
   }

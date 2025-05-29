@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from . import models, serializers
 from rest_framework.parsers import MultiPartParser, FormParser
-# import face_recognition
+import face_recognition
 import cv2
 import numpy as np
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -28,7 +28,7 @@ def checkImage (uploaded_photo: InMemoryUploadedFile):
     return Response({"detail": "Could not decode image. Invalid image file."}, status=status.HTTP_400_BAD_REQUEST)
     
   rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
-  # face_locations = face_recognition.face_locations(rgb_image)
+  face_locations = face_recognition.face_locations(rgb_image)
 
   if not face_locations:
     return Response({"detail": "No face detected in the uploaded photo. Please upload a photo with a clear face."}, status=status.HTTP_400_BAD_REQUEST)
@@ -149,7 +149,7 @@ class VisitorsView(APIView):
 
   def get(self, request):
     try:
-      visitors = models.VisitorDetails.objects.all()
+      visitors = models.VisitorDetails.objects.all().order_by('-registration_date')
       serializer = serializers.VisitorDetailsSerializer(visitors, many=True)
       return Response({"visitors": serializer.data}, status=status.HTTP_200_OK)
     except Exception as e:

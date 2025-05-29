@@ -350,8 +350,6 @@ class _GeneralTabState extends State<GeneralTab> {
   }
 }
 
-// Keep your GeneralSettingsGroup and SubItemWidget as they are, no changes needed.
-
 class GeneralSettingsGroup extends StatelessWidget {
   const GeneralSettingsGroup({
     required this.title,
@@ -365,13 +363,14 @@ class GeneralSettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: 5,
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: AppTextStyles.biggerStyleBold
         ),
+        const SizedBox(height: 5),
         Padding(
           padding: EdgeInsets.only(
             left: AppConstants.kAppPadding.left
@@ -379,14 +378,14 @@ class GeneralSettingsGroup extends StatelessWidget {
           child: SizedBox(
             width: 800,
             child: Column(
-              spacing: 10,
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(
-                subItems.length, 
-                (index) {
-                  return subItems[index];
-                }
-              )
+              children: [
+                for (var i = 0; i < subItems.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 10),
+                  subItems[i],
+                ],
+              ],
             ),
           )
         )
@@ -408,7 +407,6 @@ class SubItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      spacing: 10,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
