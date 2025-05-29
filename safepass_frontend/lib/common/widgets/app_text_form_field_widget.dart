@@ -20,6 +20,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
     this.keyboardType,
     this.enabled = true,
     this.style,
+    this.onChanged,
     super.key
   });
 
@@ -62,6 +63,9 @@ class AppTextFormFieldWidget extends StatelessWidget {
   // Custom text style
   final TextStyle? style;
 
+  // Called when the text changes
+  final void Function(String)? onChanged;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -77,6 +81,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
       onTapOutside: onEditingComplete != null
         ? (event) => onEditingComplete!()
         : null,
+      onChanged: onChanged,
       validator: (value) {
         if (value!.isEmpty) {
           return validatorText ?? "Please enter a valid input";

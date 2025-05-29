@@ -11,6 +11,8 @@ import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart';
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
 import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controller.dart';
+import 'package:safepass_frontend/src/check_in/controller/visitor_search_controller.dart';
+import 'package:safepass_frontend/src/check_in/models/visitor_search_model.dart';
 
 class CheckInScreen extends StatefulWidget { //comment for checkpoint
   const CheckInScreen({super.key});
@@ -21,9 +23,9 @@ class CheckInScreen extends StatefulWidget { //comment for checkpoint
 
 class _CheckInScreenState extends State<CheckInScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _searchController = TextEditingController();
   final _nameController = TextEditingController();
   final _idNumberController = TextEditingController();
+  final _searchController = TextEditingController();
   String? _selectedVisitPurpose;
   bool _isFaceRecognized = false;
   bool _isDenied = false;
@@ -48,13 +50,11 @@ class _CheckInScreenState extends State<CheckInScreen> {
     });
   }
 
-  List<String> _visitPurposes = [];
-
   @override
   void dispose() {
-    _searchController.dispose();
     _nameController.dispose();
     _idNumberController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -172,7 +172,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
       return Center(child: AppCircularProgressIndicatorWidget());
     }
 
-    _visitPurposes = context.read<VisitPurposesController>().getVisitPurposes.map((e) => e.purpose).toList();
+    final visitPurposes = context.watch<VisitPurposesController>().getVisitPurposes;
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -223,17 +223,36 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: AppTextFormFieldWidget(
-                            controller: _searchController,
-                            hintText: 'Search Visitor ID',
-                            prefixIcon: const Icon(Icons.search),
+                          child: Autocomplete<VisitorSearchResult>(
+                            displayStringForOption: (option) => option.displayString,
+                            optionsBuilder: (TextEditingValue textEditingValue) async {
+                              if (textEditingValue.text.isEmpty) {
+                                return const Iterable<VisitorSearchResult>.empty();
+                              }
+                              await context.read<VisitorSearchController>().searchVisitors(
+                                context,
+                                textEditingValue.text,
+                              );
+                              return context.read<VisitorSearchController>().getSearchResults;
+                            },
+                            onSelected: (VisitorSearchResult selection) {
+                              context.read<VisitorSearchController>().setSelectedVisitor(selection);
+                              _nameController.text = selection.fullName;
+                              _idNumberController.text = selection.idNumber;
+                            },
+                            fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                              _searchController.text = textEditingController.text;
+                              return AppTextFormFieldWidget(
+                                controller: _searchController,
+                                focusNode: focusNode,
+                                hintText: 'Search Visitor ID or Name',
+                                prefixIcon: const Icon(Icons.search),
+                                onChanged: (value) {
+                                  textEditingController.text = value;
+                                },
+                              );
+                            },
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        AppButtonWidget(
-                          width: 120,
-                          onTap: _handleSearch,
-                          text: 'Search',
                         ),
                       ],
                     ),
@@ -273,13 +292,32 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                             AppTextFormFieldWidget(
                                               controller: _nameController,
                                               hintText: 'Name',
-                                              validatorText: 'Please enter visitor name',
+                                              enabled: false,
+                                              style: AppTextStyles.defaultStyle.copyWith(
+                                                color: AppColors.kDark,
+                                              ),
                                             ),
                                             const SizedBox(height: 30),
                                             AppTextFormFieldWidget(
                                               controller: _idNumberController,
                                               hintText: 'Visitor ID Number',
-                                              validatorText: 'Please enter visitor ID number',
+                                              enabled: false,
+                                              style: AppTextStyles.defaultStyle.copyWith(
+                                                color: AppColors.kDark,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 30),
+                                            AppTextFormFieldWidget(
+                                              controller: TextEditingController(
+                                                text: context.watch<VisitorSearchController>().getSelectedVisitor?.lastVisitDate == 'No previous visits' 
+                                                    ? '' 
+                                                    : context.watch<VisitorSearchController>().getSelectedVisitor?.lastVisitDate
+                                              ),
+                                              hintText: 'Last Visit',
+                                              enabled: false,
+                                              style: AppTextStyles.defaultStyle.copyWith(
+                                                color: AppColors.kDark,
+                                              ),
                                             ),
                                             const SizedBox(height: 30),
                                             Container(
@@ -298,17 +336,19 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                                     border: InputBorder.none,
                                                     contentPadding: EdgeInsets.symmetric(horizontal: 15),
                                                   ),
-                                                  items: _visitPurposes.map((String purpose) {
+                                                  items: visitPurposes.map((purpose) {
                                                     return DropdownMenuItem(
-                                                      value: purpose,
-                                                      child: Text(purpose),
+                                                      value: purpose.purpose,
+                                                      child: Text(purpose.purpose),
                                                     );
                                                   }).toList(),
-                                                  onChanged: (String? value) {
-                                                    setState(() {
-                                                      _selectedVisitPurpose = value;
-                                                    });
-                                                  },
+                                                  onChanged: context.watch<VisitorSearchController>().getSelectedVisitor != null
+                                                      ? (String? value) {
+                                                          setState(() {
+                                                            _selectedVisitPurpose = value;
+                                                          });
+                                                        }
+                                                      : null,
                                                 ),
                                               ),
                                             ),
@@ -316,12 +356,20 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                             AppButtonWidget(
                                               width: double.infinity,
                                               onTap: () {
-                                                if (_formKey.currentState!.validate()) {
-                                                  AppSnackbar.showSuccess(
+                                                if (_formKey.currentState!.validate() &&
+                                                    _selectedVisitPurpose != null &&
+                                                    context.read<VisitorSearchController>().getSelectedVisitor != null) {
+                                                  context.read<VisitorSearchController>().checkInVisitor(
                                                     context,
-                                                    'Visitor successfully checked in!'
+                                                    visitorId: context.read<VisitorSearchController>().getSelectedVisitor!.id,
+                                                    visitPurpose: _selectedVisitPurpose!,
                                                   );
-                                                  // TODO: Implement check-in logic
+                                                  setState(() {
+                                                    _selectedVisitPurpose = null;
+                                                    _nameController.clear();
+                                                    _idNumberController.clear();
+                                                    _searchController.clear();
+                                                  });
                                                 }
                                               },
                                               text: 'Confirm Check-In',
