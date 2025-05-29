@@ -35,7 +35,7 @@ class VisitorDetails(models.Model):
   
   def save(self, *args, **kwargs):
     self.full_name = f"{self.first_name}{' ' + self.middle_name if self.middle_name else ''} {self.last_name}"
-    dont_save = kwargs.pop('dont_save_id_number')
+    dont_save = kwargs.pop('dont_save_id_number', False) 
     if not dont_save:
       code = IdTypes.objects.get(type=self.id_type).code
       self.id_number = f"{code}-{self.id_number}" 

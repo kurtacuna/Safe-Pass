@@ -1,6 +1,11 @@
+import 'dart:typed_data';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/browser_client.dart' as http;
+import 'package:http/browser_client.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:safepass_frontend/common/assets/images.dart';
@@ -34,8 +39,31 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _contactNumberController = TextEditingController();
   String? _selectedIdType;
   bool _isLoading = false;
-
   List<String> _idTypes = [];
+
+  List<CameraDescription> cameras = [];
+  late CameraController _cameraController;
+  late Future<void> _initializeControllerFuture;
+  bool previewCamera = false;
+
+  void _loadCameras() async {
+    cameras = await availableCameras();
+
+    print("debug: list of cameras ${cameras}");
+
+    _cameraController = CameraController(
+      cameras.firstWhere(
+        (e) => e.name == "Logi C270 HD WebCam (046d:0825)",
+        orElse: () => cameras.first
+      ),
+      ResolutionPreset.high
+    );
+    _initializeControllerFuture = _cameraController.initialize();
+
+    setState(() {
+      previewCamera = true;
+    });
+  }
 
   @override
   void initState() {
@@ -53,12 +81,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _lastNameController.dispose();
     _idNumberController.dispose();
     _contactNumberController.dispose();
+    _cameraController.dispose();
     super.dispose();
   }
 
   Future<void> _registerVisitor() async {
     if (!mounted) return;  // Check if widget is still mounted
     
+    if (previewCamera == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please turn on the camera first"),
+          backgroundColor: AppColors.kDarkRed,
+        )
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) {
       AppSnackbar.showError(context, 'Please fill in all required fields');
       return;
@@ -69,28 +108,39 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       return;
     }
 
+    await _initializeControllerFuture;
+      final XFile image = await _cameraController.takePicture();
+      final Uint8List imageBytes = await image.readAsBytes();
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      var client = http.BrowserClient();
+      var client = BrowserClient();
       client.withCredentials = true;
-      final response = await client.post(
-        Uri.parse(ApiUrls.registrationUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': AppCookies.getCSRFToken()
-        },
-        body: json.encode({
-          'first_name': _firstNameController.text,
-          'middle_name': _middleNameController.text,
-          'last_name': _lastNameController.text,
-          'id_type': _selectedIdType,
-          'id_number': _idNumberController.text,
-          'contact_number': _contactNumberController.text,
-        }),
+      var url = Uri.parse(ApiUrls.registrationUrl);
+      var request = http.MultipartRequest('POST', url);
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'photo',
+          imageBytes,
+          filename: "imagefromclient.jpeg",
+          contentType: MediaType('image', 'jpeg')
+        )
       );
+      request.headers['X-CSRFToken'] = AppCookies.getCSRFToken();
+      request.fields['reg_details'] = json.encode({
+        'first_name': _firstNameController.text,
+        'middle_name': _middleNameController.text,
+        'last_name': _lastNameController.text,
+        'id_type': _selectedIdType,
+        'id_number': _idNumberController.text,
+        'contact_number': _contactNumberController.text,
+      });
+
+      var streamedResponse = await client.send(request);
+      var response = await http.Response.fromStream(streamedResponse);
 
       print('API Response Status: ${response.statusCode}');
       print('API Response Body: ${response.body}');
@@ -104,8 +154,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _lastNameController.clear();
         _idNumberController.clear();
         _contactNumberController.clear();
+        _cameraController.pausePreview();
         setState(() {
           _selectedIdType = null;
+          previewCamera = false;
         });
         
         // Show success message after state is updated
@@ -143,32 +195,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  Future<void> _scanFace() async {
-    setState(() {
-      _isLoading = true;
-    });
+  // Future<void> _scanFace() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
 
-    try {
-      var client = http.BrowserClient();
-      client.withCredentials = true;
-      final response = await client.post(Uri.parse(ApiUrls.registerFaceUrl));
+  //   try {
+  //     var client = BrowserClient();
+  //     client.withCredentials = true;
+  //     final response = await client.post(Uri.parse(ApiUrls.registerFaceUrl));
       
-      if (response.statusCode == 200) {
-        AppSnackbar.showSuccess(context, 'Face scan successful!');
-      } else {
-        AppSnackbar.showError(context, 'Face scan failed. Please try again.');
-      }
-    } catch (e) {
-      AppSnackbar.showError(
-        context, 
-        'An error occurred during face scan. Please try again.'
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+  //     if (response.statusCode == 200) {
+  //       AppSnackbar.showSuccess(context, 'Face scan successful!');
+  //     } else {
+  //       AppSnackbar.showError(context, 'Face scan failed. Please try again.');
+  //     }
+  //   } catch (e) {
+  //     AppSnackbar.showError(
+  //       context, 
+  //       'An error occurred during face scan. Please try again.'
+  //     );
+  //   } finally {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +241,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               child: TextButton.icon(
                 onPressed: _isLoading 
                   ? null 
-                  : () => context.go('/entrypoint'),
+                  : () {
+                    context.go('/entrypoint');
+                    _cameraController.dispose();
+                  },
                 icon: const Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
                 label: Text(
                   'Back to Dashboard',
@@ -303,13 +358,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         keyboardType: TextInputType.phone,
                                         digitsOnly: true,
                                       ),
-                                      const SizedBox(height: 30),
-                                      AppButtonWidget(
-                                        width: double.infinity,
-                                        onTap: _isLoading ? null : _registerVisitor,
-                                        text: _isLoading ? 'Registering...' : 'Enter Visitor',
-                                        isLoading: _isLoading,
-                                      ),
+                                      // const SizedBox(height: 30),
+                                      // AppButtonWidget(
+                                      //   width: double.infinity,
+                                      //   onTap: _isLoading ? null : _registerVisitor,
+                                      //   text: _isLoading ? 'Registering...' : 'Enter Visitor',
+                                      //   isLoading: _isLoading,
+                                      // ),
                                     ],
                                   ),
                                 ),
@@ -351,27 +406,40 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     color: Colors.blue.withOpacity(0.1),
                                     borderRadius: AppConstants.kAppBorderRadius,
                                   ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'Face Not Registered',
-                                          style: AppTextStyles.bigStyle.copyWith(
-                                            color: AppColors.kDarkGray,
+                                  child: previewCamera
+                                      ? FutureBuilder(
+                                          future: _initializeControllerFuture,
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState == ConnectionState.done) {
+                                              return SizedBox.expand(
+                                                child: CameraPreview(_cameraController)
+                                              );
+                                            } else {
+                                              return Center(child: AppCircularProgressIndicatorWidget(),);
+                                            }
+                                          }
+                                        )
+                                      : Center(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Face Not Registered',
+                                                style: AppTextStyles.bigStyle.copyWith(
+                                                  color: AppColors.kDarkGray,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 20),
+                                              AppButtonWidget(
+                                                width: 200,
+                                                onTap: _isLoading 
+                                                  ? null 
+                                                  : () => _loadCameras(),
+                                                text: _isLoading ? 'Scanning...' : 'TAKE A PHOTO',
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        const SizedBox(height: 20),
-                                        AppButtonWidget(
-                                          width: 200,
-                                          onTap: _isLoading 
-                                            ? null 
-                                            : () => _scanFace(),
-                                          text: _isLoading ? 'Scanning...' : 'TAKE A PHOTO',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -392,6 +460,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         _contactNumberController.clear();
                                         setState(() {
                                           _selectedIdType = null;
+                                          previewCamera = false;
+                                          _cameraController.pausePreview();
                                         });
                                       },
                                       text: 'Reset Form',
