@@ -35,14 +35,14 @@ class VisitorLogsSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
 class VisitPurposes(serializers.ModelSerializer):
-  class Meta:
-    model = models.VisitPurposes
-    fields = "__all__"
+    class Meta:
+        model = models.VisitPurposes
+        fields = ['id', 'purpose']
 
 class VisitorStatus(serializers.ModelSerializer):
     class Meta:
         model = models.visitor_status
-        fields = "__all__"
+        fields = ['id', 'status']
 
 
 
