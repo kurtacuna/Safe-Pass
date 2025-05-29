@@ -256,6 +256,19 @@ class _CheckInScreenState extends State<CheckInScreen> {
                               focusNode: _searchFocusNode,
                               hintText: 'Search Visitor ID or Name',
                               prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchController.text.isNotEmpty || context.read<VisitorSearchController>().getSelectedVisitor != null
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _nameController.clear();
+                                      _idNumberController.clear();
+                                      _selectedVisitPurpose = null;
+                                      context.read<VisitorSearchController>().clearSelectedVisitor();
+                                      setState(() {});
+                                    },
+                                  )
+                                : null,
                               onChanged: (value) {
                                 print("DEBUG: Search onChanged triggered with value: $value");
                                 if (value.isNotEmpty) {
@@ -264,6 +277,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                     context,
                                     value,
                                   );
+                                } else {
+                                  context.read<VisitorSearchController>().clearSelectedVisitor();
                                 }
                               },
                             ),

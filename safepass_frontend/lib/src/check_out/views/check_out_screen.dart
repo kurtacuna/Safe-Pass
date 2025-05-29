@@ -479,6 +479,19 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                               focusNode: _searchFocusNode,
                               hintText: 'Search Visitor ID or Name',
                               prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchController.text.isNotEmpty || context.read<CheckOutController>().getSelectedVisitor != null
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _nameController.clear();
+                                      _idNumberController.clear();
+                                      _visitPurposeController.clear();
+                                      context.read<CheckOutController>().clearSelectedVisitor();
+                                      setState(() {});
+                                    },
+                                  )
+                                : null,
                             ),
                             Consumer<CheckOutController>(
                               builder: (context, controller, _) {
