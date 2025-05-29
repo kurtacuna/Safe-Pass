@@ -6,6 +6,7 @@ import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/common_json_model.dart';
 import 'package:safepass_frontend/common/utils/refresh_access_token.dart';
 import 'package:safepass_frontend/src/check_out/model/visitor_search_result.dart';
+import 'package:universal_html/html.dart' as html;
 
 class CheckOutController with ChangeNotifier {
   bool _isLoading = false;
@@ -13,9 +14,32 @@ class CheckOutController with ChangeNotifier {
   
   List<VisitorSearchResult> _searchResults = [];
   List<VisitorSearchResult> get getSearchResults => _searchResults;
+
+  VisitorSearchResult? _selectedVisitor;
+  VisitorSearchResult? get getSelectedVisitor => _selectedVisitor;
+
+  void setSelectedVisitor(VisitorSearchResult? visitor) {
+    _selectedVisitor = visitor;
+    notifyListeners();
+  }
+
+  String? _getCsrfToken() {
+    final cookies = html.document.cookie?.split(';');
+    if (cookies != null) {
+      for (var cookie in cookies) {
+        final parts = cookie.trim().split('=');
+        if (parts[0] == 'csrftoken') {
+          return parts[1];
+        }
+      }
+    }
+    return null;
+  }
   
   Future<void> searchVisitors(BuildContext context, String query) async {
+    print('DEBUG: Starting searchVisitors with query: $query');
     if (query.isEmpty) {
+      print('DEBUG: Empty query, clearing results');
       _searchResults = [];
       notifyListeners();
       return;
@@ -25,25 +49,28 @@ class CheckOutController with ChangeNotifier {
     notifyListeners();
 
     try {
-      print('Searching for visitors with query: $query');
+      print('DEBUG: Making HTTP request to search visitors');
       var client = http.BrowserClient();
       client.withCredentials = true;
-      var url = Uri.parse('${ApiUrls.visitorSearchUrl}?query=$query');
-      print('Search URL: $url');
+      var url = Uri.parse('${ApiUrls.visitorCheckOutSearchUrl}?query=$query');
+      print('DEBUG: Search URL: $url');
       
       var response = await client.get(url);
-      print('Search response status: ${response.statusCode}');
-      print('Search response body: ${response.body}');
+      print('DEBUG: Search response status: ${response.statusCode}');
+      print('DEBUG: Search response body: ${response.body}');
 
       if (response.statusCode == 200) {
         VisitorSearchModel model = visitorSearchModelFromJson(response.body);
         _searchResults = model.results;
-        print('Found ${_searchResults.length} results');
+        print('DEBUG: Found ${_searchResults.length} results');
+        print('DEBUG: Search results: ${_searchResults.map((r) => r.toString()).toList()}');
       } else if (response.statusCode == 401) {
+        print('DEBUG: Unauthorized, attempting to refresh token');
         if (context.mounted) {
           await refetch(context, fetch: () => searchVisitors(context, query));
         }
       } else {
+        print('DEBUG: Error response received');
         CommonJsonModel model = commonJsonModelFromJson(response.body);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -56,7 +83,7 @@ class CheckOutController with ChangeNotifier {
       }
 
     } catch (e) {
-      print("CheckOutController searchVisitors error:");
+      print("ERROR in CheckOutController searchVisitors:");
       print(e);
     } finally {
       _isLoading = false;
@@ -73,15 +100,23 @@ class CheckOutController with ChangeNotifier {
       var client = http.BrowserClient();
       client.withCredentials = true;
       
-      // Using the visitor logs check-out endpoint
       var url = Uri.parse(ApiUrls.visitorCheckOutUrl);
       print('Check-out URL: $url');
+
+      final csrfToken = _getCsrfToken();
+      if (csrfToken == null) {
+        throw Exception('CSRF token not found');
+      }
       
       var response = await client.post(
         url,
-        body: {
-          'visitor_id': visitorId,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
         },
+        body: json.encode({
+          'visitor_id': visitorId,
+        }),
       );
       
       print('Check-out response status: ${response.statusCode}');
@@ -95,6 +130,8 @@ class CheckOutController with ChangeNotifier {
               backgroundColor: AppColors.kLightGreen,
             ),
           );
+          // Clear selection after successful check-out
+          setSelectedVisitor(null);
         }
       } else if (response.statusCode == 401) {
         if (context.mounted) {
