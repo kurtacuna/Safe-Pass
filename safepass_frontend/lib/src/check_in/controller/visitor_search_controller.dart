@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/browser_client.dart' as http;
 import 'package:safepass_frontend/common/const/kcolors.dart';
@@ -5,6 +6,7 @@ import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/common_json_model.dart';
 import 'package:safepass_frontend/common/utils/refresh_access_token.dart';
 import 'package:safepass_frontend/src/check_in/models/visitor_search_model.dart';
+import 'package:universal_html/html.dart' as html;
 
 class VisitorSearchController with ChangeNotifier {
   bool _isLoading = false;
@@ -12,6 +14,31 @@ class VisitorSearchController with ChangeNotifier {
   
   List<VisitorSearchResult> _searchResults = [];
   List<VisitorSearchResult> get getSearchResults => _searchResults;
+
+  String? _selectedVisitorId;
+  String? get getSelectedVisitorId => _selectedVisitorId;
+
+  VisitorSearchResult? _selectedVisitor;
+  VisitorSearchResult? get getSelectedVisitor => _selectedVisitor;
+
+  void setSelectedVisitor(VisitorSearchResult? visitor) {
+    _selectedVisitor = visitor;
+    _selectedVisitorId = visitor?.id;
+    notifyListeners();
+  }
+
+  String? _getCsrfToken() {
+    final cookies = html.document.cookie?.split(';');
+    if (cookies != null) {
+      for (var cookie in cookies) {
+        final parts = cookie.trim().split('=');
+        if (parts[0] == 'csrftoken') {
+          return parts[1];
+        }
+      }
+    }
+    return null;
+  }
   
   Future<void> searchVisitors(BuildContext context, String query) async {
     if (query.isEmpty) {
@@ -68,12 +95,22 @@ class VisitorSearchController with ChangeNotifier {
       var client = http.BrowserClient();
       client.withCredentials = true;
       var url = Uri.parse(ApiUrls.visitorCheckInUrl);
+      
+      final csrfToken = _getCsrfToken();
+      if (csrfToken == null) {
+        throw Exception('CSRF token not found');
+      }
+
       var response = await client.post(
         url,
-        body: {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: json.encode({
           'visitor_id': visitorId,
           'visit_purpose': visitPurpose,
-        },
+        }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -84,6 +121,8 @@ class VisitorSearchController with ChangeNotifier {
               backgroundColor: AppColors.kLightGreen,
             ),
           );
+          // Clear selection after successful check-in
+          setSelectedVisitor(null);
         }
       } else if (response.statusCode == 401) {
         if (context.mounted) {
@@ -108,6 +147,14 @@ class VisitorSearchController with ChangeNotifier {
     } catch (e) {
       print("VisitorSearchController checkInVisitor:");
       print(e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error checking in visitor: ${e.toString()}'),
+            backgroundColor: AppColors.kDarkRed,
+          ),
+        );
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

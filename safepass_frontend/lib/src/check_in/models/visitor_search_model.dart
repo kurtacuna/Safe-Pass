@@ -24,19 +24,22 @@ class VisitorSearchResult {
   final String id;
   final String idNumber;
   final String fullName;
-  final String? lastVisitDate;
+  final String displayString;
+  final String lastVisitDate;
 
   VisitorSearchResult({
     required this.id,
     required this.idNumber,
     required this.fullName,
-    this.lastVisitDate,
+    required this.displayString,
+    required this.lastVisitDate,
   });
 
   factory VisitorSearchResult.fromJson(Map<String, dynamic> json) => VisitorSearchResult(
     id: json["id"],
     idNumber: json["id_number"],
     fullName: json["full_name"],
+    displayString: json["display_string"],
     lastVisitDate: json["last_visit_date"],
   );
 
@@ -44,9 +47,10 @@ class VisitorSearchResult {
     "id": id,
     "id_number": idNumber,
     "full_name": fullName,
+    "display_string": displayString,
     "last_visit_date": lastVisitDate,
   };
 
   @override
-  String toString() => "$idNumber ($fullName)";
+  String toString() => displayString;
 } 
