@@ -77,7 +77,7 @@ class VisitorStatsView(APIView):
             print(f"Checked out logs: {list(checked_out_logs.values())}")
             
             # Get new registrants directly from VisitorDetails model
-            new_registrants = visitor_details_models.VisitorDetails.objects.filter(
+            new_registrants = VisitorDetails.objects.filter(
                 registration_date__date=today
             ).count()
             print(f"New registrants today: {new_registrants}")
