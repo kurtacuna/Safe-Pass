@@ -38,42 +38,81 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   @override
   void initState() {
     super.initState();
+    print('DEBUG: Initializing CheckOutScreen');
     _searchController.addListener(_onSearchChanged);
     _searchFocusNode.addListener(() {
+      print('DEBUG: Search focus changed - hasFocus: ${_searchFocusNode.hasFocus}');
       if (_searchFocusNode.hasFocus) {
         _showOverlay();
       } else {
-        _hideOverlay();
+        // Add a small delay before hiding overlay to allow for click handling
+        Future.delayed(const Duration(milliseconds: 200), () {
+          if (!_searchFocusNode.hasFocus) {
+            _hideOverlay();
+          }
+        });
       }
     });
   }
 
   void _onSearchChanged() {
+    print('DEBUG: Search text changed: ${_searchController.text}');
     if (_searchController.text.isEmpty) {
+      print('DEBUG: Search text is empty, hiding overlay');
       _hideOverlay();
     } else {
+      print('DEBUG: Calling searchVisitors with query: ${_searchController.text}');
       context.read<CheckOutController>().searchVisitors(context, _searchController.text);
       if (_searchFocusNode.hasFocus) {
+        print('DEBUG: Search has focus, showing overlay');
         _showOverlay();
       }
     }
   }
 
+  void _handleVisitorSelection(VisitorSearchResult visitor) {
+    print('DEBUG: Handling visitor selection');
+    print('DEBUG: Selected visitor data:');
+    print('ID: ${visitor.id}');
+    print('ID Number: ${visitor.idNumber}');
+    print('Full Name: ${visitor.fullName}');
+    print('Visit Purpose: ${visitor.visitPurpose}');
+
+    setState(() {
+      _selectedVisitor = visitor;
+      _searchController.text = visitor.toString();
+      _nameController.text = visitor.fullName;
+      _idNumberController.text = visitor.idNumber;
+      _visitPurposeController.text = visitor.visitPurpose ?? 'Not Available';
+    });
+
+    print('DEBUG: Updated form fields:');
+    print('Search Text: ${_searchController.text}');
+    print('Name: ${_nameController.text}');
+    print('ID Number: ${_idNumberController.text}');
+    print('Visit Purpose: ${_visitPurposeController.text}');
+
+    context.read<CheckOutController>().setSelectedVisitor(visitor);
+    _hideOverlay();
+    FocusScope.of(context).unfocus();
+  }
+
   void _showOverlay() {
+    print('DEBUG: Showing overlay');
     _hideOverlay();
 
     // Get the RenderBox of the search field using its GlobalKey
     final RenderBox? searchField = _searchFieldKey.currentContext?.findRenderObject() as RenderBox?;
     if (searchField == null) {
-      print('Search field RenderBox is null');
+      print('ERROR: Search field RenderBox is null');
       return;
     }
 
     final Size searchFieldSize = searchField.size;
     final Offset searchFieldOffset = searchField.localToGlobal(Offset.zero);
     
-    print('Search field position: ${searchFieldOffset.dx}, ${searchFieldOffset.dy}');
-    print('Search field size: ${searchFieldSize.width}, ${searchFieldSize.height}');
+    print('DEBUG: Search field position: ${searchFieldOffset.dx}, ${searchFieldOffset.dy}');
+    print('DEBUG: Search field size: ${searchFieldSize.width}, ${searchFieldSize.height}');
 
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
@@ -85,7 +124,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
           borderRadius: BorderRadius.circular(8),
           child: Consumer<CheckOutController>(
             builder: (context, controller, _) {
-              print('Building overlay: isLoading=${controller.getIsLoading}, results=${controller.getSearchResults.length}');
+              print('DEBUG: Building overlay - isLoading: ${controller.getIsLoading}, results: ${controller.getSearchResults.length}');
               
               if (controller.getIsLoading) {
                 return Container(
@@ -109,18 +148,44 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: controller.getSearchResults.length,
-                  itemBuilder: (context, index) {
-                    final visitor = controller.getSearchResults[index];
-                    return ListTile(
-                      title: Text(visitor.toString()),
-                      onTap: () {
-                        _selectVisitor(visitor);
-                      },
-                    );
-                  },
+                child: Material(
+                  color: Colors.transparent,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: controller.getSearchResults.length,
+                    itemBuilder: (context, index) {
+                      final visitor = controller.getSearchResults[index];
+                      print('DEBUG: Showing visitor in list: ${visitor.toString()}');
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _handleVisitorSelection(visitor),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: AppColors.kGray.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              child: Text(
+                                visitor.toString(),
+                                style: AppTextStyles.defaultStyle.copyWith(
+                                  color: AppColors.kDark,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               );
             },
@@ -135,35 +200,6 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   void _hideOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-  }
-
-  void _selectVisitor(VisitorSearchResult visitor) {
-    print('Selected visitor: ${visitor.toString()}');
-    print('Visitor details - ID: ${visitor.id}, Name: ${visitor.fullName}, ID Number: ${visitor.idNumber}');
-    
-    setState(() {
-      _selectedVisitor = visitor;
-      _searchController.text = visitor.toString();
-      _nameController.text = visitor.fullName;
-      _idNumberController.text = visitor.idNumber;
-      _selectedVisitPurpose = visitor.visitPurpose ?? 'Not Available';
-      _visitPurposeController.text = _selectedVisitPurpose!;
-    });
-    
-    print('Updated fields - Name: ${_nameController.text}, ID: ${_idNumberController.text}, Purpose: $_selectedVisitPurpose');
-    _hideOverlay();
-  }
-
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    _nameController.dispose();
-    _idNumberController.dispose();
-    _visitPurposeController.dispose();
-    _searchFocusNode.dispose();
-    _hideOverlay();
-    super.dispose();
   }
 
   void _showReminderDialog() {
@@ -251,6 +287,15 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                               context,
                               _selectedVisitor!.id,
                             );
+                            // Clear the form after successful check-out
+                            setState(() {
+                              _selectedVisitor = null;
+                              _searchController.clear();
+                              _nameController.clear();
+                              _idNumberController.clear();
+                              _visitPurposeController.clear();
+                              _isFaceRecognized = false;
+                            });
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -276,6 +321,76 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSearchResults(BuildContext context, CheckOutController controller) {
+    if (controller.getIsLoading) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        color: Colors.white,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (controller.getSearchResults.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        color: Colors.white,
+        child: const Text('No visitors found'),
+      );
+    }
+
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 200),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: controller.getSearchResults.length,
+        itemBuilder: (context, index) {
+          final visitor = controller.getSearchResults[index];
+          print('DEBUG: Building list item for visitor:');
+          print('ID: ${visitor.id}');
+          print('Display String: ${visitor.toString()}');
+          
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _handleVisitorSelection(visitor),
+              hoverColor: AppColors.kGray.withOpacity(0.1),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AppColors.kGray.withOpacity(0.2),
+                    ),
+                  ),
+                ),
+                child: Text(
+                  visitor.toString(),
+                  style: AppTextStyles.defaultStyle.copyWith(
+                    color: AppColors.kDark,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -327,13 +442,25 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                   // Search Bar
                   SizedBox(
                     width: 1000,
-                          child: AppTextFormFieldWidget(
-                      key: _searchFieldKey,
-                            controller: _searchController,
-                      focusNode: _searchFocusNode,
-                            hintText: 'Search Visitor ID',
-                            prefixIcon: const Icon(Icons.search),
-                          ),
+                    child: Column(
+                      children: [
+                        AppTextFormFieldWidget(
+                          key: _searchFieldKey,
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          hintText: 'Search Visitor ID',
+                          prefixIcon: const Icon(Icons.search),
+                        ),
+                        Consumer<CheckOutController>(
+                          builder: (context, controller, _) {
+                            if (_searchFocusNode.hasFocus || controller.getSearchResults.isNotEmpty) {
+                              return _buildSearchResults(context, controller);
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 70),
                   // Two Column Layout
@@ -389,10 +516,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                               width: double.infinity,
                                               onTap: () {
                                                 if (_formKey.currentState!.validate() && _selectedVisitor != null) {
-                                                  context.read<CheckOutController>().checkOutVisitor(
-                                                    context,
-                                                    _selectedVisitor!.id,
-                                                  );
+                                                  _showReminderDialog();
                                                 }
                                               },
                                               text: 'Confirm Check-Out',
