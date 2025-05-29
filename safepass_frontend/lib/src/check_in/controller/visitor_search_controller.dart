@@ -27,6 +27,13 @@ class VisitorSearchController with ChangeNotifier {
     notifyListeners();
   }
 
+  void clearSelectedVisitor() {
+    _selectedVisitor = null;
+    _selectedVisitorId = null;
+    _searchResults = [];
+    notifyListeners();
+  }
+
   String? _getCsrfToken() {
     final cookies = html.document.cookie?.split(';');
     if (cookies != null) {
