@@ -246,102 +246,104 @@ class _DatabaseTabState extends State<DatabaseTab> {
               ),
           Flexible(
             child: SingleChildScrollView(
-              child: Table(
-                columnWidths: {
-                  7: FractionColumnWidth(0.1)
-                },
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                children: [
-                  // Table Headers
-                  TableRow(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: AppColors.kGray
-                        )
-                      )
-                    ),
+              child: paginatedRows.isEmpty
+                ? Center(child: Text("No visitors found"))
+                : Table(
+                    columnWidths: {
+                      7: FractionColumnWidth(0.1)
+                    },
+                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     children: [
-                      TableHeader(
-                        text: "Photo"
-                      ),
-                      TableHeader(
-                        text: "Name"
-                      ),
-                      TableHeader(
-                        text: "Contact Number"
-                      ),
-                      TableHeader(
-                        text: "ID Type"
-                      ),
-                      TableHeader(
-                        text: "ID Number"
-                      ),
-                      TableHeader(
-                        text: "Status"
-                      ),
-                      TableHeader(
-                        text: "Registration Date"
-                      ),
-                      TableHeader(
-                        text: "Actions"
-                      ),
-                    ]
-                  ),
-                  // Table Values
-                  ...paginatedRows.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    var row = entry.value;
-                    return TableRow(
-                      children: [
-                        TableCellWidget(
-                          child: Image.network(
-                            ApiUrls.getImageUrl(row.photo),
-                            width: 70,
-                            height: 70,
-                          )
-                        ), 
-                        TableCellWidget(
-                          text: row.fullName
-                        ),
-                        TableCellWidget(
-                          text: row.contactNumber
-                        ),
-                        TableCellWidget(
-                          text: row.idType.type
-                        ),
-                        TableCellWidget(
-                          text: row.idNumber
-                        ),
-                        TableCellWidget(
-                          text: row.status
-                        ),
-                        TableCellWidget(
-                          text: DateFormat('MMM d, y H:m').format(row.registrationDate)
-                        ),
-                        TableCellWidget(
-                          child: AppButtonWidget(
-                            onTap: () {
-                              context.read<SettingsTabNotifier>().setVisitor = index;
-                              context.read<SidebarNotifier>().setIndex = 3;
-                            },
-                            height: 30,
-                            child: Padding(
-                              padding: EdgeInsets.all(0),
-                              child: Image.asset(
-                                "assets/images/edit_icon.png",
-                                width: 20,
-                                height: 20,
-                                color: AppColors.kWhite,
-                              )
+                      // Table Headers
+                      TableRow(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: AppColors.kGray
                             )
                           )
-                        )
-                      ]
-                    );
-                  })
-                ]
-              ),
+                        ),
+                        children: [
+                          TableHeader(
+                            text: "Photo"
+                          ),
+                          TableHeader(
+                            text: "Name"
+                          ),
+                          TableHeader(
+                            text: "Contact Number"
+                          ),
+                          TableHeader(
+                            text: "ID Type"
+                          ),
+                          TableHeader(
+                            text: "ID Number"
+                          ),
+                          TableHeader(
+                            text: "Status"
+                          ),
+                          TableHeader(
+                            text: "Registration Date"
+                          ),
+                          TableHeader(
+                            text: "Actions"
+                          ),
+                        ]
+                      ),
+                      // Table Values
+                      ...paginatedRows.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        var row = entry.value;
+                        return TableRow(
+                          children: [
+                            TableCellWidget(
+                              child: Image.network(
+                                ApiUrls.getImageUrl(row.photo),
+                                width: 70,
+                                height: 70,
+                              )
+                            ), 
+                            TableCellWidget(
+                              text: row.fullName
+                            ),
+                            TableCellWidget(
+                              text: row.contactNumber
+                            ),
+                            TableCellWidget(
+                              text: row.idType.type
+                            ),
+                            TableCellWidget(
+                              text: row.idNumber
+                            ),
+                            TableCellWidget(
+                              text: row.status
+                            ),
+                            TableCellWidget(
+                              text: DateFormat('MMM d, y H:m').format(row.registrationDate)
+                            ),
+                            TableCellWidget(
+                              child: AppButtonWidget(
+                                onTap: () {
+                                  context.read<SettingsTabNotifier>().setVisitor = index;
+                                  context.read<SidebarNotifier>().setIndex = 3;
+                                },
+                                height: 30,
+                                child: Padding(
+                                  padding: EdgeInsets.all(0),
+                                  child: Image.asset(
+                                    "assets/images/edit_icon.png",
+                                    width: 20,
+                                    height: 20,
+                                    color: AppColors.kWhite,
+                                  )
+                                )
+                              )
+                            )
+                          ]
+                        );
+                      })
+                    ]
+                  ),
             ),
           ),
           _buildPagination()

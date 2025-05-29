@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:safepass_frontend/common/assets/images.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kconstants.dart';
 import 'package:safepass_frontend/common/widgets/app_button_widget.dart';
+import 'package:safepass_frontend/common/widgets/app_circular_progress_indicator_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
 import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart';
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
+import 'package:safepass_frontend/src/check_out/controller/check_out_controller.dart';
+import 'package:safepass_frontend/src/check_out/model/visitor_search_result.dart';
 
 class CheckOutScreen extends StatefulWidget {
   const CheckOutScreen({super.key});
@@ -21,84 +25,145 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   final _searchController = TextEditingController();
   final _nameController = TextEditingController();
   final _idNumberController = TextEditingController();
-  final _lastVisitController = TextEditingController();
   final _visitPurposeController = TextEditingController();
-  final _checkOutTimeController = TextEditingController();
+  String? _selectedVisitPurpose;
   bool _isFaceRecognized = false;
   bool _isDenied = false;
   bool _showVerificationDialog = false;
-  DateTime? _selectedCheckOutTime;
-  String? _selectedVisitPurpose;
-
-  final List<String> _visitPurposes = [
-    'Legal Consultation',
-    'Family Visit',
-    'Official Visit',
-    'Religious Visit/Pastoral Counseling',
-    'Educational/Rehabilitative Program Visit',
-    'Media Visit',
-    'Other'
-  ];
+  final FocusNode _searchFocusNode = FocusNode();
+  OverlayEntry? _overlayEntry;
+  VisitorSearchResult? _selectedVisitor;
+  final GlobalKey _searchFieldKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    // Set current time as default check-out time
-    _selectedCheckOutTime = DateTime.now();
-    _checkOutTimeController.text = _formatDateTime(_selectedCheckOutTime!);
+    _searchController.addListener(_onSearchChanged);
+    _searchFocusNode.addListener(() {
+      if (_searchFocusNode.hasFocus) {
+        _showOverlay();
+      } else {
+        _hideOverlay();
+      }
+    });
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _nameController.dispose();
-    _idNumberController.dispose();
-    _lastVisitController.dispose();
-    _visitPurposeController.dispose();
-    _checkOutTimeController.dispose();
-    super.dispose();
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
-
-  Future<void> _selectCheckOutTime() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedCheckOutTime ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null) {
-      final TimeOfDay? timePicked = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(_selectedCheckOutTime ?? DateTime.now()),
-      );
-      if (timePicked != null) {
-        setState(() {
-          _selectedCheckOutTime = DateTime(
-            picked.year,
-            picked.month,
-            picked.day,
-            timePicked.hour,
-            timePicked.minute,
-          );
-          _checkOutTimeController.text = _formatDateTime(_selectedCheckOutTime!);
-        });
+  void _onSearchChanged() {
+    if (_searchController.text.isEmpty) {
+      _hideOverlay();
+    } else {
+      context.read<CheckOutController>().searchVisitors(context, _searchController.text);
+      if (_searchFocusNode.hasFocus) {
+        _showOverlay();
       }
     }
   }
 
-  void _handleSearch() {
-    // TODO: Implement search functionality
-    // For now, simulate finding a visitor
+  void _showOverlay() {
+    _hideOverlay();
+
+    // Get the RenderBox of the search field using its GlobalKey
+    final RenderBox? searchField = _searchFieldKey.currentContext?.findRenderObject() as RenderBox?;
+    if (searchField == null) {
+      print('Search field RenderBox is null');
+      return;
+    }
+
+    final Size searchFieldSize = searchField.size;
+    final Offset searchFieldOffset = searchField.localToGlobal(Offset.zero);
+    
+    print('Search field position: ${searchFieldOffset.dx}, ${searchFieldOffset.dy}');
+    print('Search field size: ${searchFieldSize.width}, ${searchFieldSize.height}');
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: searchFieldOffset.dy + searchFieldSize.height,
+        left: searchFieldOffset.dx,
+        width: searchFieldSize.width,
+        child: Material(
+          elevation: 4,
+          borderRadius: BorderRadius.circular(8),
+          child: Consumer<CheckOutController>(
+            builder: (context, controller, _) {
+              print('Building overlay: isLoading=${controller.getIsLoading}, results=${controller.getSearchResults.length}');
+              
+              if (controller.getIsLoading) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.white,
+                  child: const Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (controller.getSearchResults.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.white,
+                  child: const Text('No visitors found'),
+                );
+              }
+
+              return Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: controller.getSearchResults.length,
+                  itemBuilder: (context, index) {
+                    final visitor = controller.getSearchResults[index];
+                    return ListTile(
+                      title: Text(visitor.toString()),
+                      onTap: () {
+                        _selectVisitor(visitor);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _hideOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _selectVisitor(VisitorSearchResult visitor) {
+    print('Selected visitor: ${visitor.toString()}');
+    print('Visitor details - ID: ${visitor.id}, Name: ${visitor.fullName}, ID Number: ${visitor.idNumber}');
+    
     setState(() {
-      _nameController.text = 'John Doe';
-      _idNumberController.text = 'VIS-2024-001';
-      _lastVisitController.text = '2024-03-15 09:30';
-      _selectedVisitPurpose = 'Official Visit';
+      _selectedVisitor = visitor;
+      _searchController.text = visitor.toString();
+      _nameController.text = visitor.fullName;
+      _idNumberController.text = visitor.idNumber;
+      _selectedVisitPurpose = visitor.visitPurpose ?? 'Not Available';
+      _visitPurposeController.text = _selectedVisitPurpose!;
     });
+    
+    print('Updated fields - Name: ${_nameController.text}, ID: ${_idNumberController.text}, Purpose: $_selectedVisitPurpose');
+    _hideOverlay();
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _nameController.dispose();
+    _idNumberController.dispose();
+    _visitPurposeController.dispose();
+    _searchFocusNode.dispose();
+    _hideOverlay();
+    super.dispose();
   }
 
   void _showReminderDialog() {
@@ -177,11 +242,16 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(context);
                           setState(() {
                             _isFaceRecognized = true;
                           });
-                          // TODO: Implement check-out logic
+                          Navigator.pop(context);
+                          if (_selectedVisitor != null) {
+                            context.read<CheckOutController>().checkOutVisitor(
+                              context,
+                              _selectedVisitor!.id,
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.kDarkBlue,
@@ -257,25 +327,15 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                   // Search Bar
                   SizedBox(
                     width: 1000,
-                    child: Row(
-                      children: [
-                        Expanded(
                           child: AppTextFormFieldWidget(
+                      key: _searchFieldKey,
                             controller: _searchController,
+                      focusNode: _searchFocusNode,
                             hintText: 'Search Visitor ID',
                             prefixIcon: const Icon(Icons.search),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        AppButtonWidget(
-                          width: 120,
-                          onTap: _handleSearch,
-                          text: 'Search',
-                        ),
-                      ],
-                    ),
                   ),
-                  const SizedBox(height: 55),
+                  const SizedBox(height: 70),
                   // Two Column Layout
                   Center(
                     child: ConstrainedBox(
@@ -289,7 +349,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 55),
                                 ConstrainedBox(
                                   constraints: const BoxConstraints(maxWidth: 400),
                                   child: Column(
@@ -310,81 +370,28 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                             AppTextFormFieldWidget(
                                               controller: _nameController,
                                               hintText: 'Name',
-                                              validatorText: 'Please enter visitor name',
-                                              enabled: true,
+                                              enabled: false,
                                             ),
                                             const SizedBox(height: 30),
                                             AppTextFormFieldWidget(
                                               controller: _idNumberController,
-                                              hintText: 'ID Number',
-                                              validatorText: 'Please enter ID number',
-                                              enabled: true,
+                                              hintText: 'Visitor ID Number',
+                                              enabled: false,
                                             ),
                                             const SizedBox(height: 30),
                                             AppTextFormFieldWidget(
-                                              controller: _lastVisitController,
-                                              hintText: 'Last Visit',
-                                              validatorText: 'Please enter last visit date',
-                                              enabled: true,
-                                            ),
-                                            const SizedBox(height: 30),
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: AppColors.kLighterGray,
-                                                borderRadius: AppConstants.kAppBorderRadius,
-                                                border: Border.all(color: AppColors.kGray),
-                                              ),
-                                              child: DropdownButtonHideUnderline(
-                                                child: DropdownButtonFormField<String>(
-                                                  value: _selectedVisitPurpose,
-                                                  hint: const Text('Visit Purpose'),
-                                                  style: AppTextStyles.defaultStyle,
-                                                  isExpanded: true,
-                                                  decoration: const InputDecoration(
-                                                    border: InputBorder.none,
-                                                    contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                                                  ),
-                                                  items: _visitPurposes.map((String purpose) {
-                                                    return DropdownMenuItem(
-                                                      value: purpose,
-                                                      child: Text(purpose),
-                                                    );
-                                                  }).toList(),
-                                                  onChanged: (String? value) {
-                                                    setState(() {
-                                                      _selectedVisitPurpose = value;
-                                                    });
-                                                  },
-                                                  validator: (value) {
-                                                    if (value == null || value.isEmpty) {
-                                                      return 'Please select visit purpose';
-                                                    }
-                                                    return null;
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 30),
-                                            GestureDetector(
-                                              onTap: _selectCheckOutTime,
-                                              child: AbsorbPointer(
-                                                child: AppTextFormFieldWidget(
-                                                  controller: _checkOutTimeController,
-                                                  hintText: 'Check-Out Time',
-                                                  validatorText: 'Please select check-out time',
-                                                  enabled: true,
-                                                  suffixIcon: const Icon(Icons.calendar_today),
-                                                ),
-                                              ),
+                                              controller: _visitPurposeController,
+                                              hintText: 'Visit Purpose',
+                                              enabled: false,
                                             ),
                                             const SizedBox(height: 30),
                                             AppButtonWidget(
                                               width: double.infinity,
                                               onTap: () {
-                                                if (_formKey.currentState!.validate()) {
-                                                  AppSnackbar.showSuccess(
+                                                if (_formKey.currentState!.validate() && _selectedVisitor != null) {
+                                                  context.read<CheckOutController>().checkOutVisitor(
                                                     context,
-                                                    'Visitor successfully checked out!'
+                                                    _selectedVisitor!.id,
                                                   );
                                                 }
                                               },
@@ -488,9 +495,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                               _isDenied = true;
                                               _isFaceRecognized = false;
                                             });
-                                            // TODO: Implement deny check-out
+                                            // TODO: Implement deny visitor
                                           },
-                                          text: 'Deny Check-Out',
+                                          text: 'Deny Visitor',
                                           color: AppColors.kGray,
                                         ),
                                         AppButtonWidget(
