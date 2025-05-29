@@ -12,7 +12,7 @@ import 'package:safepass_frontend/common/widgets/app_text_form_field_widget.dart
 import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
 import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controller.dart';
 
-class CheckInScreen extends StatefulWidget {
+class CheckInScreen extends StatefulWidget { //comment for checkpoint
   const CheckInScreen({super.key});
 
   @override
