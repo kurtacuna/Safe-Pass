@@ -13,6 +13,7 @@ import 'package:safepass_frontend/common/utils/widgets/snackbar.dart';
 import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controller.dart';
 import 'package:safepass_frontend/src/check_in/controller/visitor_search_controller.dart';
 import 'package:safepass_frontend/src/check_in/models/visitor_search_model.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CheckInScreen extends StatefulWidget { //comment for checkpoint
   const CheckInScreen({super.key});
@@ -26,10 +27,13 @@ class _CheckInScreenState extends State<CheckInScreen> {
   final _nameController = TextEditingController();
   final _idNumberController = TextEditingController();
   final _searchController = TextEditingController();
+  TextEditingController? _autocompleteController;
   String? _selectedVisitPurpose;
   bool _isFaceRecognized = false;
   bool _isDenied = false;
   bool _showVerificationDialog = false;
+  final _searchFieldKey = GlobalKey();
+  final _searchFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -55,6 +59,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
     _nameController.dispose();
     _idNumberController.dispose();
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -182,9 +187,44 @@ class _CheckInScreenState extends State<CheckInScreen> {
             Positioned(
               top: 50,
               left: 50,
-              child: Image.asset(
-                AppImages.logoDark,
-                height: 50,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => context.go('/entrypoint'),
+                  child: Image.asset(
+                    AppImages.logoDark,
+                    height: 50,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 50,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/images/checked_in_icon2.svg',
+                      width: 34,
+                      height: 34,
+                      colorFilter: ColorFilter.mode(
+                        AppColors.kDarkBlue,
+                        BlendMode.srcIn
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Visitor Check-In',
+                      style: AppTextStyles.biggestStyle.copyWith(
+                        color: AppColors.kDark,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             Positioned(
@@ -205,59 +245,110 @@ class _CheckInScreenState extends State<CheckInScreen> {
 
             // Main Content
             Padding(
-              padding: const EdgeInsets.fromLTRB(50, 120, 50, 50),
+              padding: const EdgeInsets.fromLTRB(50, 150, 50, 50),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    'Visitor Check-In',
-                    style: AppTextStyles.biggestStyle.copyWith(
-                      color: AppColors.kDark,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 50),
                   // Search Bar
                   SizedBox(
                     width: 1000,
-                    child: Row(
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Autocomplete<VisitorSearchResult>(
-                            displayStringForOption: (option) => option.displayString,
-                            optionsBuilder: (TextEditingValue textEditingValue) async {
-                              if (textEditingValue.text.isEmpty) {
-                                return const Iterable<VisitorSearchResult>.empty();
-                              }
-                              await context.read<VisitorSearchController>().searchVisitors(
+                        AppTextFormFieldWidget(
+                          key: _searchFieldKey,
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          hintText: 'Search Visitor ID or Name',
+                          prefixIcon: const Icon(Icons.search),
+                          onChanged: (value) {
+                            if (value.isNotEmpty) {
+                              context.read<VisitorSearchController>().searchVisitors(
                                 context,
-                                textEditingValue.text,
+                                value,
                               );
-                              return context.read<VisitorSearchController>().getSearchResults;
-                            },
-                            onSelected: (VisitorSearchResult selection) {
-                              context.read<VisitorSearchController>().setSelectedVisitor(selection);
-                              _nameController.text = selection.fullName;
-                              _idNumberController.text = selection.idNumber;
-                            },
-                            fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                              _searchController.text = textEditingController.text;
-                              return AppTextFormFieldWidget(
-                                controller: _searchController,
-                                focusNode: focusNode,
-                                hintText: 'Search Visitor ID or Name',
-                                prefixIcon: const Icon(Icons.search),
-                                onChanged: (value) {
-                                  textEditingController.text = value;
-                                },
+                            }
+                          },
+                        ),
+                        Consumer<VisitorSearchController>(
+                          builder: (context, controller, _) {
+                            if (_searchFocusNode.hasFocus && 
+                                _searchController.text.isNotEmpty && 
+                                controller.getSelectedVisitor == null) {
+                              return Container(
+                                constraints: const BoxConstraints(maxHeight: 200),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: controller.getIsLoading
+                                      ? Container(
+                                          padding: const EdgeInsets.all(16),
+                                          child: const Center(child: CircularProgressIndicator()),
+                                        )
+                                      : controller.getSearchResults.isEmpty
+                                          ? Container(
+                                              padding: const EdgeInsets.all(16),
+                                              child: const Text('No visitors found'),
+                                            )
+                                          : ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount: controller.getSearchResults.length,
+                                              itemBuilder: (context, index) {
+                                                final visitor = controller.getSearchResults[index];
+                                                return Material(
+                                                  color: Colors.transparent,
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      controller.setSelectedVisitor(visitor);
+                                                      _nameController.text = visitor.fullName;
+                                                      _idNumberController.text = visitor.idNumber;
+                                                      _searchController.text = visitor.toString();
+                                                      FocusScope.of(context).unfocus();
+                                                      setState(() {}); // Trigger rebuild to hide overlay
+                                                    },
+                                                    hoverColor: AppColors.kGray.withOpacity(0.1),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 12,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                            color: AppColors.kGray.withOpacity(0.2),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        visitor.toString(),
+                                                        style: AppTextStyles.defaultStyle.copyWith(
+                                                          color: AppColors.kDark,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                ),
                               );
-                            },
-                          ),
+                            }
+                            return const SizedBox.shrink();
+                          },
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 70),
+                  const SizedBox(height: 50),
                   // Two Column Layout
                   Center(
                     child: ConstrainedBox(
@@ -322,31 +413,47 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                             const SizedBox(height: 30),
                                             Container(
                                               decoration: BoxDecoration(
-                                                color: AppColors.kLighterGray,
+                                                color: AppColors.kWhite,
                                                 borderRadius: AppConstants.kAppBorderRadius,
                                                 border: Border.all(color: AppColors.kGray),
                                               ),
                                               child: DropdownButtonHideUnderline(
                                                 child: DropdownButtonFormField<String>(
+                                                  dropdownColor: Colors.white,
                                                   value: _selectedVisitPurpose,
-                                                  hint: const Text('Visit Purpose'),
-                                                  style: AppTextStyles.defaultStyle,
+                                                  hint: Text(
+                                                    'Visit Purpose',
+                                                    style: AppTextStyles.defaultStyle.copyWith(
+                                                      color: AppColors.kDark,
+                                                    ),
+                                                  ),
+                                                  style: AppTextStyles.defaultStyle.copyWith(
+                                                    color: AppColors.kDark,
+                                                  ),
                                                   isExpanded: true,
                                                   decoration: const InputDecoration(
                                                     border: InputBorder.none,
                                                     contentPadding: EdgeInsets.symmetric(horizontal: 15),
                                                   ),
                                                   items: visitPurposes.map((purpose) {
+                                                    print("DEBUG: Creating dropdown item for purpose: ${purpose.purpose}");
                                                     return DropdownMenuItem(
                                                       value: purpose.purpose,
-                                                      child: Text(purpose.purpose),
+                                                      child: Text(
+                                                        purpose.purpose,
+                                                        style: AppTextStyles.defaultStyle.copyWith(
+                                                          color: AppColors.kDark,
+                                                        ),
+                                                      ),
                                                     );
                                                   }).toList(),
                                                   onChanged: context.watch<VisitorSearchController>().getSelectedVisitor != null
                                                       ? (String? value) {
+                                                          print("DEBUG: Visit purpose selected: $value");
                                                           setState(() {
                                                             _selectedVisitPurpose = value;
                                                           });
+                                                          print("DEBUG: Updated selected visit purpose: $_selectedVisitPurpose");
                                                         }
                                                       : null,
                                                 ),
@@ -369,6 +476,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                                     _nameController.clear();
                                                     _idNumberController.clear();
                                                     _searchController.clear();
+                                                    _autocompleteController?.clear();
                                                   });
                                                 }
                                               },

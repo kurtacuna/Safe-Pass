@@ -67,7 +67,7 @@ class _AppIconCardWidgetState extends State<AppIconCardWidget> {
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -79,7 +79,7 @@ class _AppIconCardWidgetState extends State<AppIconCardWidget> {
                   height: 32,
                   colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
                 ),
-                const SizedBox(width: 32),
+                const SizedBox(width: 12),
                 Flexible(
                   child: Text(
                     widget.label,
