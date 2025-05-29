@@ -17,4 +17,16 @@ class ApiUrls {
   static String visitPurposesUrl = '$_appBaseUrl/api/visitor_logs/purposes/';
   static String visitorsUrl = '$_appBaseUrl/api/visitor_details/visitors/';
   static String idTypesUrl = '$_appBaseUrl/api/visitor_details/id_types/';
+  static String updateVisitorDetailsUrl = '$_appBaseUrl/api/visitor_details/update_details/';
+  static String updatePhotoUrl = '$_appBaseUrl/api/visitor_details/update_photo/';
+  static String settingsUrl = '$_appBaseUrl/api/settings/';
+  static String updateSettingsUrl = '$_appBaseUrl/api/settings/update/';
+
+  static String getImageUrl(String photoUrl) {
+    return _appBaseUrl + photoUrl;
+  }
+  static String visitorSearchUrl = '$_appBaseUrl/api/visitor_details/search/';
+  static String visitorCheckInUrl = '$_appBaseUrl/api/visitor_logs/check-in/';
+  static const String baseUrl = 'http://localhost:8000/api';
+  static const String visitorCheckOutUrl = '$baseUrl/visitors/check-out';
 }

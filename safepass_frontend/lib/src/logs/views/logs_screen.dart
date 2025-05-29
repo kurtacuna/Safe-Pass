@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:safepass_frontend/common/widgets/app_circular_progress_indicator_widget.dart';
+import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controller.dart';
 import '../controllers/visitorlogs_controller.dart';
 import '../models/visitor_logs_model.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
@@ -33,6 +35,11 @@ class _LogsScreenState extends State<LogsScreen> {
   
   ScrollController scrollController = ScrollController();
 
+  final List<String> _statusItems = [
+    "Checked-in",
+    "Checked-out"
+  ];
+  List<String> _purposeItems = [];
 
   @override
   void initState() {
@@ -40,6 +47,7 @@ class _LogsScreenState extends State<LogsScreen> {
     tempSearchQuery = searchQuery;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VisitorLogsController>().getVisitorLogs(context);
+      context.read<VisitPurposesController>().fetchVisitPurposes(context);
       if (context.read<VisitorLogsController>().visitorLogs == []) {
         context.read<VisitorLogsController>().getVisitorLogs(context);
       }
@@ -98,6 +106,8 @@ class _LogsScreenState extends State<LogsScreen> {
               startDate: startDate,
               endDate: endDate,
               selectedStatus: selectedStatus,
+              statusItems: _statusItems,
+              purposeItems: _purposeItems,
               onStartDatePicked: (picked) {
                 setState(() {
                   startDate = picked;
@@ -141,6 +151,12 @@ class _LogsScreenState extends State<LogsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<VisitPurposesController>().getIsLoading) {
+      return Center(child: AppCircularProgressIndicatorWidget());
+    }
+
+    _purposeItems = context.read<VisitPurposesController>().getVisitPurposes.map((e) => e.purpose).toList();
+
     return Scaffold(
       backgroundColor: AppColors.kWhite,
       body: SafeArea(

@@ -31,6 +31,7 @@ class AppDropdownButtonFormFieldWidget extends StatelessWidget {
             border: AppConstants.enabledBorder,
             focusedBorder: AppConstants.focusedBorder
           ),
+          iconSize: 15,
           dropdownColor: AppColors.kWhite,
           borderRadius: AppConstants.kAppBorderRadius,
           isExpanded: true,

@@ -449,7 +449,7 @@
             "visitor_details": 3,
             "check_in": "09:30:00",
             "check_out": "11:30:00",
-            "visit_date": "2025-05-28",
+            "visit_date": "2025-05-29",
             "purpose": 1,
             "status": 2
         }
@@ -458,11 +458,11 @@
         "model": "visitor_logs.visitor_logs",
         "pk": 14,
         "fields": {
-            "log_datetime": "2025-05-28T14:30:00Z",
+            "log_datetime": "2025-05-29T14:30:00Z",
             "visitor_details": 4,
             "check_in": "14:30:00",
             "check_out": "16:00:00",
-            "visit_date": "2025-05-28",
+            "visit_date": "2025-05-29",
             "purpose": 2,
             "status": 2
         }
@@ -471,15 +471,16 @@
         "model": "visitor_logs.visitor_logs",
         "pk": 15,
         "fields": {
-            "log_datetime": "2025-05-28T14:30:00Z",
+            "log_datetime": "2025-05-29T14:30:00Z",
             "visitor_details": 3,
             "check_in": "14:30:00",
             "check_out": null,
-            "visit_date": "2025-05-28",
+            "visit_date": "2025-05-29",
             "purpose": 2,
             "status": 1
         }
     },
+
 
         {
         "model": "visitor_logs.visitor_logs",
@@ -520,8 +521,22 @@
         "visit_date": "2025-05-29",
         "purpose": 4,
         "status": 2
-    }
-},
+    },
+    {
+        "model": "settings.appsettings",
+        "pk": 1,
+        "fields": {
+            "enable_mfa": true,
+            "session_timeout": 60,
+            "enable_visitor_notifs": true,
+            "enable_alerts": true,
+            "enable_scheduled_reminders": false,
+            "max_visitors_per_day": 50,
+            "max_visit_duration": 120
+        }
+
+    },
+    },
 
 {
     "model": "visitor_logs.visitor_logs",

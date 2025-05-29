@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/common_json_model.dart';
 import 'package:http/browser_client.dart' as http;
+import 'package:safepass_frontend/common/utils/cookies.dart';
 
 class JwtNotifier with ChangeNotifier {
   bool _isLoading = false;
@@ -28,7 +29,8 @@ class JwtNotifier with ChangeNotifier {
       var response = await client.post(
         url,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRFToken': (AppCookies.getCSRFToken())
         },
         body: jsonEncode({
           'credentials': {

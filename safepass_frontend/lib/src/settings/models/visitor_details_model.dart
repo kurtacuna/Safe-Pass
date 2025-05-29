@@ -26,7 +26,7 @@ class VisitorsModel {
 
 class Visitor {
     int id;
-    IdType idType;
+    IdTypeSettings idType;
     String photo;
     String firstName;
     String middleName;
@@ -53,7 +53,7 @@ class Visitor {
 
     factory Visitor.fromJson(Map<String, dynamic> json) => Visitor(
         id: json["id"],
-        idType: IdType.fromJson(json["id_type"]),
+        idType: IdTypeSettings.fromJson(json["id_type"]),
         photo: json["photo"],
         firstName: json["first_name"],
         middleName: json["middle_name"],
@@ -80,16 +80,16 @@ class Visitor {
     };
 }
 
-class IdType {
+class IdTypeSettings {
     String type;
     String code;
 
-    IdType({
+    IdTypeSettings({
         required this.type,
         required this.code,
     });
 
-    factory IdType.fromJson(Map<String, dynamic> json) => IdType(
+    factory IdTypeSettings.fromJson(Map<String, dynamic> json) => IdTypeSettings(
         type: json["type"],
         code: json["code"],
     );
