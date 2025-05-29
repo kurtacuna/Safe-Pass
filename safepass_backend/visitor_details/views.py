@@ -1,10 +1,10 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from . import models, serializers
 from rest_framework.parsers import MultiPartParser, FormParser
-import face_recognition
+# import face_recognition
 import cv2
 import numpy as np
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -12,6 +12,12 @@ from django.shortcuts import render
 from django.db.models import Q
 from django.utils import timezone
 import json
+import os
+import base64
+from django.core.files.base import ContentFile
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 def checkImage (uploaded_photo: InMemoryUploadedFile):
   image_bytes = uploaded_photo.read()
@@ -22,7 +28,7 @@ def checkImage (uploaded_photo: InMemoryUploadedFile):
     return Response({"detail": "Could not decode image. Invalid image file."}, status=status.HTTP_400_BAD_REQUEST)
     
   rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
-  face_locations = face_recognition.face_locations(rgb_image)
+  # face_locations = face_recognition.face_locations(rgb_image)
 
   if not face_locations:
     return Response({"detail": "No face detected in the uploaded photo. Please upload a photo with a clear face."}, status=status.HTTP_400_BAD_REQUEST)
@@ -225,15 +231,23 @@ class VisitorSearchView(APIView):
 
         results = []
         for visitor in visitors:
-            # Get the last visit date for this visitor
-            last_visit = visitor.visitor_logs_set.order_by('-visit_date').first()
+            # Get the last visit date for this visitor where check_out is not null
+            # This ensures we only get completed visits
+            last_visit = visitor.visitor_logs_set.filter(
+                check_out__isnull=False
+            ).order_by('-visit_date', '-check_out').first()
+            
             last_visit_date = last_visit.visit_date if last_visit else None
+
+            # Format the display string as "ID (Full Name)"
+            display_string = f"{visitor.id_number} ({visitor.full_name})"
 
             results.append({
                 'id': str(visitor.id),
                 'id_number': visitor.id_number,
                 'full_name': visitor.full_name,
-                'last_visit_date': last_visit_date.strftime('%Y-%m-%d') if last_visit_date else None
+                'display_string': display_string,
+                'last_visit_date': last_visit_date.strftime('%Y-%m-%d') if last_visit_date else 'No previous visits'
             })
 
         return Response({'results': results})
