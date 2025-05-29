@@ -6,14 +6,18 @@ import 'package:safepass_frontend/common/utils/routes.dart';
 import 'package:safepass_frontend/src/auth/controller/jwt_notifier.dart';
 import 'package:safepass_frontend/src/auth/controller/password_notifier.dart';
 import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controller.dart';
+import 'package:safepass_frontend/src/check_in/controller/visitor_search_controller.dart';
+import 'package:safepass_frontend/src/check_out/controller/check_out_controller.dart';
+import 'package:safepass_frontend/src/check_out/repository/check_out_repository.dart';
 import 'package:safepass_frontend/src/entrypoint/controllers/sidebar_notifier.dart';
 import 'package:safepass_frontend/src/registration/controller/id_types_controller.dart';
 import 'package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart';
 import 'package:safepass_frontend/src/logs/controllers/visitorlogs_controller.dart';
+import 'package:safepass_frontend/src/visitor/controllers/visitor_details_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env.development');
+  await dotenv.load(fileName: '.env.development'); //comment for checkpoint
 
   runApp(MultiProvider(
     providers: [
@@ -24,6 +28,9 @@ void main() async {
       ChangeNotifierProvider(create: (_) => VisitorLogsController()),
       ChangeNotifierProvider(create: (_) => IdTypesController()),
       ChangeNotifierProvider(create: (_) => VisitPurposesController()),
+      ChangeNotifierProvider(create: (_) => VisitorDetailsController()),
+      ChangeNotifierProvider(create: (_) => VisitorSearchController()),
+      ChangeNotifierProvider(create: (_) => CheckOutController()),
     ],
     child: MyApp()
   ));

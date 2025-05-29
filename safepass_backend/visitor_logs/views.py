@@ -11,6 +11,10 @@ from rest_framework.permissions import AllowAny
 from . import models, serializers
 import pytz
 from django.conf import settings
+from django.shortcuts import render
+from rest_framework import generics
+from .models import visitor_logs, visitor_status, VisitPurposes
+from visitor_details.models import VisitorDetails
 
 class VisitorLogsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -107,3 +111,60 @@ class VisitPurposesView(APIView):
         except Exception as e:
             print(f"VisitPurposesView: {str(e)}")
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class VisitorCheckInView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            visitor_id = request.data.get('visitor_id')
+            visit_purpose = request.data.get('visit_purpose')
+
+            if not visitor_id or not visit_purpose:
+                return Response(
+                    {"detail": "Visitor ID and visit purpose are required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get the visitor
+            try:
+                visitor = VisitorDetails.objects.get(id=visitor_id)
+            except VisitorDetails.DoesNotExist:
+                return Response(
+                    {"detail": "Visitor not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Get the visit purpose
+            try:
+                purpose = VisitPurposes.objects.get(purpose=visit_purpose)
+            except VisitPurposes.DoesNotExist:
+                return Response(
+                    {"detail": "Invalid visit purpose"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get or create the "Checked In" status
+            checked_in_status, _ = visitor_status.objects.get_or_create(status="Checked In")
+
+            # Create the visitor log
+            now = timezone.now()
+            visitor_logs.objects.create(
+                visitor_details=visitor,
+                check_in=now.time(),
+                visit_date=now.date(),
+                purpose=purpose,
+                status=checked_in_status
+            )
+
+            return Response({
+                "detail": "Visitor successfully checked in",
+                "check_in_time": now.time().strftime("%H:%M:%S")
+            })
+
+        except Exception as e:
+            print(f"VisitorCheckInView: {str(e)}")
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
