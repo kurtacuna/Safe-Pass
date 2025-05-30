@@ -183,422 +183,428 @@ class _CheckInScreenState extends State<CheckInScreen> {
       body: SingleChildScrollView(
         child: Stack(
           children: [
-            // Logo and Back Button
-            Positioned(
-              top: 50,
-              left: 50,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => context.go('/entrypoint'),
-                  child: Image.asset(
-                    AppImages.logoDark,
-                    height: 50,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 50,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/images/checked_in_icon2.svg',
-                      width: 34,
-                      height: 34,
-                      colorFilter: ColorFilter.mode(
-                        AppColors.kDarkBlue,
-                        BlendMode.srcIn
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Visitor Check-In',
-                      style: AppTextStyles.biggestStyle.copyWith(
-                        color: AppColors.kDark,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: 50,
-              right: 50,
-              child: TextButton.icon(
-                onPressed: () => context.go('/entrypoint'),
-                icon: const Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
-                label: Text(
-                  'Back to Dashboard',
-                  style: AppTextStyles.bigStyle.copyWith(
-                    color: AppColors.kDarkBlue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ),
-
-            // Main Content
             Padding(
-              padding: const EdgeInsets.fromLTRB(50, 150, 50, 50),
+              padding: const EdgeInsets.fromLTRB(50, 50, 50, 50),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Search Bar
-                  SizedBox(
-                    width: 1000,
-                    child: Column(
-                      children: [
-                        AppTextFormFieldWidget(
-                          key: _searchFieldKey,
-                          controller: _searchController,
-                          focusNode: _searchFocusNode,
-                          hintText: 'Search Visitor ID or Name',
-                          prefixIcon: const Icon(Icons.search),
-                          onChanged: (value) {
-                            if (value.isNotEmpty) {
-                              context.read<VisitorSearchController>().searchVisitors(
-                                context,
-                                value,
-                              );
-                            }
-                          },
+                  // Header Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Logo
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => context.go('/entrypoint'),
+                          child: Image.asset(
+                            AppImages.logoDark,
+                            height: 50,
+                          ),
                         ),
-                        Consumer<VisitorSearchController>(
-                          builder: (context, controller, _) {
-                            if (_searchFocusNode.hasFocus && 
-                                _searchController.text.isNotEmpty && 
-                                controller.getSelectedVisitor == null) {
-                              return Container(
-                                constraints: const BoxConstraints(maxHeight: 200),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: controller.getIsLoading
-                                      ? Container(
-                                          padding: const EdgeInsets.all(16),
-                                          child: const Center(child: CircularProgressIndicator()),
-                                        )
-                                      : controller.getSearchResults.isEmpty
-                                          ? Container(
-                                              padding: const EdgeInsets.all(16),
-                                              child: const Text('No visitors found'),
-                                            )
-                                          : ListView.builder(
-                                              shrinkWrap: true,
-                                              itemCount: controller.getSearchResults.length,
-                                              itemBuilder: (context, index) {
-                                                final visitor = controller.getSearchResults[index];
-                                                return Material(
-                                                  color: Colors.transparent,
-                                                  child: InkWell(
-                                                    onTap: () {
-                                                      controller.setSelectedVisitor(visitor);
-                                                      _nameController.text = visitor.fullName;
-                                                      _idNumberController.text = visitor.idNumber;
-                                                      _searchController.text = visitor.toString();
-                                                      FocusScope.of(context).unfocus();
-                                                      setState(() {}); // Trigger rebuild to hide overlay
-                                                    },
-                                                    hoverColor: AppColors.kGray.withOpacity(0.1),
-                                                    child: Container(
-                                                      padding: const EdgeInsets.symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 12,
-                                                      ),
-                                                      decoration: BoxDecoration(
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                            color: AppColors.kGray.withOpacity(0.2),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        visitor.toString(),
-                                                        style: AppTextStyles.defaultStyle.copyWith(
-                                                          color: AppColors.kDark,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                ),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 50),
-                  // Two Column Layout
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1200),
-                      child: Row(
+                      ),
+                      // Title with Icon
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Left Column - Visitor Details
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const SizedBox(height: 55),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 400),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text( 
-                                        'Visitor\'s Details',
-                                        style: AppTextStyles.biggestStyle.copyWith(
-                                          color: AppColors.kDark,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 30),
-                                      Form(
-                                        key: _formKey,
-                                        child: Column(
-                                          children: [
-                                            AppTextFormFieldWidget(
-                                              controller: _nameController,
-                                              hintText: 'Name',
-                                              enabled: false,
-                                              style: AppTextStyles.defaultStyle.copyWith(
-                                                color: AppColors.kDark,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 30),
-                                            AppTextFormFieldWidget(
-                                              controller: _idNumberController,
-                                              hintText: 'Visitor ID Number',
-                                              enabled: false,
-                                              style: AppTextStyles.defaultStyle.copyWith(
-                                                color: AppColors.kDark,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 30),
-                                            AppTextFormFieldWidget(
-                                              controller: TextEditingController(
-                                                text: context.watch<VisitorSearchController>().getSelectedVisitor?.lastVisitDate == 'No previous visits' 
-                                                    ? '' 
-                                                    : context.watch<VisitorSearchController>().getSelectedVisitor?.lastVisitDate
-                                              ),
-                                              hintText: 'Last Visit',
-                                              enabled: false,
-                                              style: AppTextStyles.defaultStyle.copyWith(
-                                                color: AppColors.kDark,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 30),
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: AppColors.kWhite,
-                                                borderRadius: AppConstants.kAppBorderRadius,
-                                                border: Border.all(color: AppColors.kGray),
-                                              ),
-                                              child: DropdownButtonHideUnderline(
-                                                child: DropdownButtonFormField<String>(
-                                                  dropdownColor: Colors.white,
-                                                  value: _selectedVisitPurpose,
-                                                  hint: Text(
-                                                    'Visit Purpose',
-                                                    style: AppTextStyles.defaultStyle.copyWith(
-                                                      color: AppColors.kDark,
-                                                    ),
-                                                  ),
-                                                  style: AppTextStyles.defaultStyle.copyWith(
-                                                    color: AppColors.kDark,
-                                                  ),
-                                                  isExpanded: true,
-                                                  decoration: const InputDecoration(
-                                                    border: InputBorder.none,
-                                                    contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                                                  ),
-                                                  items: visitPurposes.map((purpose) {
-                                                    print("DEBUG: Creating dropdown item for purpose: ${purpose.purpose}");
-                                                    return DropdownMenuItem(
-                                                      value: purpose.purpose,
-                                                      child: Text(
-                                                        purpose.purpose,
-                                                        style: AppTextStyles.defaultStyle.copyWith(
-                                                          color: AppColors.kDark,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                                  onChanged: context.watch<VisitorSearchController>().getSelectedVisitor != null
-                                                      ? (String? value) {
-                                                          print("DEBUG: Visit purpose selected: $value");
-                                                          setState(() {
-                                                            _selectedVisitPurpose = value;
-                                                          });
-                                                          print("DEBUG: Updated selected visit purpose: $_selectedVisitPurpose");
-                                                        }
-                                                      : null,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 30),
-                                            AppButtonWidget(
-                                              width: double.infinity,
-                                              onTap: () {
-                                                if (_formKey.currentState!.validate() &&
-                                                    _selectedVisitPurpose != null &&
-                                                    context.read<VisitorSearchController>().getSelectedVisitor != null) {
-                                                  context.read<VisitorSearchController>().checkInVisitor(
-                                                    context,
-                                                    visitorId: context.read<VisitorSearchController>().getSelectedVisitor!.id,
-                                                    visitPurpose: _selectedVisitPurpose!,
-                                                  );
-                                                  setState(() {
-                                                    _selectedVisitPurpose = null;
-                                                    _nameController.clear();
-                                                    _idNumberController.clear();
-                                                    _searchController.clear();
-                                                    _autocompleteController?.clear();
-                                                  });
-                                                }
-                                              },
-                                              text: 'Confirm Check-In',
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                          SvgPicture.asset(
+                            'assets/images/checked_in_icon2.svg',
+                            width: 34,
+                            height: 34,
+                            colorFilter: ColorFilter.mode(
+                              AppColors.kDarkBlue,
+                              BlendMode.srcIn
                             ),
                           ),
-                          const SizedBox(width: 50),
-                          // Right Column - Face Recognition
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Face Identity Confirmation',
-                                  style: AppTextStyles.biggestStyle.copyWith(
-                                    color: AppColors.kDark,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 30),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 600),
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 400,
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.1),
-                                      borderRadius: AppConstants.kAppBorderRadius,
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          if (_isDenied) ...[
-                                            Icon(
-                                              Icons.cancel,
-                                              size: 64,
-                                              color: AppColors.kDarkRed,
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Text(
-                                              'Face Not Recognized',
-                                              style: AppTextStyles.bigStyle.copyWith(
-                                                color: AppColors.kDarkRed,
-                                              ),
-                                            ),
-                                          ] else if (_isFaceRecognized) ...[
-                                            Icon(
-                                              Icons.check_circle,
-                                              size: 64,
-                                              color: AppColors.kLightGreen,
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Text(
-                                              'Face Recognized',
-                                              style: AppTextStyles.bigStyle.copyWith(
-                                                color: AppColors.kLightGreen,
-                                              ),
-                                            ),
-                                          ] else ...[
-                                            Text(
-                                              'Face Not Recognized',
-                                              style: AppTextStyles.bigStyle.copyWith(
-                                                color: AppColors.kDarkGray,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 20),
-                                            AppButtonWidget(
-                                              width: 200,
-                                              onTap: () {
-                                                // TODO: Implement photo capture
-                                              },
-                                              text: 'TAKE A PHOTO',
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                if (!_isFaceRecognized)
-                                  ConstrainedBox(
-                                    constraints: const BoxConstraints(maxWidth: 600),
-                                    child: Wrap(
-                                      spacing: 20,
-                                      runSpacing: 10,
-                                      children: [
-                                        AppButtonWidget(
-                                          width: 150,
-                                          onTap: () {
-                                            setState(() {
-                                              _isDenied = true;
-                                              _isFaceRecognized = false;
-                                            });
-                                            // TODO: Implement deny visitor
-                                          },
-                                          text: 'Deny Visitor',
-                                          color: AppColors.kGray,
-                                        ),
-                                        AppButtonWidget(
-                                          width: 150,
-                                          onTap: _showReminderDialog,
-                                          text: 'Mark As Verified',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
+                          const SizedBox(width: 12),
+                          Text(
+                            'Visitor Check-In',
+                            style: AppTextStyles.biggestStyle.copyWith(
+                              color: AppColors.kDark,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    ),
+                      // Back Button
+                      TextButton.icon(
+                        onPressed: () => context.go('/entrypoint'),
+                        icon: const Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
+                        label: Text(
+                          'Back to Dashboard',
+                          style: AppTextStyles.bigStyle.copyWith(
+                            color: AppColors.kDarkBlue,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 50),
+                  // Main Content
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Search Bar
+                      SizedBox(
+                        width: 1000,
+                        child: Column(
+                          children: [
+                            AppTextFormFieldWidget(
+                              key: _searchFieldKey,
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              hintText: 'Search Visitor ID or Name',
+                              prefixIcon: const Icon(Icons.search),
+                              onChanged: (value) {
+                                print("DEBUG: Search onChanged triggered with value: $value");
+                                if (value.isNotEmpty) {
+                                  print("DEBUG: Calling searchVisitors with value: $value");
+                                  context.read<VisitorSearchController>().searchVisitors(
+                                    context,
+                                    value,
+                                  );
+                                }
+                              },
+                            ),
+                            Consumer<VisitorSearchController>(
+                              builder: (context, controller, _) {
+                                print("DEBUG: Consumer rebuilding with:");
+                                print("DEBUG: - Has focus: ${_searchFocusNode.hasFocus}");
+                                print("DEBUG: - Search text: ${_searchController.text}");
+                                print("DEBUG: - Selected visitor: ${controller.getSelectedVisitor}");
+                                print("DEBUG: - Is loading: ${controller.getIsLoading}");
+                                print("DEBUG: - Search results count: ${controller.getSearchResults.length}");
+                                
+                                if (_searchFocusNode.hasFocus && 
+                                    _searchController.text.isNotEmpty && 
+                                    controller.getSelectedVisitor == null) {
+                                  return Container(
+                                    constraints: const BoxConstraints(maxHeight: 200),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: controller.getIsLoading
+                                          ? Container(
+                                              padding: const EdgeInsets.all(16),
+                                              child: const Center(child: CircularProgressIndicator()),
+                                            )
+                                          : controller.getSearchResults.isEmpty
+                                              ? Container(
+                                                  padding: const EdgeInsets.all(16),
+                                                  child: const Text('No visitors found'),
+                                                )
+                                              : ListView.builder(
+                                                  shrinkWrap: true,
+                                                  itemCount: controller.getSearchResults.length,
+                                                  itemBuilder: (context, index) {
+                                                    final visitor = controller.getSearchResults[index];
+                                                    return Material(
+                                                      color: Colors.transparent,
+                                                      child: InkWell(
+                                                        onTap: () {
+                                                          controller.setSelectedVisitor(visitor);
+                                                          _nameController.text = visitor.fullName;
+                                                          _idNumberController.text = visitor.idNumber;
+                                                          _searchController.text = visitor.toString();
+                                                          FocusScope.of(context).unfocus();
+                                                          setState(() {}); // Trigger rebuild to hide overlay
+                                                        },
+                                                        hoverColor: AppColors.kGray.withOpacity(0.1),
+                                                        child: Container(
+                                                          padding: const EdgeInsets.symmetric(
+                                                            horizontal: 16,
+                                                            vertical: 12,
+                                                          ),
+                                                          decoration: BoxDecoration(
+                                                            border: Border(
+                                                              bottom: BorderSide(
+                                                                color: AppColors.kGray.withOpacity(0.2),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          child: Text(
+                                                            visitor.toString(),
+                                                            style: AppTextStyles.defaultStyle.copyWith(
+                                                              color: AppColors.kDark,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                  ));
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 50),
+                      // Two Column Layout
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1200),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Left Column - Visitor Details
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(height: 55),
+                                    ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 400),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text( 
+                                            'Visitor\'s Details',
+                                            style: AppTextStyles.biggestStyle.copyWith(
+                                              color: AppColors.kDark,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 30),
+                                          Form(
+                                            key: _formKey,
+                                            child: Column(
+                                              children: [
+                                                AppTextFormFieldWidget(
+                                                  controller: _nameController,
+                                                  hintText: 'Name',
+                                                  enabled: false,
+                                                  style: AppTextStyles.defaultStyle.copyWith(
+                                                    color: AppColors.kDark,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 30),
+                                                AppTextFormFieldWidget(
+                                                  controller: _idNumberController,
+                                                  hintText: 'Visitor ID Number',
+                                                  enabled: false,
+                                                  style: AppTextStyles.defaultStyle.copyWith(
+                                                    color: AppColors.kDark,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 30),
+                                                AppTextFormFieldWidget(
+                                                  controller: TextEditingController(
+                                                    text: context.watch<VisitorSearchController>().getSelectedVisitor?.lastVisitDate == 'No previous visits' 
+                                                        ? '' 
+                                                        : context.watch<VisitorSearchController>().getSelectedVisitor?.lastVisitDate
+                                                  ),
+                                                  hintText: 'Last Visit',
+                                                  enabled: false,
+                                                  style: AppTextStyles.defaultStyle.copyWith(
+                                                    color: AppColors.kDark,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 30),
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.kWhite,
+                                                    borderRadius: AppConstants.kAppBorderRadius,
+                                                    border: Border.all(color: AppColors.kGray),
+                                                  ),
+                                                  child: DropdownButtonHideUnderline(
+                                                    child: DropdownButtonFormField<String>(
+                                                      dropdownColor: Colors.white,
+                                                      value: _selectedVisitPurpose,
+                                                      hint: Text(
+                                                        'Visit Purpose',
+                                                        style: AppTextStyles.defaultStyle.copyWith(
+                                                          color: AppColors.kDark,
+                                                        ),
+                                                      ),
+                                                      style: AppTextStyles.defaultStyle.copyWith(
+                                                        color: AppColors.kDark,
+                                                      ),
+                                                      isExpanded: true,
+                                                      decoration: const InputDecoration(
+                                                        border: InputBorder.none,
+                                                        contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                                                      ),
+                                                      items: visitPurposes.map((purpose) {
+                                                        print("DEBUG: Creating dropdown item for purpose: ${purpose.purpose}");
+                                                        return DropdownMenuItem(
+                                                          value: purpose.purpose,
+                                                          child: Text(
+                                                            purpose.purpose,
+                                                            style: AppTextStyles.defaultStyle.copyWith(
+                                                              color: AppColors.kDark,
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }).toList(),
+                                                      onChanged: context.watch<VisitorSearchController>().getSelectedVisitor != null
+                                                          ? (String? value) {
+                                                              print("DEBUG: Visit purpose selected: $value");
+                                                              setState(() {
+                                                                _selectedVisitPurpose = value;
+                                                              });
+                                                              print("DEBUG: Updated selected visit purpose: $_selectedVisitPurpose");
+                                                            }
+                                                          : null,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 30),
+                                                AppButtonWidget(
+                                                  width: double.infinity,
+                                                  onTap: () {
+                                                    if (_formKey.currentState!.validate() &&
+                                                        _selectedVisitPurpose != null &&
+                                                        context.read<VisitorSearchController>().getSelectedVisitor != null) {
+                                                      context.read<VisitorSearchController>().checkInVisitor(
+                                                        context,
+                                                        visitorId: context.read<VisitorSearchController>().getSelectedVisitor!.id,
+                                                        visitPurpose: _selectedVisitPurpose!,
+                                                      );
+                                                      setState(() {
+                                                        _selectedVisitPurpose = null;
+                                                        _nameController.clear();
+                                                        _idNumberController.clear();
+                                                        _searchController.clear();
+                                                        _autocompleteController?.clear();
+                                                      });
+                                                    }
+                                                  },
+                                                  text: 'Confirm Check-In',
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 50),
+                              // Right Column - Face Recognition
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Face Identity Confirmation',
+                                      style: AppTextStyles.biggestStyle.copyWith(
+                                        color: AppColors.kDark,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 30),
+                                    ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 600),
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: 400,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.withOpacity(0.1),
+                                          borderRadius: AppConstants.kAppBorderRadius,
+                                        ),
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              if (_isDenied) ...[
+                                                Icon(
+                                                  Icons.cancel,
+                                                  size: 64,
+                                                  color: AppColors.kDarkRed,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                  'Face Not Recognized',
+                                                  style: AppTextStyles.bigStyle.copyWith(
+                                                    color: AppColors.kDarkRed,
+                                                  ),
+                                                ),
+                                              ] else if (_isFaceRecognized) ...[
+                                                Icon(
+                                                  Icons.check_circle,
+                                                  size: 64,
+                                                  color: AppColors.kLightGreen,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                  'Face Recognized',
+                                                  style: AppTextStyles.bigStyle.copyWith(
+                                                    color: AppColors.kLightGreen,
+                                                  ),
+                                                ),
+                                              ] else ...[
+                                                Text(
+                                                  'Face Not Recognized',
+                                                  style: AppTextStyles.bigStyle.copyWith(
+                                                    color: AppColors.kDarkGray,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 20),
+                                                AppButtonWidget(
+                                                  width: 200,
+                                                  onTap: () {
+                                                    // TODO: Implement photo capture
+                                                  },
+                                                  text: 'TAKE A PHOTO',
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    if (!_isFaceRecognized)
+                                      ConstrainedBox(
+                                        constraints: const BoxConstraints(maxWidth: 600),
+                                        child: Wrap(
+                                          spacing: 20,
+                                          runSpacing: 10,
+                                          children: [
+                                            AppButtonWidget(
+                                              width: 150,
+                                              onTap: () {
+                                                setState(() {
+                                                  _isDenied = true;
+                                                  _isFaceRecognized = false;
+                                                });
+                                                // TODO: Implement deny visitor
+                                              },
+                                              text: 'Deny Visitor',
+                                              color: AppColors.kGray,
+                                            ),
+                                            AppButtonWidget(
+                                              width: 150,
+                                              onTap: _showReminderDialog,
+                                              text: 'Mark As Verified',
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

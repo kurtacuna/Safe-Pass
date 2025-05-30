@@ -406,285 +406,283 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
       body: SingleChildScrollView(
         child: Stack(
           children: [
-            // Logo and Back Button
-            Positioned(
-              top: 50,
-              left: 50,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => context.go('/entrypoint'),
-                  child: Image.asset(
-                    AppImages.logoDark,
-                    height: 50,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 50,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/images/checked_out_icon2.svg',
-                      width: 34,
-                      height: 34,
-                      colorFilter: ColorFilter.mode(
-                        AppColors.kDarkBlue,
-                        BlendMode.srcIn
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Visitor Check-Out',
-                      style: AppTextStyles.biggestStyle.copyWith(
-                        color: AppColors.kDark,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: 50,
-              right: 50,
-              child: TextButton.icon(
-                onPressed: () => context.go('/entrypoint'),
-                icon: const Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
-                label: Text(
-                  'Back to Dashboard',
-                  style: AppTextStyles.bigStyle.copyWith(
-                    color: AppColors.kDarkBlue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ),
-
-            // Main Content
             Padding(
-              padding: const EdgeInsets.fromLTRB(50, 150, 50, 50),
+              padding: const EdgeInsets.fromLTRB(50, 50, 50, 50),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Search Bar
-                  SizedBox(
-                    width: 1000,
-                    child: Column(
-                      children: [
-                        AppTextFormFieldWidget(
-                          key: _searchFieldKey,
-                          controller: _searchController,
-                          focusNode: _searchFocusNode,
-                          hintText: 'Search Visitor ID or Name',
-                          prefixIcon: const Icon(Icons.search),
+                  // Header Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Logo
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => context.go('/entrypoint'),
+                          child: Image.asset(
+                            AppImages.logoDark,
+                            height: 50,
+                          ),
                         ),
-                        Consumer<CheckOutController>(
-                          builder: (context, controller, _) {
-                            if (_searchFocusNode.hasFocus || controller.getSearchResults.isNotEmpty) {
-                              return _buildSearchResults(context, controller);
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 50),
-                  // Two Column Layout
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1200),
-                      child: Row(
+                      ),
+                      // Title with Icon
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Left Column - Visitor Details
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const SizedBox(height: 55),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 400),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Visitor\'s Details',
-                                        style: AppTextStyles.biggestStyle.copyWith(
-                                          color: AppColors.kDark,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 30),
-                                      Form(
-                                        key: _formKey,
-                                        child: Column(
-                                          children: [
-                                            AppTextFormFieldWidget(
-                                              controller: _nameController,
-                                              hintText: 'Name',
-                                              enabled: false,
-                                            ),
-                                            const SizedBox(height: 30),
-                                            AppTextFormFieldWidget(
-                                              controller: _idNumberController,
-                                              hintText: 'Visitor ID Number',
-                                              enabled: false,
-                                            ),
-                                            const SizedBox(height: 30),
-                                            AppTextFormFieldWidget(
-                                              controller: _visitPurposeController,
-                                              hintText: 'Visit Purpose',
-                                              enabled: false,
-                                            ),
-                                            const SizedBox(height: 30),
-                                            AppButtonWidget(
-                                              width: double.infinity,
-                                              onTap: () {
-                                                if (_formKey.currentState!.validate() && _selectedVisitor != null) {
-                                                  context.read<CheckOutController>().checkOutVisitor(
-                                                    context,
-                                                    _selectedVisitor!.id,
-                                                  );
-                                                  // Clear the form after successful check-out
-                                                  setState(() {
-                                                    _selectedVisitor = null;
-                                                    _searchController.clear();
-                                                    _nameController.clear();
-                                                    _idNumberController.clear();
-                                                    _visitPurposeController.clear();
-                                                    _isFaceRecognized = false;
-                                                  });
-                                                }
-                                              },
-                                              text: 'Confirm Check-Out',
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                          SvgPicture.asset(
+                            'assets/images/checked_out_icon2.svg',
+                            width: 34,
+                            height: 34,
+                            colorFilter: ColorFilter.mode(
+                              AppColors.kDarkBlue,
+                              BlendMode.srcIn
                             ),
                           ),
-                          const SizedBox(width: 50),
-                          // Right Column - Face Recognition
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Face Identity Confirmation',
-                                  style: AppTextStyles.biggestStyle.copyWith(
-                                    color: AppColors.kDark,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 30),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 600),
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 400,
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.1),
-                                      borderRadius: AppConstants.kAppBorderRadius,
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          if (_isDenied) ...[
-                                            Icon(
-                                              Icons.cancel,
-                                              size: 64,
-                                              color: AppColors.kDarkRed,
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Text(
-                                              'Face Not Recognized',
-                                              style: AppTextStyles.bigStyle.copyWith(
-                                                color: AppColors.kDarkRed,
-                                              ),
-                                            ),
-                                          ] else if (_isFaceRecognized) ...[
-                                            Icon(
-                                              Icons.check_circle,
-                                              size: 64,
-                                              color: AppColors.kLightGreen,
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Text(
-                                              'Face Recognized',
-                                              style: AppTextStyles.bigStyle.copyWith(
-                                                color: AppColors.kLightGreen,
-                                              ),
-                                            ),
-                                          ] else ...[
-                                            Text(
-                                              'Face Not Recognized',
-                                              style: AppTextStyles.bigStyle.copyWith(
-                                                color: AppColors.kDarkGray,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 20),
-                                            AppButtonWidget(
-                                              width: 200,
-                                              onTap: () {
-                                                // TODO: Implement photo capture
-                                              },
-                                              text: 'TAKE A PHOTO',
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                if (!_isFaceRecognized)
-                                  ConstrainedBox(
-                                    constraints: const BoxConstraints(maxWidth: 600),
-                                    child: Wrap(
-                                      spacing: 20,
-                                      runSpacing: 10,
-                                      children: [
-                                        AppButtonWidget(
-                                          width: 150,
-                                          onTap: () {
-                                            setState(() {
-                                              _isDenied = true;
-                                              _isFaceRecognized = false;
-                                            });
-                                            // TODO: Implement deny visitor
-                                          },
-                                          text: 'Deny Visitor',
-                                          color: AppColors.kGray,
-                                        ),
-                                        AppButtonWidget(
-                                          width: 150,
-                                          onTap: () {
-                                            _showReminderDialog();
-                                          },
-                                          text: 'Mark As Verified',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
+                          const SizedBox(width: 12),
+                          Text(
+                            'Visitor Check-Out',
+                            style: AppTextStyles.biggestStyle.copyWith(
+                              color: AppColors.kDark,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    ),
+                      // Back Button
+                      TextButton.icon(
+                        onPressed: () => context.go('/entrypoint'),
+                        icon: const Icon(Icons.arrow_back, color: AppColors.kDarkBlue),
+                        label: Text(
+                          'Back to Dashboard',
+                          style: AppTextStyles.bigStyle.copyWith(
+                            color: AppColors.kDarkBlue,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 50),
+                  // Main Content
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Search Bar
+                      SizedBox(
+                        width: 1000,
+                        child: Column(
+                          children: [
+                            AppTextFormFieldWidget(
+                              key: _searchFieldKey,
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              hintText: 'Search Visitor ID or Name',
+                              prefixIcon: const Icon(Icons.search),
+                            ),
+                            Consumer<CheckOutController>(
+                              builder: (context, controller, _) {
+                                if (_searchFocusNode.hasFocus || controller.getSearchResults.isNotEmpty) {
+                                  return _buildSearchResults(context, controller);
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 50),
+                      // Two Column Layout
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1200),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Left Column - Visitor Details
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(height: 55),
+                                    ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 400),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Visitor\'s Details',
+                                            style: AppTextStyles.biggestStyle.copyWith(
+                                              color: AppColors.kDark,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 30),
+                                          Form(
+                                            key: _formKey,
+                                            child: Column(
+                                              children: [
+                                                AppTextFormFieldWidget(
+                                                  controller: _nameController,
+                                                  hintText: 'Name',
+                                                  enabled: false,
+                                                ),
+                                                const SizedBox(height: 30),
+                                                AppTextFormFieldWidget(
+                                                  controller: _idNumberController,
+                                                  hintText: 'Visitor ID Number',
+                                                  enabled: false,
+                                                ),
+                                                const SizedBox(height: 30),
+                                                AppTextFormFieldWidget(
+                                                  controller: _visitPurposeController,
+                                                  hintText: 'Visit Purpose',
+                                                  enabled: false,
+                                                ),
+                                                const SizedBox(height: 30),
+                                                AppButtonWidget(
+                                                  width: double.infinity,
+                                                  onTap: () {
+                                                    if (_formKey.currentState!.validate() && _selectedVisitor != null) {
+                                                      context.read<CheckOutController>().checkOutVisitor(
+                                                        context,
+                                                        _selectedVisitor!.id,
+                                                      );
+                                                      // Clear the form after successful check-out
+                                                      setState(() {
+                                                        _selectedVisitor = null;
+                                                        _searchController.clear();
+                                                        _nameController.clear();
+                                                        _idNumberController.clear();
+                                                        _visitPurposeController.clear();
+                                                        _isFaceRecognized = false;
+                                                      });
+                                                    }
+                                                  },
+                                                  text: 'Confirm Check-Out',
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 50),
+                              // Right Column - Face Recognition
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Face Identity Confirmation',
+                                      style: AppTextStyles.biggestStyle.copyWith(
+                                        color: AppColors.kDark,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 30),
+                                    ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 600),
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: 400,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.withOpacity(0.1),
+                                          borderRadius: AppConstants.kAppBorderRadius,
+                                        ),
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              if (_isDenied) ...[
+                                                Icon(
+                                                  Icons.cancel,
+                                                  size: 64,
+                                                  color: AppColors.kDarkRed,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                  'Face Not Recognized',
+                                                  style: AppTextStyles.bigStyle.copyWith(
+                                                    color: AppColors.kDarkRed,
+                                                  ),
+                                                ),
+                                              ] else if (_isFaceRecognized) ...[
+                                                Icon(
+                                                  Icons.check_circle,
+                                                  size: 64,
+                                                  color: AppColors.kLightGreen,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                  'Face Recognized',
+                                                  style: AppTextStyles.bigStyle.copyWith(
+                                                    color: AppColors.kLightGreen,
+                                                  ),
+                                                ),
+                                              ] else ...[
+                                                Text(
+                                                  'Face Not Recognized',
+                                                  style: AppTextStyles.bigStyle.copyWith(
+                                                    color: AppColors.kDarkGray,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 20),
+                                                AppButtonWidget(
+                                                  width: 200,
+                                                  onTap: () {
+                                                    // TODO: Implement photo capture
+                                                  },
+                                                  text: 'TAKE A PHOTO',
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    if (!_isFaceRecognized)
+                                      ConstrainedBox(
+                                        constraints: const BoxConstraints(maxWidth: 600),
+                                        child: Wrap(
+                                          spacing: 20,
+                                          runSpacing: 10,
+                                          children: [
+                                            AppButtonWidget(
+                                              width: 150,
+                                              onTap: () {
+                                                setState(() {
+                                                  _isDenied = true;
+                                                  _isFaceRecognized = false;
+                                                });
+                                                // TODO: Implement deny visitor
+                                              },
+                                              text: 'Deny Visitor',
+                                              color: AppColors.kGray,
+                                            ),
+                                            AppButtonWidget(
+                                              width: 150,
+                                              onTap: () {
+                                                _showReminderDialog();
+                                              },
+                                              text: 'Mark As Verified',
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
