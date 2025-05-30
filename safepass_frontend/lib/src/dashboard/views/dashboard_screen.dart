@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:safepass_frontend/common/const/app_theme/app_text_styles.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/utils/refresh_access_token.dart';
+import 'package:safepass_frontend/common/widgets/app_circular_progress_indicator_widget.dart';
+import 'package:safepass_frontend/common/widgets/app_container_widget.dart';
+import 'package:safepass_frontend/src/dashboard/controllers/notif_controller.dart';
 import 'package:safepass_frontend/src/dashboard/widgets/app_container_widget_offset.dart';
 import 'package:safepass_frontend/src/dashboard/widgets/app_stat_card_widget.dart';
 import 'package:safepass_frontend/src/dashboard/widgets/app_visitor_logs.dart';
 import 'package:safepass_frontend/src/dashboard/models/visitor_stats_model.dart';
 import 'package:safepass_frontend/src/dashboard/services/visitor_stats_service.dart';
+import 'package:safepass_frontend/src/settings/controllers/settings_tab_notifier.dart';
+import 'package:safepass_frontend/src/logs/controllers/visitorlogs_controller.dart';
+import 'package:provider/provider.dart';
+// hello just to git add.
+import 'dart:async';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,11 +28,25 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   VisitorStats? _visitorStats;
   bool _isLoading = true;
+  bool allowScheduledReminders = false;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadVisitorStats();
+    context.read<SettingsTabNotifier>().fetchSettings(context);
+    Future.microtask(() => context.read<VisitorLogsController>().getVisitorLogs(context));
+    // Set up periodic refresh every 5 seconds
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _loadVisitorStats();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadVisitorStats() async {
@@ -37,16 +60,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         });
       }
       print('Received visitor stats: ${stats?.totalVisitors}, ${stats?.checkedIn}, ${stats?.checkedOut}, ${stats?.newRegistrants}'); // Debug print
-      setState(() {
-        _visitorStats = stats;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _visitorStats = stats;
+          _isLoading = false;
+        });
+      }
       print('Stats updated in state: ${_visitorStats?.totalVisitors}, ${_visitorStats?.checkedIn}, ${_visitorStats?.checkedOut}, ${_visitorStats?.newRegistrants}'); // Debug print
     } catch (e) {
       print('Error loading stats: $e'); // Debug print
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       // You might want to show an error message here
     }
   }
@@ -56,9 +83,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {
-            // Handle notifications
+          icon: context.watch<NotifController>().getSeen
+            ? Icon(Icons.notifications_outlined)
+            : Icon(Icons.notifications, color: AppColors.kLightRed),
+          onPressed: () async {
+            if (allowScheduledReminders) {
+              var result = await showDialog(
+                context: context, 
+                builder:(context) {
+                  return Dialog(
+                    child: AppContainerWidget(
+                      width: 500, 
+                      height: 300, 
+                      boxShadow: [],
+                      child: Center(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: EdgeInsets.all(10),
+                            child: context.read<NotifController>().getNotifs.isEmpty
+                              ? Text("No notifs yet", style: AppTextStyles.bigStyleBold)
+                              : Column(
+                                spacing: 5,
+                                children: List.generate(
+                                  context.read<NotifController>().getNotifs.length,
+                                  (index) {
+                                    return Container(
+                                      width: double.infinity,
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: AppColors.kDarkBlue
+                                        )
+                                      ),
+                                      child: Text(context.read<NotifController>().getNotifs[index])
+                                    );
+                                  }
+                                ),
+                              )
+                            ),
+                          )
+                      )
+                    ),
+                  );
+                }
+              );
+
+              if (result == null) {
+                if (context.mounted) {
+                  context.read<NotifController>().setSeen = true;
+                }
+              }
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Scheduled reminders are disabled"),
+                  backgroundColor: AppColors.kDarkRed,
+                )
+              );
+            }
           },
           iconSize: 24,
           color: AppColors.kDarkBlue,
@@ -119,7 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         AppStatCardWidget(
           count: _visitorStats?.checkedIn.toString() ?? '0',
           label: 'Checked-in',
-          totalIconPath: 'assets/images/checked_in_visitors.png',
+          totalIconPath:  'assets/images/total_icon.png',
           bottomIconPath: 'assets/images/checked_in_visitors.png',
         ),
         AppStatCardWidget(
@@ -142,6 +224,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final ScrollController scrollController = ScrollController();
 
+    if (context.watch<SettingsTabNotifier>().getIsLoading) {
+      return Center(child: AppCircularProgressIndicatorWidget());
+    }
+
+    allowScheduledReminders = context.read<SettingsTabNotifier>().getSettings[0].enableScheduledReminders;
+    print("debug: this is the value of allow: ${allowScheduledReminders}");
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -156,14 +245,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 16),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: _buildTopBar(),
                 ),
-
                 const SizedBox(height: 20),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
@@ -200,13 +286,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 48),
-
                 _buildStatCards(),
-
                 const SizedBox(height: 42),
-
                 const VisitorLogsWidget(),
               ],
             ),

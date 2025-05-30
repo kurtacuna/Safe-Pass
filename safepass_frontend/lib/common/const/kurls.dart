@@ -21,8 +21,14 @@ class ApiUrls {
   static String updatePhotoUrl = '$_appBaseUrl/api/visitor_details/update_photo/';
   static String settingsUrl = '$_appBaseUrl/api/settings/';
   static String updateSettingsUrl = '$_appBaseUrl/api/settings/update/';
+  static String visitorSearchUrl = '$_appBaseUrl/api/visitor_details/search/';
+  static String visitorCheckInUrl = '$_appBaseUrl/api/visitor_logs/check-in/';
+  static String visitorCheckOutSearchUrl = '$_appBaseUrl/api/visitor_logs/check-out-search/';
+  static String visitorCheckOutUrl = '$_appBaseUrl/api/visitor_logs/check-out/';
+  static String csrfTokenUrl = '$_appBaseUrl/api/csrf/';
 
   static String getImageUrl(String photoUrl) {
     return _appBaseUrl + photoUrl;
   }
+  static const String baseUrl = 'http://localhost:8000/api';
 }

@@ -1,13 +1,40 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from . import models, serializers
 from rest_framework.parsers import MultiPartParser, FormParser
 import face_recognition
 import cv2
 import numpy as np
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.shortcuts import render
+from django.db.models import Q
+from django.utils import timezone
+import json
+import os
+import base64
+from django.core.files.base import ContentFile
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+
+def checkImage (uploaded_photo: InMemoryUploadedFile):
+  image_bytes = uploaded_photo.read()
+  np_array = np.frombuffer(image_bytes, np.uint8)
+  cv2_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+
+  if cv2_image is None:
+    return Response({"detail": "Could not decode image. Invalid image file."}, status=status.HTTP_400_BAD_REQUEST)
+    
+  rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+  face_locations = face_recognition.face_locations(rgb_image)
+
+  if not face_locations:
+    return Response({"detail": "No face detected in the uploaded photo. Please upload a photo with a clear face."}, status=status.HTTP_400_BAD_REQUEST)
+  
+  if len(face_locations) > 1:
+    return Response({"detail": "Multiple faces detected. Please upload a photo with only one clear face."}, status=status.HTTP_400_BAD_REQUEST)
 
 # Create your views here.
 class IdTypesView(APIView):
@@ -25,10 +52,16 @@ class IdTypesView(APIView):
 
 class VisitorRegistration(APIView):
   permission_classes = [IsAuthenticated]
+  parser_classes = (MultiPartParser, FormParser)
   def post(self, request):
+    uploaded_photo: InMemoryUploadedFile = request.FILES.get('photo')
+    if not uploaded_photo:
+      return Response({"detail": "No photo received. Try again."}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
+      checkImage(uploaded_photo)
       print("Received registration request with data:", request.data)
-      reg_details = request.data
+      reg_details = json.loads(request.POST['reg_details'])
       if not reg_details:
         return Response(
           {'detail': 'No registration details provided'},
@@ -81,6 +114,7 @@ class VisitorRegistration(APIView):
           'contact_number': contact_number
         })
         visitor = models.VisitorDetails.objects.create(
+          photo=uploaded_photo,
           first_name=first_name,
           middle_name=middle_name,
           last_name=last_name,
@@ -115,7 +149,7 @@ class VisitorsView(APIView):
 
   def get(self, request):
     try:
-      visitors = models.VisitorDetails.objects.all()
+      visitors = models.VisitorDetails.objects.all().order_by('-registration_date')
       serializer = serializers.VisitorDetailsSerializer(visitors, many=True)
       return Response({"visitors": serializer.data}, status=status.HTTP_200_OK)
     except Exception as e:
@@ -166,22 +200,7 @@ class UpdateVisitorPhotoView(APIView):
     uploaded_photo: InMemoryUploadedFile = request.FILES.get('photo')
     
     try:
-      image_bytes = uploaded_photo.read()
-      np_array = np.frombuffer(image_bytes, np.uint8)
-      cv2_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-
-      if cv2_image is None:
-        return Response({"detail": "Could not decode image. Invalid image file."}, status=status.HTTP_400_BAD_REQUEST)
-        
-      rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
-      face_locations = face_recognition.face_locations(rgb_image)
-
-      if not face_locations:
-        return Response({"detail": "No face detected in the uploaded photo. Please upload a photo with a clear face."}, status=status.HTTP_400_BAD_REQUEST)
-      
-      if len(face_locations) > 1:
-        return Response({"detail": "Multiple faces detected. Please upload a photo with only one clear face."}, status=status.HTTP_400_BAD_REQUEST)
-
+      checkImage(uploaded_photo)
       visitor = models.VisitorDetails.objects.get(id=user_id)
       if visitor.photo.name != 'default_photo/no_photo.png':
         visitor.photo.delete(save=False)
@@ -195,3 +214,40 @@ class UpdateVisitorPhotoView(APIView):
     except Exception as e:
       print(f"UpdateVisitorDetailsView: {str(e)}")
       return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VisitorSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.GET.get('query', '')
+        if not query:
+            return Response({'results': []})
+
+        visitors = models.VisitorDetails.objects.filter(
+            Q(id_number__icontains=query) |
+            Q(full_name__icontains=query)
+        ).order_by('-registration_date')[:10]
+
+        results = []
+        for visitor in visitors:
+            # Get the last visit date for this visitor where check_out is not null
+            # This ensures we only get completed visits
+            last_visit = visitor.visitor_logs_set.filter(
+                check_out__isnull=False
+            ).order_by('-visit_date', '-check_out').first()
+            
+            last_visit_date = last_visit.visit_date if last_visit else None
+
+            # Format the display string as "ID (Full Name)"
+            display_string = f"{visitor.id_number} ({visitor.full_name})"
+
+            results.append({
+                'id': str(visitor.id),
+                'id_number': visitor.id_number,
+                'full_name': visitor.full_name,
+                'display_string': display_string,
+                'last_visit_date': last_visit_date.strftime('%Y-%m-%d') if last_visit_date else 'No previous visits'
+            })
+
+        return Response({'results': results})

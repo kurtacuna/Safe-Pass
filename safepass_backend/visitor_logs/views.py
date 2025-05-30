@@ -5,12 +5,16 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Count
-from visitor_details import models as visitor_details_models
+from visitor_details.models import VisitorDetails
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from . import models, serializers
 import pytz
 from django.conf import settings
+from django.shortcuts import render
+from rest_framework import generics
+from .models import visitor_logs, visitor_status, VisitPurposes
+from django.db.models import Q
 
 class VisitorLogsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -73,7 +77,7 @@ class VisitorStatsView(APIView):
             print(f"Checked out logs: {list(checked_out_logs.values())}")
             
             # Get new registrants directly from VisitorDetails model
-            new_registrants = visitor_details_models.VisitorDetails.objects.filter(
+            new_registrants = VisitorDetails.objects.filter(
                 registration_date__date=today
             ).count()
             print(f"New registrants today: {new_registrants}")
@@ -101,9 +105,241 @@ class VisitPurposesView(APIView):
 
     def get(self, request):
         try:
+            print("DEBUG: Fetching visit purposes")
             purposes = models.VisitPurposes.objects.all()
+            print(f"DEBUG: Found purposes: {list(purposes.values())}")
             serializer = serializers.VisitPurposes(purposes, many=True)
-            return Response({"purposes": serializer.data}, status=status.HTTP_200_OK)
+            print(f"DEBUG: Serialized data: {serializer.data}")
+            response_data = {"purposes": serializer.data}
+            print(f"DEBUG: Final response data: {response_data}")
+            return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
-            print(f"VisitPurposesView: {str(e)}")
+            print(f"DEBUG: Error in VisitPurposesView: {str(e)}")
+            print(f"DEBUG: Error type: {type(e)}")
+            print(f"DEBUG: Stack trace:")
+            import traceback
+            traceback.print_exc()
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class VisitorCheckInView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            visitor_id = request.data.get('visitor_id')
+            visit_purpose = request.data.get('visit_purpose')
+
+            if not visitor_id or not visit_purpose:
+                return Response(
+                    {"detail": "Visitor ID and visit purpose are required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get the visitor
+            try:
+                visitor = VisitorDetails.objects.get(id=visitor_id)
+            except VisitorDetails.DoesNotExist:
+                return Response(
+                    {"detail": "Visitor not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Get the visit purpose
+            try:
+                purpose = VisitPurposes.objects.get(purpose=visit_purpose)
+            except VisitPurposes.DoesNotExist:
+                return Response(
+                    {"detail": "Invalid visit purpose"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get or create the "Checked In" status
+            checked_in_status, _ = visitor_status.objects.get_or_create(status="Checked In")
+
+            # Get current time in UTC
+            now_utc = timezone.now()
+            
+            # Convert to Philippine timezone
+            ph_tz = pytz.timezone('Asia/Manila')
+            now_ph = now_utc.astimezone(ph_tz)
+
+            # Create the visitor log using Philippine time
+            visitor_logs.objects.create(
+                visitor_details=visitor,
+                check_in=now_ph.time(),
+                visit_date=now_ph.date(),
+                purpose=purpose,
+                status=checked_in_status
+            )
+
+            return Response({
+                "detail": "Visitor successfully checked in",
+                "check_in_time": now_ph.time().strftime("%H:%M:%S")
+            })
+
+        except Exception as e:
+            print(f"VisitorCheckInView: {str(e)}")
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class CheckOutSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.GET.get('query', '')
+        if not query:
+            return Response({'results': []})
+
+        try:
+            # Get current time in UTC
+            now_utc = timezone.now()
+            
+            # Convert to local timezone
+            current_timezone = pytz.timezone(settings.TIME_ZONE)
+            local_datetime = now_utc.astimezone(current_timezone)
+            today = local_datetime.date()
+            
+            print(f"DEBUG: UTC time: {now_utc}")
+            print(f"DEBUG: Local time: {local_datetime}")
+            print(f"DEBUG: Today's date: {today}")
+
+            # First, get all visitor logs for today that are checked in
+            checked_in_status = visitor_status.objects.get(status="Checked In")
+            print(f"DEBUG: Found Checked In status: {checked_in_status}")
+
+            # Get all visitor logs for today
+            all_today_logs = visitor_logs.objects.filter(visit_date=today)
+            print(f"DEBUG: All logs for today: {list(all_today_logs.values())}")
+
+            # Get checked in logs
+            today_checked_in_logs = visitor_logs.objects.filter(
+                visit_date=today,
+                status=checked_in_status,
+                check_out__isnull=True
+            )
+            print(f"DEBUG: Found {today_checked_in_logs.count()} checked in logs for today")
+            print(f"DEBUG: Checked in logs details: {list(today_checked_in_logs.values())}")
+
+            visitor_ids = list(today_checked_in_logs.values_list('visitor_details_id', flat=True))
+            print(f"DEBUG: Visitor IDs checked in today: {visitor_ids}")
+
+            # Then search for visitors who are checked in today
+            visitors = VisitorDetails.objects.filter(
+                id__in=visitor_ids
+            ).filter(
+                Q(id_number__icontains=query) |
+                Q(full_name__icontains=query)
+            )
+            print(f"DEBUG: Found {visitors.count()} matching visitors")
+            print(f"DEBUG: Search query was: {query}")
+            print(f"DEBUG: Matching visitors: {list(visitors.values('id', 'id_number', 'full_name'))}")
+
+            results = []
+            for visitor in visitors:
+                # Get the current active visit for today
+                current_visit = visitor_logs.objects.filter(
+                    visitor_details=visitor,
+                    visit_date=today,
+                    status=checked_in_status,
+                    check_out__isnull=True
+                ).first()
+
+                if current_visit:
+                    visitor_data = {
+                        'id': str(visitor.id),
+                        'id_number': visitor.id_number,
+                        'full_name': visitor.full_name,
+                        'display_string': f"{visitor.id_number} ({visitor.full_name})",
+                        'visit_purpose': current_visit.purpose.purpose if current_visit.purpose else None
+                    }
+                    print(f"DEBUG: Adding visitor to results with data: {visitor_data}")
+                    results.append(visitor_data)
+
+            print(f"DEBUG: Final results count: {len(results)}")
+            print(f"DEBUG: Final results: {results}")
+            return Response({'results': results})
+        except Exception as e:
+            print(f"ERROR in CheckOutSearchView: {str(e)}")
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class VisitorCheckOutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            visitor_id = request.data.get('visitor_id')
+
+            if not visitor_id:
+                return Response(
+                    {"detail": "Visitor ID is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get the visitor
+            try:
+                visitor = VisitorDetails.objects.get(id=visitor_id)
+            except VisitorDetails.DoesNotExist:
+                return Response(
+                    {"detail": "Visitor not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Get current time in UTC and convert to Philippine timezone
+            now_utc = timezone.now()
+            ph_tz = pytz.timezone('Asia/Manila')
+            now_ph = now_utc.astimezone(ph_tz)
+            today_ph = now_ph.date()
+
+            # Get the current active visit
+            checked_in_status = visitor_status.objects.get(status="Checked In")
+            
+            # Debug prints
+            print(f"DEBUG: Checking for visitor {visitor_id}")
+            print(f"DEBUG: Today's date (PH): {today_ph}")
+            
+            current_visit = visitor_logs.objects.filter(
+                visitor_details=visitor,
+                visit_date=today_ph,
+                status=checked_in_status,
+                check_out__isnull=True
+            ).first()
+            
+            # More debug prints
+            if current_visit:
+                print(f"DEBUG: Found active visit - ID: {current_visit.id}, Date: {current_visit.visit_date}")
+            else:
+                all_visits = visitor_logs.objects.filter(visitor_details=visitor)
+                print(f"DEBUG: No active visit found. All visits for this visitor:")
+                for visit in all_visits:
+                    print(f"Visit ID: {visit.id}, Date: {visit.visit_date}, Status: {visit.status}, Check-out: {visit.check_out}")
+
+            if not current_visit:
+                return Response(
+                    {"detail": "No active check-in found for this visitor today"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get or create the "Checked Out" status
+            checked_out_status, _ = visitor_status.objects.get_or_create(status="Checked Out")
+
+            # Update the visitor log with Philippine time
+            current_visit.check_out = now_ph.time()
+            current_visit.status = checked_out_status
+            current_visit.save()
+
+            return Response({
+                "detail": "Visitor successfully checked out",
+                "check_out_time": now_ph.time().strftime("%H:%M:%S")
+            })
+
+        except Exception as e:
+            print(f"ERROR in VisitorCheckOutView: {str(e)}")
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

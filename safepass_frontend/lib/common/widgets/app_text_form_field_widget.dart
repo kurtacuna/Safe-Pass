@@ -19,6 +19,8 @@ class AppTextFormFieldWidget extends StatelessWidget {
     this.inputFormatters,
     this.keyboardType,
     this.enabled = true,
+    this.style,
+    this.onChanged,
     super.key
   });
 
@@ -58,6 +60,12 @@ class AppTextFormFieldWidget extends StatelessWidget {
   // Whether the text field is enabled
   final bool enabled;
 
+  // Custom text style
+  final TextStyle? style;
+
+  // Called when the text changes
+  final void Function(String)? onChanged;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -73,6 +81,7 @@ class AppTextFormFieldWidget extends StatelessWidget {
       onTapOutside: onEditingComplete != null
         ? (event) => onEditingComplete!()
         : null,
+      onChanged: onChanged,
       validator: (value) {
         if (value!.isEmpty) {
           return validatorText ?? "Please enter a valid input";
@@ -80,7 +89,9 @@ class AppTextFormFieldWidget extends StatelessWidget {
           return null;
         }
       },
-      style: AppTextStyles.defaultStyle,
+      style: style ?? (enabled 
+        ? AppTextStyles.defaultStyle
+        : AppTextStyles.defaultStyle.copyWith(color: AppColors.kDark)),
       decoration: InputDecoration(
         prefixIcon: prefixIcon != null
             ? SizedBox(width: 20, height: 20, child: prefixIcon)
@@ -91,11 +102,12 @@ class AppTextFormFieldWidget extends StatelessWidget {
         hintText: hintText,
         contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
         filled: true,
-        fillColor: enabled ? AppColors.kLighterGray : AppColors.kLighterGray.withOpacity(0.5),
+        fillColor: enabled ? AppColors.kLighterGray : const Color(0xFFFAF7F7),
         enabledBorder: AppConstants.enabledBorder,
-        focusedBorder: AppConstants.focusedBorder,
-        errorBorder: AppConstants.errorBorder,
-        focusedErrorBorder: AppConstants.focusedBorder,
+        focusedBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        focusedErrorBorder: InputBorder.none,
+        border: InputBorder.none,
       ),
     );
   }
