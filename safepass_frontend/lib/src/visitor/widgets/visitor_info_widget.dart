@@ -37,8 +37,8 @@ class _VisitorInfoWidgetState extends State<VisitorInfoWidget> {
       value: 'Archived'
     ),
     DropdownOption(
-      label: 'Denied', 
-      value: 'Denied'
+      label: 'Blacklisted', 
+      value: 'Blacklisted'
     ),
   ];
   

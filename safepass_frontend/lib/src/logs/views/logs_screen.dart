@@ -388,7 +388,7 @@ class _LogsScreenState extends State<LogsScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: isPositiveStatus
+                color: log.status == "Checked In"
                   ? Colors.green.withOpacity(0.2)
                   : Colors.red.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
@@ -396,7 +396,7 @@ class _LogsScreenState extends State<LogsScreen> {
             child: Text(
               log.status,
               style: TextStyle(
-                color: isPositiveStatus
+                color: log.status == "Checked In"
                     ? Colors.green.shade800
                     : Colors.red.shade800,
                 ),

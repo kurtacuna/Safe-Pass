@@ -10,11 +10,39 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from . import models, serializers
 import pytz
+import cv2
+import numpy as np
+import face_recognition
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.conf import settings
 from django.shortcuts import render
 from rest_framework import generics
 from .models import visitor_logs, visitor_status, VisitPurposes
 from django.db.models import Q
+from settings import models as settings_models
+
+def checkImage(uploaded_photo: InMemoryUploadedFile):
+    print("debug: checking photo")
+    image_bytes = uploaded_photo.read()
+    np_array = np.frombuffer(image_bytes, np.uint8)
+    cv2_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+
+    if cv2_image is None:
+        return Response({"detail": "Could not decode image. Invalid image file."}, status=status.HTTP_400_BAD_REQUEST)
+        
+    rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+    face_locations = face_recognition.face_locations(rgb_image)
+
+    if not face_locations:
+        return Response({"detail": "No face detected in the uploaded photo. Please upload a photo with a clear face."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if len(face_locations) > 1:
+        return Response({"detail": "Multiple faces detected. Please upload a photo with only one clear face."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    print("debug: photo passed")
+    return None  # Return None when validation passes
+
 
 class VisitorLogsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -42,21 +70,21 @@ class VisitorStatsView(APIView):
             # 4. Extract the date from the local timezone datetime
             today = today_local_datetime.date()
             
-            print(f"Current date (local timezone): {today}")
+            # print(f"Current date (local timezone): {today}")
             
             # Get all visitor logs for debugging
             all_logs = models.visitor_logs.objects.all()
-            print(f"All visitor logs: {list(all_logs.values())}")
+            # print(f"All visitor logs: {list(all_logs.values())}")
             
             # Get all statuses for debugging
             all_statuses = models.visitor_status.objects.all()
-            print(f"All available statuses: {list(all_statuses.values())}")
+            # print(f"All available statuses: {list(all_statuses.values())}")
             
             # Get total visitors for today (all visitors who checked in today)
             total_visitors = models.visitor_logs.objects.filter(
                 visit_date=today
             ).count()
-            print(f"Total visitors today: {total_visitors}")
+            # print(f"Total visitors today: {total_visitors}")
             
             # Get currently checked in visitors for today (those with no check_out time)
             checked_in_logs = models.visitor_logs.objects.filter(
@@ -64,8 +92,8 @@ class VisitorStatsView(APIView):
                 check_out__isnull=True
             )
             checked_in = checked_in_logs.count()
-            print(f"Checked in visitors today: {checked_in}")
-            print(f"Checked in logs: {list(checked_in_logs.values())}")
+            # print(f"Checked in visitors today: {checked_in}")
+            # print(f"Checked in logs: {list(checked_in_logs.values())}")
             
             # Get checked out visitors for today (those with a check_out time)
             checked_out_logs = models.visitor_logs.objects.filter(
@@ -73,14 +101,14 @@ class VisitorStatsView(APIView):
                 check_out__isnull=False
             )
             checked_out = checked_out_logs.count()
-            print(f"Checked out visitors today: {checked_out}")
-            print(f"Checked out logs: {list(checked_out_logs.values())}")
+            # print(f"Checked out visitors today: {checked_out}")
+            # print(f"Checked out logs: {list(checked_out_logs.values())}")
             
             # Get new registrants directly from VisitorDetails model
             new_registrants = VisitorDetails.objects.filter(
                 registration_date__date=today
             ).count()
-            print(f"New registrants today: {new_registrants}")
+            # print(f"New registrants today: {new_registrants}")
             
             stats = {
                 'total_visitors': total_visitors,
@@ -89,7 +117,7 @@ class VisitorStatsView(APIView):
                 'new_registrants': new_registrants,
             }
             
-            print(f"Final stats being sent: {stats}")
+            # print(f"Final stats being sent: {stats}")
             return Response(stats, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -121,10 +149,52 @@ class VisitPurposesView(APIView):
             traceback.print_exc()
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
 class VisitorCheckInView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
+        now_utc = timezone.now() 
+        
+        # 2. Get your Django TIME_ZONE setting
+        current_timezone = pytz.timezone(settings.TIME_ZONE)
+        
+        # 3. Convert the UTC time to your local timezone
+        today_local_datetime = now_utc.astimezone(current_timezone)
+        
+        # 4. Extract the date from the local timezone datetime
+        today = today_local_datetime.date()
+        
+        # print(f"Current date (local timezone): {today}")
+        
+        # Get all visitor logs for debugging
+        all_logs = models.visitor_logs.objects.all()
+        # print(f"All visitor logs: {list(all_logs.values())}")
+        
+        # Get all statuses for debugging
+        all_statuses = models.visitor_status.objects.all()
+        # print(f"All available statuses: {list(all_statuses.values())}")
+        
+        # Get total visitors for today (all visitors who checked in today)
+        total_visitors = models.visitor_logs.objects.filter(
+            visit_date=today
+        ).count()
+
+        max_visitors = settings_models.AppSettings.objects.get(id=1).max_visitors_per_day
+        max_visitors = int(max_visitors)
+        if total_visitors >= max_visitors:
+            return Response({"detail": "Max visitors reached."}, status=status.HTTP_400_BAD_REQUEST)
+
+        uploaded_photo: InMemoryUploadedFile = request.FILES.get('photo')
+        if not uploaded_photo:
+            return Response({"detail": "No photo received. Try again."}, status=status.HTTP_400_BAD_REQUEST)
+
+        image_validation_response = checkImage(uploaded_photo)
+        if image_validation_response is not None:
+            return image_validation_response  # Return the error response
+
         try:
             visitor_id = request.data.get('visitor_id')
             visit_purpose = request.data.get('visit_purpose')
@@ -143,7 +213,94 @@ class VisitorCheckInView(APIView):
                     {"detail": "Visitor not found"},
                     status=status.HTTP_404_NOT_FOUND
                 )
+            
+            # Process uploaded photo (reset file pointer first)
+            uploaded_photo.seek(0)
+            image_bytes1 = uploaded_photo.read()
+            
+            if not image_bytes1:
+                return Response(
+                    {"detail": "Uploaded photo is empty or corrupted"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            np_array1 = np.frombuffer(image_bytes1, np.uint8)
+            if np_array1.size == 0:
+                return Response(
+                    {"detail": "Could not process uploaded photo"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            cv2_image1 = cv2.imdecode(np_array1, cv2.IMREAD_COLOR)
+            if cv2_image1 is None:
+                return Response(
+                    {"detail": "Could not decode uploaded photo"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            rgb_image1 = cv2.cvtColor(cv2_image1, cv2.COLOR_BGR2RGB)
+            
+            # Get face encodings from uploaded photo
+            face_encodings1 = face_recognition.face_encodings(rgb_image1)
+            if not face_encodings1:
+                return Response(
+                    {"detail": "No face detected in uploaded photo"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            img1_encoding = face_encodings1[0]
 
+            # Process visitor's stored photo
+            try:
+                visitor.photo.seek(0)  # Reset file pointer for stored photo
+                image_bytes2 = visitor.photo.read()
+            except Exception as e:
+                return Response(
+                    {"detail": "Could not read visitor's stored photo"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            if not image_bytes2:
+                return Response(
+                    {"detail": "Visitor's stored photo is empty or corrupted"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            np_array2 = np.frombuffer(image_bytes2, np.uint8)
+            if np_array2.size == 0:
+                return Response(
+                    {"detail": "Could not process visitor's stored photo"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                
+            cv2_image2 = cv2.imdecode(np_array2, cv2.IMREAD_COLOR)
+            if cv2_image2 is None:
+                return Response(
+                    {"detail": "Could not decode visitor's stored photo"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            rgb_image2 = cv2.cvtColor(cv2_image2, cv2.COLOR_BGR2RGB)
+            
+            # Get face encodings from stored photo
+            face_encodings2 = face_recognition.face_encodings(rgb_image2)
+            if not face_encodings2:
+                return Response(
+                    {"detail": "No face detected in visitor's stored photo"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            img2_encoding = face_encodings2[0]
+
+            # Compare faces
+            result = face_recognition.compare_faces([img2_encoding], img1_encoding, tolerance=0.6)
+            if not result[0]:  # result is a list, check first element
+                return Response(
+                    {"detail": "Face doesn't match the registered visitor"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # If we get here, face match is successful
+            # Add your check-in logic here (create visit log, etc.)
+            
             # Get the visit purpose
             try:
                 purpose = VisitPurposes.objects.get(purpose=visit_purpose)
@@ -175,12 +332,15 @@ class VisitorCheckInView(APIView):
             return Response({
                 "detail": "Visitor successfully checked in",
                 "check_in_time": now_ph.time().strftime("%H:%M:%S")
-            })
+            }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print(f"VisitorCheckInView: {str(e)}")
+            print(f"VisitorCheckInView Error: {str(e)}")
+            import traceback
+            print("Full traceback:")
+            print(traceback.format_exc())
             return Response(
-                {"detail": str(e)},
+                {"detail": f"An error occurred during check-in: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -269,8 +429,17 @@ class CheckOutSearchView(APIView):
 
 class VisitorCheckOutView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
+        uploaded_photo: InMemoryUploadedFile = request.FILES.get('photo')
+        if not uploaded_photo:
+            return Response({"detail": "No photo received. Try again."}, status=status.HTTP_400_BAD_REQUEST)
+
+        image_validation_response = checkImage(uploaded_photo)
+        if image_validation_response is not None:
+            return image_validation_response  # Return the error response
+
         try:
             visitor_id = request.data.get('visitor_id')
 
@@ -287,6 +456,91 @@ class VisitorCheckOutView(APIView):
                 return Response(
                     {"detail": "Visitor not found"},
                     status=status.HTTP_404_NOT_FOUND
+                )
+            
+            
+            # Process uploaded photo (reset file pointer first)
+            uploaded_photo.seek(0)
+            image_bytes1 = uploaded_photo.read()
+            
+            if not image_bytes1:
+                return Response(
+                    {"detail": "Uploaded photo is empty or corrupted"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            np_array1 = np.frombuffer(image_bytes1, np.uint8)
+            if np_array1.size == 0:
+                return Response(
+                    {"detail": "Could not process uploaded photo"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            cv2_image1 = cv2.imdecode(np_array1, cv2.IMREAD_COLOR)
+            if cv2_image1 is None:
+                return Response(
+                    {"detail": "Could not decode uploaded photo"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            rgb_image1 = cv2.cvtColor(cv2_image1, cv2.COLOR_BGR2RGB)
+            
+            # Get face encodings from uploaded photo
+            face_encodings1 = face_recognition.face_encodings(rgb_image1)
+            if not face_encodings1:
+                return Response(
+                    {"detail": "No face detected in uploaded photo"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            img1_encoding = face_encodings1[0]
+
+            # Process visitor's stored photo
+            try:
+                visitor.photo.seek(0)  # Reset file pointer for stored photo
+                image_bytes2 = visitor.photo.read()
+            except Exception as e:
+                return Response(
+                    {"detail": "Could not read visitor's stored photo"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            if not image_bytes2:
+                return Response(
+                    {"detail": "Visitor's stored photo is empty or corrupted"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            np_array2 = np.frombuffer(image_bytes2, np.uint8)
+            if np_array2.size == 0:
+                return Response(
+                    {"detail": "Could not process visitor's stored photo"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                
+            cv2_image2 = cv2.imdecode(np_array2, cv2.IMREAD_COLOR)
+            if cv2_image2 is None:
+                return Response(
+                    {"detail": "Could not decode visitor's stored photo"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            rgb_image2 = cv2.cvtColor(cv2_image2, cv2.COLOR_BGR2RGB)
+            
+            # Get face encodings from stored photo
+            face_encodings2 = face_recognition.face_encodings(rgb_image2)
+            if not face_encodings2:
+                return Response(
+                    {"detail": "No face detected in visitor's stored photo"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            img2_encoding = face_encodings2[0]
+
+            # Compare faces
+            result = face_recognition.compare_faces([img2_encoding], img1_encoding, tolerance=0.6)
+            if not result[0]:  # result is a list, check first element
+                return Response(
+                    {"detail": "Face doesn't match the registered visitor"},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
             # Get current time in UTC and convert to Philippine timezone

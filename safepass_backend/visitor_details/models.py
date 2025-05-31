@@ -15,7 +15,7 @@ class VisitorDetails(models.Model):
   STATUS_CHOICES = [
     ('Approved', 'Approved'),
     ('Archived', 'Archived'),
-    ('Denied', 'Denied')
+    ('Blacklisted', 'Blacklisted')
   ]
 
 

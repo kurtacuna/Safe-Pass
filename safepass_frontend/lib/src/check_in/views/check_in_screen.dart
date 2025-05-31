@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +17,9 @@ import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controll
 import 'package:safepass_frontend/src/check_in/controller/visitor_search_controller.dart';
 import 'package:safepass_frontend/src/check_in/models/visitor_search_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:safepass_frontend/src/settings/models/settings_model.dart';
+import 'package:safepass_frontend/src/settings/models/visitor_details_model.dart';
+// import 'package:safepass_frontend/src/check_in/services/check_in_service.dart';
 
 class CheckInScreen extends StatefulWidget { //comment for checkpoint
   const CheckInScreen({super.key});
@@ -28,12 +34,18 @@ class _CheckInScreenState extends State<CheckInScreen> {
   final _idNumberController = TextEditingController();
   final _searchController = TextEditingController();
   TextEditingController? _autocompleteController;
-  String? _selectedVisitPurpose;
+  dynamic _selectedVisitPurpose;
   bool _isFaceRecognized = false;
   bool _isDenied = false;
   bool _showVerificationDialog = false;
   final _searchFieldKey = GlobalKey();
   final _searchFocusNode = FocusNode();
+  bool _isLoading = false;
+
+  List<CameraDescription> cameras = [];
+  late CameraController _cameraController;
+  late Future<void> _initializeControllerFuture;
+  bool previewCamera = false;
 
   @override
   void initState() {
@@ -42,6 +54,25 @@ class _CheckInScreenState extends State<CheckInScreen> {
     });
 
     super.initState();
+  }
+
+  void _loadCameras() async {
+    cameras = await availableCameras();
+
+    print("debug: list of cameras ${cameras}");
+
+    _cameraController = CameraController(
+      cameras.firstWhere(
+        (e) => e.name == "Logi C270 HD WebCam (046d:0825)",
+        orElse: () => cameras.first
+      ),
+      ResolutionPreset.high
+    );
+    _initializeControllerFuture = _cameraController.initialize();
+
+    setState(() {
+      previewCamera = true;
+    });
   }
 
   void _handleSearch() {
@@ -59,7 +90,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
     _nameController.dispose();
     _idNumberController.dispose();
     _searchController.dispose();
-    _searchFocusNode.dispose();
+     _cameraController.dispose();
+     _selectedVisitPurpose = null;
     super.dispose();
   }
 
@@ -114,7 +146,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Row(
+                context.watch<VisitorSearchController>().getIsLoading
+                  ? Center(child: AppCircularProgressIndicatorWidget())
+                  : Row(
                   children: [
                     Expanded(
                       child: TextButton(
@@ -138,12 +172,37 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _isFaceRecognized = true;
-                          });
-                          Navigator.pop(context);
-                          // TODO: Implement verification logic
+                        onPressed: () async {
+                          // setState(() {
+                            
+                          //   _isFaceRecognized = true;
+                          //   Navigator.pop(context);
+                          // });
+                          if (!previewCamera) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Please turn on the camera first"),
+                                backgroundColor: AppColors.kDarkRed,
+                              )
+                            );
+                          }
+                          if (_selectedVisitPurpose!.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Please select a visit purpose."),
+                                backgroundColor: AppColors.kDarkRed,
+                              )
+                            );
+                          }
+                          await _initializeControllerFuture;
+                          final XFile image = await _cameraController.takePicture();
+                          final Uint8List imageBytes = await image.readAsBytes();
+                          context.read<VisitorSearchController>().checkInVisitor(
+                            context,
+                            visitorId: context.read<VisitorSearchController>().getSelectedVisitorId!,
+                            visitPurpose: _selectedVisitPurpose!,
+                            imageBytes: imageBytes
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.kDarkBlue,
@@ -196,7 +255,10 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
-                          onTap: () => context.go('/entrypoint'),
+                          onTap: () {
+                            context.go('/entrypoint');
+                            _cameraController.dispose();
+                          },
                           child: Image.asset(
                             AppImages.logoDark,
                             height: 50,
@@ -256,6 +318,19 @@ class _CheckInScreenState extends State<CheckInScreen> {
                               focusNode: _searchFocusNode,
                               hintText: 'Search Visitor ID or Name',
                               prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchController.text.isNotEmpty || context.read<VisitorSearchController>().getSelectedVisitor != null
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _nameController.clear();
+                                      _idNumberController.clear();
+                                      _selectedVisitPurpose = null;
+                                      context.read<VisitorSearchController>().clearSelectedVisitor();
+                                      setState(() {});
+                                    },
+                                  )
+                                : null,
                               onChanged: (value) {
                                 print("DEBUG: Search onChanged triggered with value: $value");
                                 if (value.isNotEmpty) {
@@ -264,6 +339,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                     context,
                                     value,
                                   );
+                                } else {
+                                  context.read<VisitorSearchController>().clearSelectedVisitor();
                                 }
                               },
                             ),
@@ -413,6 +490,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                                   style: AppTextStyles.defaultStyle.copyWith(
                                                     color: AppColors.kDark,
                                                   ),
+                                                  validate: false,
                                                 ),
                                                 const SizedBox(height: 30),
                                                 Container(
@@ -458,34 +536,63 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                                                 _selectedVisitPurpose = value;
                                                               });
                                                               print("DEBUG: Updated selected visit purpose: $_selectedVisitPurpose");
-                                                            }
-                                                          : null,
-                                                    ),
+                                                          }
+                                                        : null,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 30),
-                                                AppButtonWidget(
-                                                  width: double.infinity,
-                                                  onTap: () {
-                                                    if (_formKey.currentState!.validate() &&
-                                                        _selectedVisitPurpose != null &&
-                                                        context.read<VisitorSearchController>().getSelectedVisitor != null) {
-                                                      context.read<VisitorSearchController>().checkInVisitor(
-                                                        context,
-                                                        visitorId: context.read<VisitorSearchController>().getSelectedVisitor!.id,
-                                                        visitPurpose: _selectedVisitPurpose!,
-                                                      );
-                                                      setState(() {
-                                                        _selectedVisitPurpose = null;
-                                                        _nameController.clear();
-                                                        _idNumberController.clear();
-                                                        _searchController.clear();
-                                                        _autocompleteController?.clear();
-                                                      });
-                                                    }
-                                                  },
-                                                  text: 'Confirm Check-In',
-                                                ),
+                                              ),
+                                              const SizedBox(height: 30),
+                                              context.watch<VisitorSearchController>().getIsLoading
+                                                ? Center(child: AppCircularProgressIndicatorWidget())
+                                                : AppButtonWidget(
+                                                width: double.infinity,
+                                                onTap: ()  async {
+                                                  print("debug: confirmed checkin");
+                                                  if (!_formKey.currentState!.validate()) {
+                                                    return;
+                                                  }
+                                                  if (
+                                                      _selectedVisitPurpose != null &&
+                                                      context.read<VisitorSearchController>().getSelectedVisitor != null
+                                                      ) {
+                                                        if (!previewCamera) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text("Please turn on the camera first"),
+                                                              backgroundColor: AppColors.kDarkRed,
+                                                            )
+                                                          );
+                                                        }
+                                                        if (_selectedVisitPurpose == null) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text("Please select a visit purpose."),
+                                                              backgroundColor: AppColors.kDarkRed,
+                                                            )
+                                                          );
+                                                        }
+                                                        print("debug: executed checkin");
+                                                        await _initializeControllerFuture;
+                                                        final XFile image = await _cameraController.takePicture();
+                                                        final Uint8List imageBytes = await image.readAsBytes();
+                                                        context.read<VisitorSearchController>().checkInVisitor(
+                                                          context,
+                                                          visitorId: context.read<VisitorSearchController>().getSelectedVisitorId!,
+                                                          visitPurpose: _selectedVisitPurpose!,
+                                                          imageBytes: imageBytes
+                                                        );
+                                                        print("debug: finished");
+                                                        // setState(() {
+                                                        //   _selectedVisitPurpose = null;
+                                                        //   _nameController.clear();
+                                                        //   _idNumberController.clear();
+                                                        //   _searchController.clear();
+                                                        //   _autocompleteController?.clear();
+                                                        // });
+                                                  }
+                                                },
+                                                text: 'Confirm Check-In',
+                                              ),
                                               ],
                                             ),
                                           ),
@@ -519,7 +626,20 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                           borderRadius: AppConstants.kAppBorderRadius,
                                         ),
                                         child: Center(
-                                          child: Column(
+                                          child: previewCamera
+                                            ? FutureBuilder(
+                                              future: _initializeControllerFuture,
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState == ConnectionState.done) {
+                                                  return SizedBox.expand(
+                                                    child: CameraPreview(_cameraController)
+                                                  );
+                                                } else {
+                                                  return Center(child: AppCircularProgressIndicatorWidget(),);
+                                                }
+                                              }
+                                            )
+                                            : Column(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               if (_isDenied) ...[
@@ -557,12 +677,12 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                                 ),
                                                 const SizedBox(height: 20),
                                                 AppButtonWidget(
-                                                  width: 200,
-                                                  onTap: () {
-                                                    // TODO: Implement photo capture
-                                                  },
-                                                  text: 'TAKE A PHOTO',
-                                                ),
+                                                    width: 200,
+                                                    onTap: _isLoading 
+                                                      ? null 
+                                                      : () => _loadCameras(),
+                                                    text: _isLoading ? 'Scanning...' : 'TAKE A PHOTO',
+                                                  ),
                                               ],
                                             ],
                                           ),

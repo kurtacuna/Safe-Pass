@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/browser_client.dart' as http;
+import 'package:http/http.dart' as normalhttp;
+import 'package:http_parser/http_parser.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/common_json_model.dart';
@@ -24,6 +26,13 @@ class VisitorSearchController with ChangeNotifier {
   void setSelectedVisitor(VisitorSearchResult? visitor) {
     _selectedVisitor = visitor;
     _selectedVisitorId = visitor?.id;
+    notifyListeners();
+  }
+
+  void clearSelectedVisitor() {
+    _selectedVisitor = null;
+    _selectedVisitorId = null;
+    _searchResults = [];
     notifyListeners();
   }
 
@@ -87,31 +96,41 @@ class VisitorSearchController with ChangeNotifier {
   Future<void> checkInVisitor(BuildContext context, {
     required String visitorId,
     required String visitPurpose,
+    required var imageBytes,
   }) async {
     _isLoading = true;
     notifyListeners();
 
+    print("debug: inside");
+
     try {
-      var client = http.BrowserClient();
-      client.withCredentials = true;
-      var url = Uri.parse(ApiUrls.visitorCheckInUrl);
+
+      print("debug: sent to backend");
       
       final csrfToken = _getCsrfToken();
       if (csrfToken == null) {
         throw Exception('CSRF token not found');
       }
 
-      var response = await client.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        body: json.encode({
-          'visitor_id': visitorId,
-          'visit_purpose': visitPurpose,
-        }),
+      var client = http.BrowserClient();
+      client.withCredentials = true;
+      var url = Uri.parse(ApiUrls.visitorCheckInUrl);
+      var request = normalhttp.MultipartRequest('POST', url);
+      request.files.add(
+        normalhttp.MultipartFile.fromBytes(
+          'photo',
+          imageBytes,
+          filename: "imagefromclient.jpeg",
+          contentType: MediaType('image', 'jpeg')
+        )
       );
+
+      request.fields['visitor_id'] = visitorId;
+      request.fields['visit_purpose'] = visitPurpose;
+      request.headers['X-CSRFToken'] = csrfToken;
+
+      var streamedResponse = await client.send(request);
+      var response = await normalhttp.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (context.mounted) {
@@ -130,6 +149,7 @@ class VisitorSearchController with ChangeNotifier {
             context,
             visitorId: visitorId,
             visitPurpose: visitPurpose,
+            imageBytes: imageBytes
           ));
         }
       } else {

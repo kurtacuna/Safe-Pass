@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/http/http_client.dart';
 
-class CheckInService {
+class CheckInService with ChangeNotifier {
   final HttpClient _httpClient = HttpClient();
 
   Future<List<Map<String, dynamic>>> searchVisitors(String query) async {
@@ -24,10 +25,19 @@ class CheckInService {
     }
   }
 
+  bool _isLoading = false;
+  get getIsLoading => _isLoading;
+
   Future<Map<String, dynamic>> checkInVisitor({
     required int visitorId,
     required int purposeId,
   }) async {
+    _isLoading = true;
+    notifyListeners();
+
+
+    print("debug: sending request to chck in");
+
     try {
       final response = await _httpClient.post(
         ApiUrls.visitorCheckInUrl,
@@ -45,6 +55,9 @@ class CheckInService {
     } catch (e) {
       print('Error checking in visitor: $e');
       throw Exception('Failed to check in visitor');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 } 

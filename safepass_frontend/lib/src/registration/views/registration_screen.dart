@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart' as http;
@@ -357,6 +358,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         validatorText: 'Please enter your contact number',
                                         keyboardType: TextInputType.phone,
                                         digitsOnly: true,
+                                        inputFormatters: [
+                                          ElevenDigitPhoneFormatter(),
+                                        ],
+                                        validate: true,
+                                        validator: (value) {
+                                          if (value.length != 11) {
+                                            return 'Contact number must be exactly 11 digits';
+                                          }
+                                          return null;
+                                        },
                                       ),
                                       // const SizedBox(height: 30),
                                       // AppButtonWidget(
@@ -489,6 +500,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class ElevenDigitPhoneFormatter extends TextInputFormatter {
+  @override 
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Remove all non-digit characters
+    String digitsOnly = newValue.text.replaceAll(RegExp(r'\D'), '');
+    
+    // Limit to maximum 11 digits
+    if (digitsOnly.length > 11) {
+      digitsOnly = digitsOnly.substring(0, 11);
+    }
+    
+    // Return the formatted value
+    return TextEditingValue(
+      text: digitsOnly,
+      selection: TextSelection.collapsed(offset: digitsOnly.length),
     );
   }
 }

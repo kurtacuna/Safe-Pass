@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/browser_client.dart' as http;
+import 'package:http/http.dart' as normalhttp;
+import 'package:http_parser/http_parser.dart';
 import 'package:safepass_frontend/common/const/kcolors.dart';
 import 'package:safepass_frontend/common/const/kurls.dart';
 import 'package:safepass_frontend/common/utils/common_json_model.dart';
@@ -20,6 +22,12 @@ class CheckOutController with ChangeNotifier {
 
   void setSelectedVisitor(VisitorSearchResult? visitor) {
     _selectedVisitor = visitor;
+    notifyListeners();
+  }
+
+  void clearSelectedVisitor() {
+    _selectedVisitor = null;
+    _searchResults = [];
     notifyListeners();
   }
 
@@ -91,36 +99,38 @@ class CheckOutController with ChangeNotifier {
     }
   }
 
-  Future<void> checkOutVisitor(BuildContext context, String visitorId) async {
+  Future<void> checkOutVisitor(
+    BuildContext context, 
+    String visitorId,
+    var imageBytes
+  ) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      print('Checking out visitor with ID: $visitorId');
-      var client = http.BrowserClient();
-      client.withCredentials = true;
-      
-      var url = Uri.parse(ApiUrls.visitorCheckOutUrl);
-      print('Check-out URL: $url');
-
       final csrfToken = _getCsrfToken();
       if (csrfToken == null) {
         throw Exception('CSRF token not found');
       }
       
-      var response = await client.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        body: json.encode({
-          'visitor_id': visitorId,
-        }),
+      var client = http.BrowserClient();
+      client.withCredentials = true;
+      var url = Uri.parse(ApiUrls.visitorCheckOutUrl);
+      var request = normalhttp.MultipartRequest('POST', url);
+      request.files.add(
+        normalhttp.MultipartFile.fromBytes(
+          'photo',
+          imageBytes,
+          filename: "imagefromclient.jpeg",
+          contentType: MediaType('image', 'jpeg')
+        )
       );
-      
-      print('Check-out response status: ${response.statusCode}');
-      print('Check-out response body: ${response.body}');
+
+      request.fields['visitor_id'] = visitorId;
+      request.headers['X-CSRFToken'] = csrfToken;
+
+      var streamedResponse = await client.send(request);
+      var response = await normalhttp.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (context.mounted) {
@@ -135,7 +145,7 @@ class CheckOutController with ChangeNotifier {
         }
       } else if (response.statusCode == 401) {
         if (context.mounted) {
-          await refetch(context, fetch: () => checkOutVisitor(context, visitorId));
+          await refetch(context, fetch: () => checkOutVisitor(context, visitorId, imageBytes));
         }
       } else {
         CommonJsonModel model = commonJsonModelFromJson(response.body);

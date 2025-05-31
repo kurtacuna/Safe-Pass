@@ -21,8 +21,14 @@ class AppTextFormFieldWidget extends StatelessWidget {
     this.enabled = true,
     this.style,
     this.onChanged,
+    this.validate = true,
+    this.validator,
     super.key
   });
+  
+  final bool validate;
+
+  final Function(String)? validator;
 
   // Controller for the value inside the field
   final TextEditingController controller;
@@ -82,13 +88,18 @@ class AppTextFormFieldWidget extends StatelessWidget {
         ? (event) => onEditingComplete!()
         : null,
       onChanged: onChanged,
-      validator: (value) {
-        if (value!.isEmpty) {
-          return validatorText ?? "Please enter a valid input";
-        } else {
-          return null;
+      validator: validate
+        ? (value) {
+          validator != null
+            ? validator!(value!)
+            : null;
+          if (value!.isEmpty) {
+            return validatorText ?? "Please enter a valid input";
+          } else {
+            return null;
+          }
         }
-      },
+        : null,
       style: style ?? (enabled 
         ? AppTextStyles.defaultStyle
         : AppTextStyles.defaultStyle.copyWith(color: AppColors.kDark)),

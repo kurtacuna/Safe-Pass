@@ -7,6 +7,7 @@ import 'package:safepass_frontend/src/auth/controller/jwt_notifier.dart';
 import 'package:safepass_frontend/src/auth/controller/password_notifier.dart';
 import 'package:safepass_frontend/src/check_in/controller/visit-purpose_controller.dart';
 import 'package:safepass_frontend/src/check_in/controller/visitor_search_controller.dart';
+import 'package:safepass_frontend/src/check_in/services/check_in_service.dart';
 import 'package:safepass_frontend/src/check_out/controller/check_out_controller.dart';
 import 'package:safepass_frontend/src/check_out/repository/check_out_repository.dart';
 import 'package:safepass_frontend/src/dashboard/controllers/notif_controller.dart';
@@ -33,6 +34,7 @@ void main() async {
       ChangeNotifierProvider(create: (_) => VisitorSearchController()),
       ChangeNotifierProvider(create: (_) => CheckOutController()),
       ChangeNotifierProvider(create: (_) => NotifController()),
+      ChangeNotifierProvider(create: (_) => CheckInService()),
     ],
     child: MyApp()
   ));

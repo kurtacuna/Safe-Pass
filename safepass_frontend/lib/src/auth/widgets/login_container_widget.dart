@@ -49,7 +49,7 @@ class _LoginContainerWidgetState extends State<LoginContainerWidget> {
   Widget build(BuildContext context) {
     return AppContainerWidget(
       width: 500, 
-      height: 500, 
+      height: 400, 
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(80),
@@ -91,38 +91,38 @@ class _LoginContainerWidgetState extends State<LoginContainerWidget> {
                           )
                         ),
                     
-                        SizedBox(height: 15),
+                        // SizedBox(height: 15),
                     
-                        AppTextButtonWidget(
-                          onPressed: () {
-                            setState(() {
-                              _checkboxValue = !_checkboxValue;
-                            });
-                          }, 
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Checkbox(
-                                value: _checkboxValue,
-                                activeColor: AppColors.kDarkBlue,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _checkboxValue = !_checkboxValue;
-                                  });
-                                }
-                              ),
+                        // AppTextButtonWidget(
+                        //   onPressed: () {
+                        //     setState(() {
+                        //       _checkboxValue = !_checkboxValue;
+                        //     });
+                        //   }, 
+                        //   child: Row(
+                        //     mainAxisSize: MainAxisSize.min,
+                        //     children: [
+                        //       Checkbox(
+                        //         value: _checkboxValue,
+                        //         activeColor: AppColors.kDarkBlue,
+                        //         onChanged: (value) {
+                        //           setState(() {
+                        //             _checkboxValue = !_checkboxValue;
+                        //           });
+                        //         }
+                        //       ),
                               
-                              SizedBox(width: 10),
+                        //       // SizedBox(width: 10),
                     
-                              Text(
-                                "Remember my password",
-                                style: AppTextStyles.defaultStyle.copyWith(
-                                  color: AppColors.kDark
-                                ),
-                              )
-                            ],
-                          )
-                        )
+                        //       // Text(
+                        //       //   "Remember my password",
+                        //       //   style: AppTextStyles.defaultStyle.copyWith(
+                        //       //     color: AppColors.kDark
+                        //       //   ),
+                        //       // )
+                        //     ],
+                          // )
+                        // )
                       ]
                     );
                   }
@@ -152,22 +152,22 @@ class _LoginContainerWidgetState extends State<LoginContainerWidget> {
                     text: "Log In"
                   ),
         
-              SizedBox(height: 10),
+              // SizedBox(height: 10),
               
-              AppTextButtonWidget(
-                onPressed: () {
-                  // TODO: handle forgot password
-                }, 
-                child: Text.rich(
-                  TextSpan(
-                    text: "Forgot Password?",
-                    style: AppTextStyles.defaultStyle.copyWith(
-                     color: AppColors.kDarkGray,
-                      decoration: TextDecoration.underline
-                    )
-                  )
-                )
-              )
+              // AppTextButtonWidget(
+              //   onPressed: () {
+              //     // TODO: handle forgot password
+              //   }, 
+              //   child: Text.rich(
+              //     TextSpan(
+              //       text: "Forgot Password?",
+              //       style: AppTextStyles.defaultStyle.copyWith(
+              //        color: AppColors.kDarkGray,
+              //         decoration: TextDecoration.underline
+              //       )
+              //     )
+              //   )
+              // )
             ],
           ),
         ),

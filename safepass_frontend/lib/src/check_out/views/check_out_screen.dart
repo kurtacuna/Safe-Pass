@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +30,6 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   final _nameController = TextEditingController();
   final _idNumberController = TextEditingController();
   final _visitPurposeController = TextEditingController();
-  String? _selectedVisitPurpose;
   bool _isFaceRecognized = false;
   bool _isDenied = false;
   bool _showVerificationDialog = false;
@@ -35,6 +37,42 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   OverlayEntry? _overlayEntry;
   VisitorSearchResult? _selectedVisitor;
   final GlobalKey _searchFieldKey = GlobalKey();
+
+  
+  List<CameraDescription> cameras = [];
+  late CameraController _cameraController;
+  late Future<void> _initializeControllerFuture;
+  bool previewCamera = false;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _cameraController.dispose();
+    _searchController.dispose();
+    _nameController.dispose();
+    _idNumberController.dispose();
+    _visitPurposeController.dispose();
+  }
+  
+  void _loadCameras() async {
+    cameras = await availableCameras();
+
+    print("debug: list of cameras ${cameras}");
+
+    _cameraController = CameraController(
+      cameras.firstWhere(
+        (e) => e.name == "Logi C270 HD WebCam (046d:0825)",
+        orElse: () => cameras.first
+      ),
+      ResolutionPreset.high
+    );
+    _initializeControllerFuture = _cameraController.initialize();
+
+    setState(() {
+      previewCamera = true;
+    });
+  }
 
   @override
   void initState() {
@@ -279,25 +317,37 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _isFaceRecognized = true;
-                          });
-                          Navigator.pop(context);
+                        onPressed: ()  async {
+                          // setState(() {
+                          //   _isFaceRecognized = true;
+                          // });
+                          // Navigator.pop(context);
+                          if (!previewCamera) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Please turn on the camera first"),
+                                backgroundColor: AppColors.kDarkRed,
+                              )
+                            );
+                          }
+                          await _initializeControllerFuture;
+                          final XFile image = await _cameraController.takePicture();
+                          final Uint8List imageBytes = await image.readAsBytes();
                           if (_selectedVisitor != null) {
                             context.read<CheckOutController>().checkOutVisitor(
                               context,
                               _selectedVisitor!.id,
+                              imageBytes
                             );
                             // Clear the form after successful check-out
-                            setState(() {
-                              _selectedVisitor = null;
-                              _searchController.clear();
-                              _nameController.clear();
-                              _idNumberController.clear();
-                              _visitPurposeController.clear();
-                              _isFaceRecognized = false;
-                            });
+                            // setState(() {
+                            //   _selectedVisitor = null;
+                            //   _searchController.clear();
+                            //   _nameController.clear();
+                            //   _idNumberController.clear();
+                            //   _visitPurposeController.clear();
+                            //   _isFaceRecognized = false;
+                            // });
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -479,6 +529,19 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                               focusNode: _searchFocusNode,
                               hintText: 'Search Visitor ID or Name',
                               prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchController.text.isNotEmpty || context.read<CheckOutController>().getSelectedVisitor != null
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _nameController.clear();
+                                      _idNumberController.clear();
+                                      _visitPurposeController.clear();
+                                      context.read<CheckOutController>().clearSelectedVisitor();
+                                      setState(() {});
+                                    },
+                                  )
+                                : null,
                             ),
                             Consumer<CheckOutController>(
                               builder: (context, controller, _) {
@@ -541,23 +604,42 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                                   enabled: false,
                                                 ),
                                                 const SizedBox(height: 30),
-                                                AppButtonWidget(
+                                                context.watch<CheckOutController>().getIsLoading
+                                                  ? Center(child: AppCircularProgressIndicatorWidget())
+                                                  : AppButtonWidget(
                                                   width: double.infinity,
-                                                  onTap: () {
-                                                    if (_formKey.currentState!.validate() && _selectedVisitor != null) {
+                                                  onTap: () async {
+                                                    if (!_formKey.currentState!.validate()) {
+                                                      return;
+                                                    }
+                                                    if (_selectedVisitor != null) {
+                                                      if (!previewCamera) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(
+                                                            content: Text("Please turn on the camera first"),
+                                                            backgroundColor: AppColors.kDarkRed,
+                                                          )
+                                                        );
+                                                      }
+                                                      await _initializeControllerFuture;
+                                                      final XFile image = await _cameraController.takePicture();
+                                                      final Uint8List imageBytes = await image.readAsBytes();
+
+                                                      
                                                       context.read<CheckOutController>().checkOutVisitor(
                                                         context,
                                                         _selectedVisitor!.id,
+                                                        imageBytes
                                                       );
-                                                      // Clear the form after successful check-out
-                                                      setState(() {
-                                                        _selectedVisitor = null;
-                                                        _searchController.clear();
-                                                        _nameController.clear();
-                                                        _idNumberController.clear();
-                                                        _visitPurposeController.clear();
-                                                        _isFaceRecognized = false;
-                                                      });
+                                                      // // Clear the form after successful check-out
+                                                      // setState(() {
+                                                      //   _selectedVisitor = null;
+                                                      //   _searchController.clear();
+                                                      //   _nameController.clear();
+                                                      //   _idNumberController.clear();
+                                                      //   _visitPurposeController.clear();
+                                                      //   _isFaceRecognized = false;
+                                                      // });
                                                     }
                                                   },
                                                   text: 'Confirm Check-Out',
@@ -595,7 +677,20 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                           borderRadius: AppConstants.kAppBorderRadius,
                                         ),
                                         child: Center(
-                                          child: Column(
+                                          child: previewCamera
+                                            ? FutureBuilder(
+                                              future: _initializeControllerFuture,
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState == ConnectionState.done) {
+                                                  return SizedBox.expand(
+                                                    child: CameraPreview(_cameraController)
+                                                  );
+                                                } else {
+                                                  return Center(child: AppCircularProgressIndicatorWidget(),);
+                                                }
+                                              }
+                                            )
+                                            : Column(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               if (_isDenied) ...[
@@ -633,12 +728,12 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                                 ),
                                                 const SizedBox(height: 20),
                                                 AppButtonWidget(
-                                                  width: 200,
-                                                  onTap: () {
-                                                    // TODO: Implement photo capture
-                                                  },
-                                                  text: 'TAKE A PHOTO',
-                                                ),
+                                                    width: 200,
+                                                    onTap: _isLoading 
+                                                      ? null 
+                                                      : () => _loadCameras(),
+                                                    text: _isLoading ? 'Scanning...' : 'TAKE A PHOTO',
+                                                  ),
                                               ],
                                             ],
                                           ),
